@@ -5072,7 +5072,7 @@ class Kadence_MCP_Abilities_Build {
 			return new WP_Error( 'kadence_mcp_nothing_to_update', __( 'Geef ten minste één van title, slug, excerpt, menu_order, featured_image, terms of acf mee.', 'mcp-abilities-kadence' ) );
 		}
 
-		list( $bezwaren, $plan, $termen, $acf_velden ) = self::toets_postvelden( $type, $object, $input );
+		list( $bezwaren, $plan, $termen, $acf_velden ) = self::toets_postvelden( $type, $object, $input, (int) $post->ID );
 
 		$titel = isset( $input['title'] ) ? trim( wp_strip_all_tags( (string) $input['title'] ) ) : null;
 		if ( null !== $titel && '' === $titel ) {
@@ -5281,16 +5281,17 @@ class Kadence_MCP_Abilities_Build {
 	 *
 	 * Samenvatting, volgorde en uitgelichte afbeelding alleen als het type ze
 	 * ondersteunt; termen alleen in taxonomieën die aan het type hangen en die
-	 * bestaan; ACF-velden alleen uit een veldgroep die op het type geldt, met
+	 * bestaan; ACF-velden alleen uit een veldgroep die op deze post geldt, met
 	 * een waarde die bij het veldtype past.
 	 *
-	 * @param string       $type   Het posttype.
-	 * @param WP_Post_Type $object Het posttype-object.
-	 * @param array        $input  De invoer.
+	 * @param string       $type    Het posttype.
+	 * @param WP_Post_Type $object  Het posttype-object.
+	 * @param array        $input   De invoer.
+	 * @param int          $post_id De post bij update-post, 0 bij create-post.
 	 *
 	 * @return array array( bezwaren, plan, termen, acf_velden ).
 	 */
-	private static function toets_postvelden( $type, $object, $input ) {
+	private static function toets_postvelden( $type, $object, $input, $post_id = 0 ) {
 		$bezwaren = array();
 		$plan     = array();
 
@@ -5367,7 +5368,7 @@ class Kadence_MCP_Abilities_Build {
 			}
 		}
 
-		// ACF: alleen velden uit een veldgroep die op dit posttype geldt.
+		// ACF: alleen velden uit een veldgroep die op deze post geldt.
 		$acf_velden = array();
 
 		if ( ! empty( $input['acf'] ) && is_array( $input['acf'] ) ) {
@@ -5376,7 +5377,7 @@ class Kadence_MCP_Abilities_Build {
 			} else {
 				$bekend = array();
 
-				foreach ( acf_get_field_groups( array( 'post_type' => $type ) ) as $groep ) {
+				foreach ( acf_get_field_groups( self::acf_scherm( $type, $post_id, $termen ) ) as $groep ) {
 					foreach ( (array) acf_get_fields( $groep ) as $veld ) {
 						if ( ! empty( $veld['name'] ) ) {
 							$bekend[ $veld['name'] ] = $veld;
@@ -5411,6 +5412,48 @@ class Kadence_MCP_Abilities_Build {
 		}
 
 		return array( $bezwaren, $plan, $termen, $acf_velden );
+	}
+
+	/**
+	 * Het scherm waartegen ACF zijn locatieregels toetst, zoals de editor het
+	 * voor deze post opbouwt.
+	 *
+	 * Alleen het posttype is niet genoeg. Een regel op een term (post_taxonomy,
+	 * en post_category die daarnaar doorverwijst) geeft zonder post_id altijd
+	 * false (ACF_Location_Post_Taxonomy::match), dus een veldgroep die aan een
+	 * tag of categorie hangt bestond niet voor create-post en update-post.
+	 * Waargenomen op Ondernemersfonds Utrecht (19-11-2026): "Hero afbeelding
+	 * Nieuws" hangt aan post_tag:nieuws en was niet te schrijven.
+	 *
+	 * De termen zijn die van na deze aanroep: wat de invoer per taxonomie
+	 * opgeeft vervangt wat de post nu heeft, net als bij het opslaan. Ze gaan
+	 * voor álle taxonomieën van het type mee, want zodra post_terms gezet is
+	 * leest ACF een ontbrekende taxonomie als leeg.
+	 *
+	 * @param string $type    Het posttype.
+	 * @param int    $post_id De post, of 0 bij create-post.
+	 * @param array  $termen  Per taxonomie de term-ID's uit de invoer.
+	 *
+	 * @return array
+	 */
+	private static function acf_scherm( $type, $post_id, $termen ) {
+		$post_terms = array();
+
+		foreach ( get_object_taxonomies( $type ) as $taxonomie ) {
+			if ( array_key_exists( $taxonomie, $termen ) ) {
+				$post_terms[ $taxonomie ] = array_map( 'intval', (array) $termen[ $taxonomie ] );
+				continue;
+			}
+
+			$huidig                   = $post_id ? wp_get_post_terms( $post_id, $taxonomie, array( 'fields' => 'ids' ) ) : array();
+			$post_terms[ $taxonomie ] = is_wp_error( $huidig ) ? array() : array_map( 'intval', (array) $huidig );
+		}
+
+		return array(
+			'post_type'  => $type,
+			'post_id'    => (int) $post_id,
+			'post_terms' => $post_terms,
+		);
 	}
 
 	/**

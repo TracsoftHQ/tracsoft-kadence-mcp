@@ -4,7 +4,7 @@ Tags: mcp, kadence, abilities, ai
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.27.0
+Stable tag: 1.27.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,9 @@ Kadence Blocks > MCP.
 Vereist de WordPress Abilities API en de MCP Adapter.
 
 == Changelog ==
+
+= 1.27.1 =
+* Fix: create-post en update-post zien nu ACF-veldgroepen die aan een term hangen (locatieregel op een tag, categorie of eigen taxonomie). De velden werden opgezocht met alleen het posttype, en ACF geeft een termregel zonder post_id altijd false; zo'n veld werd geweigerd met "hoort bij geen veldgroep". Het scherm voor ACF draagt nu het post-ID en de termen zoals ze na de aanroep staan (wat de invoer per taxonomie opgeeft vervangt de huidige termen). Waargenomen op Ondernemersfonds Utrecht: "Hero afbeelding Nieuws" (post_tag:nieuws) was niet te schrijven.
 
 = 1.27.0 =
 * Nieuw: kadence/connect-translation. Koppelt een bestaande post in WPML als vertaling aan zijn origineel, via de officiële hook wpml_set_element_language_details; los of als lijst (items, één token). Nodig omdat een vertaling die buiten de vertaaleditor om is gemaakt (WordPress-importer, create-post) los blijft staan: WPML Export and Import koppelt alleen als het origineel de importvelden in de database draagt, en die staan alleen in het exportbestand. Weigert een origineel dat in die taal al een andere vertaling heeft, een post die zelf al vertalingen heeft, een niet-vertaalbaar posttype en een inactieve taal. Leest terug via WPML (trid, taal en wpml_object_id). Raakt geen inhoud, meta of status.
