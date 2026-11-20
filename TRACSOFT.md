@@ -1,0 +1,81 @@
+# Tracsoft Kadence MCP
+
+This is Tracsoft's maintained copy of
+[mcp-abilities-kadence](https://github.com/joostadams/mcp-abilities-kadence) by
+Joost Adams. It is the plugin that lets Claude build and edit pages with Kadence
+Blocks and Kadence Blocks Pro on client sites, alongside Enable Abilities for MCP,
+which provides the sign-in.
+
+Most of the code and its comments are upstream's and in Dutch. Every Tracsoft
+change is marked with a `Tracsoft` comment, so `grep -rn Tracsoft` lists them.
+
+## What Tracsoft changed (1.27.1.1)
+
+The changes come from a security review of upstream v1.27.1 on 2026-11-20.
+
+| Area | Upstream | Tracsoft |
+| :--- | :--- | :--- |
+| Updates | From joostadams/mcp-abilities-kadence: latest release, then any version tag, then the head of `main` | Only a published, non-prerelease release of TracsoftHQ/tracsoft-kadence-mcp that carries `tracsoft-kadence-mcp.zip`. No tag or branch fallback. `Update URI` header set so WordPress.org never offers an update. |
+| Write tools | Allowed in on `kadence_mcp_view`; `kadence_mcp_write` checked inside each handler, after the dry-run preview | `kadence_mcp_write` required at the permission layer for all 26 write tools |
+| Reading posts by ID | Several tools (describe-post-type, describe-query, update-post previews, build previews, usage lists) loaded any post without a read check | One helper, `Kadence_MCP_Capabilities::can_read_post()`, used everywhere: `read_post`, plus `edit_post` for password-protected posts |
+| Site CSS | `edit_theme_options` | Also `edit_css`, as core requires |
+| Page status | `publish_posts` checked for publish only | Also for private |
+| Query creation | Published without `publish_posts`; source not read-checked | Both checked |
+| Kadence object types | Any type starting with `kadence_` (includes forms) for export, import and set-entity-meta | Allowlist of seven: navigation, header, element, query, query card, vector, custom SVG |
+| Custom SVG content | Written raw | Requires `unfiltered_html` |
+| Terms on create/update-post | No `assign_terms` check | Checked per taxonomy |
+| CI | Actions pinned by tag | Pinned by commit SHA |
+
+Known and accepted, not changed:
+
+- `set-entity-meta` and `import-entity` write `_kad_` meta without running
+  WordPress's per-key `auth_callback`. The gate is still `kadence_mcp_write`
+  plus `edit_post` on an allowlisted Kadence object.
+- The two-step token is a safety check against mistakes, not a human approval:
+  an agent can preview and confirm on its own. Human review happens in Claude
+  before the agent is told to write.
+- Releases are not signed. Anyone who can publish a release on this repo can
+  ship code to every site that runs the plugin. Protect the repo (see below).
+
+## How to release an update
+
+1. Make the change on a branch and open a pull request. CI lints PHP 7.4 and 8.3.
+2. Bump the version in three places, all identical:
+   - `Version:` in the header of `tracsoft-kadence-mcp.php`
+   - `KADENCE_MCP_VERSION` in the same file
+   - `Stable tag:` in `readme.txt`
+3. Add a changelog entry in `readme.txt`.
+4. Merge, then tag the merge commit: `git tag v1.27.1.2 && git push origin v1.27.1.2`.
+5. The Release workflow checks the three versions match the tag, lints, builds
+   `tracsoft-kadence-mcp.zip` and publishes the release.
+6. Sites see the update within about 12 hours (WordPress's normal update check),
+   or right away from MainWP after a sync or from Dashboard → Updates →
+   Check again on the site.
+
+Version scheme: upstream version plus a fourth Tracsoft number.
+1.27.1.1 is upstream 1.27.1 with the first Tracsoft changes. After merging
+upstream 1.28.0, the next release is 1.28.0.1.
+
+Don't mark a release as a pre-release unless you want sites to ignore it;
+the updater skips pre-releases, which makes them a safe way to share a test
+build.
+
+## How to pull in upstream fixes
+
+```bash
+git fetch upstream --tags
+git merge v1.28.0   # the upstream tag
+```
+
+Resolve conflicts keeping every `Tracsoft` change, re-check the table above
+against the new code (new tools may load posts or write meta in new places),
+then release as above.
+
+## Protecting the release channel
+
+Because releases are unsigned, the repo is the security boundary:
+
+- Require two-factor authentication for every member of TracsoftHQ.
+- Protect `main` (pull request required) and add a tag protection rule for
+  `v*` so only admins can create release tags.
+- Keep the number of people with write access small.

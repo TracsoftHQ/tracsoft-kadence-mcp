@@ -1,16 +1,17 @@
 <?php
 /**
- * Plugin Name:       MCP Abilities — Kadence
- * Plugin URI:        https://github.com/joostadams/mcp-abilities-kadence
- * Description:       Geeft een MCP-agent toegang tot Kadence Blocks, Kadence Blocks Pro, Kadence Pro en het Kadence-thema, via de WordPress Abilities API. Achttien leestools en zeventien schrijftools; alles staat standaard uit, en schrijven vraagt bovendien een eigen capability die niemand automatisch krijgt.
- * Version:           1.27.1
+ * Plugin Name:       Tracsoft Kadence MCP
+ * Plugin URI:        https://github.com/TracsoftHQ/tracsoft-kadence-mcp
+ * Description:       Tracsoft's hardened build of MCP Abilities — Kadence. Gives an MCP agent access to Kadence Blocks, Kadence Blocks Pro, Kadence Pro and the Kadence theme through the WordPress Abilities API. Everything is off by default, and writing needs its own capability that nobody gets automatically. Based on mcp-abilities-kadence by Joost Adams.
+ * Version:           1.27.1.1
  * Requires at least: 6.9
  * Requires PHP:      7.4
- * Author:            Joost Adams
- * Author URI:        https://github.com/joostadams
+ * Author:            Tracsoft (based on work by Joost Adams)
+ * Author URI:        https://tracsoft.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       mcp-abilities-kadence
+ * Update URI:        https://github.com/TracsoftHQ/tracsoft-kadence-mcp
  *
  * @package Kadence_MCP
  */
@@ -19,7 +20,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'KADENCE_MCP_VERSION', '1.27.1' );
+/*
+ * Tracsoft: refuse to load next to the original mcp-abilities-kadence plugin.
+ * Both declare the same constants and classes; the original sorts first in
+ * the plugin load order, so if its constant already exists we stop here and
+ * tell the admin instead of letting PHP fatal on a duplicate class.
+ */
+if ( defined( 'KADENCE_MCP_VERSION' ) ) {
+	add_action(
+		'admin_notices',
+		static function () {
+			if ( ! current_user_can( 'activate_plugins' ) ) {
+				return;
+			}
+			echo '<div class="notice notice-error"><p>'
+				. esc_html__( 'Tracsoft Kadence MCP is not running because the original "MCP Abilities — Kadence" plugin is active. Deactivate and delete the original; Tracsoft Kadence MCP replaces it and keeps the same settings.', 'mcp-abilities-kadence' )
+				. '</p></div>';
+		}
+	);
+	return;
+}
+
+/*
+ * Version scheme: upstream version plus a fourth Tracsoft patch number
+ * (1.27.1.1 = upstream 1.27.1, first Tracsoft release). version_compare()
+ * orders 1.27.1.1 above 1.27.1, and a later upstream merge to 1.28.0 starts
+ * again at 1.28.0.1.
+ */
+define( 'KADENCE_MCP_VERSION', '1.27.1.1' );
 define( 'KADENCE_MCP_FILE', __FILE__ );
 define( 'KADENCE_MCP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'KADENCE_MCP_BASENAME', plugin_basename( __FILE__ ) );
@@ -80,13 +108,35 @@ function kadence_mcp_register_updater() {
 	require_once $puc;
 
 	$checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-		'https://github.com/joostadams/mcp-abilities-kadence/',
+		'https://github.com/TracsoftHQ/tracsoft-kadence-mcp/',
 		KADENCE_MCP_FILE,
-		'mcp-abilities-kadence'
+		'tracsoft-kadence-mcp'
 	);
 
 	$checker->setBranch( 'main' );
-	$checker->getVcsApi()->enableReleaseAssets( '/^mcp-abilities-kadence\.zip$/' );
+
+	/*
+	 * Tracsoft hardening: only a published GitHub release that carries the
+	 * zip built by the release workflow can become an update. PUC's default
+	 * fallbacks (any version tag's zipball, then the head of main) are
+	 * removed, so an unreleased commit or a stray tag never reaches a site,
+	 * and REQUIRE_RELEASE_ASSETS refuses a release that lacks the built zip.
+	 */
+	$checker->getVcsApi()->enableReleaseAssets(
+		'/^tracsoft-kadence-mcp\.zip$/',
+		\YahnisElsts\PluginUpdateChecker\v5p6\Vcs\Api::REQUIRE_RELEASE_ASSETS
+	);
+
+	add_filter(
+		$checker->getUniqueName( 'vcs_update_detection_strategies' ),
+		static function ( $strategies ) {
+			$latest_release = \YahnisElsts\PluginUpdateChecker\v5p6\Vcs\Api::STRATEGY_LATEST_RELEASE;
+
+			return isset( $strategies[ $latest_release ] )
+				? array( $latest_release => $strategies[ $latest_release ] )
+				: array();
+		}
+	);
 }
 add_action( 'plugins_loaded', 'kadence_mcp_register_updater', 0 );
 

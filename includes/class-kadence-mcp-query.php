@@ -558,7 +558,8 @@ class Kadence_MCP_Query {
 		foreach ( $zoek->posts as $id ) {
 			$post = get_post( $id );
 
-			if ( ! $post ) {
+			// Tracsoft hardening: don't list titles of pages the user can't read.
+			if ( ! $post || ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
 				continue;
 			}
 

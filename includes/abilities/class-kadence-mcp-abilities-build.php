@@ -907,6 +907,14 @@ class Kadence_MCP_Abilities_Build {
 			);
 		}
 
+		// Tracsoft hardening: upstream returned any post here, so dry-run
+		// previews (update-post, verify-markup, move/remove/replace-blocks)
+		// showed titles, block text and ACF values of posts the user could
+		// not read.
+		if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
+			return Kadence_MCP_Capabilities::read_denied( $post->ID );
+		}
+
 		return $post;
 	}
 
@@ -3579,7 +3587,9 @@ class Kadence_MCP_Abilities_Build {
 		if ( $ouder > 0 ) {
 			$ouder_post = get_post( $ouder );
 
-			if ( ! $ouder_post || 'page' !== $ouder_post->post_type ) {
+			// Tracsoft hardening: treat an unreadable parent as missing, so the
+			// reply never echoes the title of a draft or private page.
+			if ( ! $ouder_post || 'page' !== $ouder_post->post_type || ! Kadence_MCP_Capabilities::can_read_post( $ouder_post ) ) {
 				return new WP_Error(
 					'kadence_mcp_bad_parent',
 					sprintf(
@@ -4145,7 +4155,18 @@ class Kadence_MCP_Abilities_Build {
 			return new WP_Error( 'kadence_mcp_not_a_vector', __( 'Deze ability werkt alleen op een kadence_vector of kadence_custom_svg. Blokinhoud wijzig je met de blokabilities.', 'mcp-abilities-kadence' ) );
 		}
 
-		if ( ! current_user_can( 'read_post', $post->ID ) ) {
+		// Tracsoft hardening: custom SVG content is JSON that WordPress's
+		// HTML filter does not meaningfully clean, and this path skips
+		// Kadence's own sanitizer. Only users trusted with raw HTML may write it.
+		if ( 'kadence_custom_svg' === $post->post_type && ! current_user_can( 'unfiltered_html' ) ) {
+			return new WP_Error(
+				'kadence_mcp_svg_needs_unfiltered_html',
+				__( 'Writing custom SVG content needs the unfiltered_html capability. Upload or edit the icon in Kadence itself instead.', 'mcp-abilities-kadence' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) { // Tracsoft: also refuses password-protected posts without edit_post.
 			return new WP_Error( 'kadence_mcp_cannot_read', __( 'Dit account mag deze post niet lezen (zie check-access).', 'mcp-abilities-kadence' ) );
 		}
 
@@ -4288,7 +4309,7 @@ class Kadence_MCP_Abilities_Build {
 			);
 		}
 
-		if ( ! current_user_can( 'read_post', $post->ID ) ) {
+		if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) { // Tracsoft: also refuses password-protected posts without edit_post.
 			return new WP_Error( 'kadence_mcp_cannot_read', __( 'Dit account mag deze post niet lezen (zie check-access).', 'mcp-abilities-kadence' ) );
 		}
 
@@ -4420,11 +4441,11 @@ class Kadence_MCP_Abilities_Build {
 	public static function export_entity( $input = array() ) {
 		$post = get_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
 
-		if ( ! $post || 0 !== strpos( (string) $post->post_type, 'kadence_' ) ) {
+		if ( ! $post || ! Kadence_MCP_Capabilities::is_entity_type( $post->post_type ) ) { // Tracsoft: allowlist instead of any kadence_ type.
 			return new WP_Error( 'kadence_mcp_not_a_kadence_entity', __( 'Geef het ID van een Kadence-object (navigatie, header, element, query, card, vector, custom SVG).', 'mcp-abilities-kadence' ) );
 		}
 
-		if ( ! current_user_can( 'read_post', $post->ID ) ) {
+		if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) { // Tracsoft: also refuses password-protected posts without edit_post.
 			return new WP_Error( 'kadence_mcp_cannot_read', __( 'Dit account mag deze post niet lezen (zie check-access).', 'mcp-abilities-kadence' ) );
 		}
 
@@ -4525,14 +4546,25 @@ class Kadence_MCP_Abilities_Build {
 
 		$type = (string) $pakket['post_type'];
 
-		if ( 0 !== strpos( $type, 'kadence_' ) || ! post_type_exists( $type ) ) {
+		if ( ! Kadence_MCP_Capabilities::is_entity_type( $type ) || ! post_type_exists( $type ) ) { // Tracsoft: allowlist instead of any kadence_ type.
 			return new WP_Error( 'kadence_mcp_entity_type_missing', sprintf( __( 'Het posttype %s bestaat op deze site niet.', 'mcp-abilities-kadence' ), $type ) );
+		}
+
+		// Tracsoft hardening: custom SVG content is JSON that WordPress's
+		// HTML filter does not meaningfully clean, and this path skips
+		// Kadence's own sanitizer. Only users trusted with raw HTML may write it.
+		if ( 'kadence_custom_svg' === $type && ! current_user_can( 'unfiltered_html' ) ) {
+			return new WP_Error(
+				'kadence_mcp_svg_needs_unfiltered_html',
+				__( 'Writing custom SVG content needs the unfiltered_html capability. Upload or edit the icon in Kadence itself instead.', 'mcp-abilities-kadence' ),
+				array( 'status' => 403 )
+			);
 		}
 
 		$doel_id = isset( $input['target_id'] ) ? (int) $input['target_id'] : 0;
 		$doel    = $doel_id > 0 ? get_post( $doel_id ) : null;
 
-		if ( $doel_id > 0 && ( ! $doel || $doel->post_type !== $type ) ) {
+		if ( $doel_id > 0 && ( ! $doel || $doel->post_type !== $type || ! Kadence_MCP_Capabilities::can_read_post( $doel ) ) ) {
 			return new WP_Error( 'kadence_mcp_bad_target', sprintf( __( 'target_id %1$d is geen %2$s op deze site.', 'mcp-abilities-kadence' ), $doel_id, $type ) );
 		}
 
@@ -5053,6 +5085,12 @@ class Kadence_MCP_Abilities_Build {
 			return new WP_Error( 'kadence_mcp_post_not_found', __( 'Die post bestaat niet.', 'mcp-abilities-kadence' ) );
 		}
 
+		// Tracsoft hardening: the dry-run reply of this tool includes the
+		// post's current title, excerpt, terms and raw ACF values.
+		if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
+			return Kadence_MCP_Capabilities::read_denied( $post->ID );
+		}
+
 		$type   = (string) $post->post_type;
 		$object = get_post_type_object( $type );
 
@@ -5341,6 +5379,20 @@ class Kadence_MCP_Abilities_Build {
 					continue;
 				}
 
+				// Tracsoft hardening: the REST API refuses to set terms in a
+				// taxonomy the user may not assign; wp_set_object_terms() does
+				// not check, so check here, before a token is issued.
+				$tax_object = get_taxonomy( $taxonomie );
+
+				if ( ! $tax_object || ! current_user_can( $tax_object->cap->assign_terms ) ) {
+					$bezwaren[] = sprintf(
+						/* translators: %s: taxonomy. */
+						__( 'Not allowed to assign terms in %s.', 'mcp-abilities-kadence' ),
+						$taxonomie
+					);
+					continue;
+				}
+
 				foreach ( (array) $lijst as $term ) {
 					$gevonden = is_numeric( $term ) ? get_term( (int) $term, $taxonomie ) : get_term_by( 'slug', (string) $term, $taxonomie );
 
@@ -5580,7 +5632,9 @@ class Kadence_MCP_Abilities_Build {
 		// Publiceren is een eigen recht, los van bewerken. Zonder deze controle
 		// zou wp_update_post de status stilzwijgend op pending zetten en zou het
 		// antwoord "gepubliceerd" melden terwijl er niets openbaar is.
-		if ( 'publish' === $naar ) {
+		// Tracsoft hardening: core's REST API also requires publish_posts to
+		// make a post private; upstream only checked it for publish.
+		if ( 'publish' === $naar || 'private' === $naar ) {
 			$type = get_post_type_object( $post->post_type );
 
 			if ( ! $type || ! current_user_can( $type->cap->publish_posts ) ) {

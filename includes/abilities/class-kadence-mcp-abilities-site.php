@@ -609,6 +609,18 @@ class Kadence_MCP_Abilities_Site {
 			);
 		}
 
+		// Tracsoft hardening: core guards Additional CSS with edit_css, which
+		// maps like unfiltered_html (denied to multisite sub-site admins and
+		// under DISALLOW_UNFILTERED_HTML). wp_update_custom_css_post() checks
+		// nothing itself, so the check has to happen here.
+		if ( ! current_user_can( 'edit_css' ) ) {
+			return new WP_Error(
+				'kadence_mcp_css_denied',
+				__( 'Missing the edit_css capability, which WordPress requires to change Additional CSS on this site.', 'mcp-abilities-kadence' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		if ( ! function_exists( 'wp_get_custom_css' ) || ! function_exists( 'wp_update_custom_css_post' ) ) {
 			return new WP_Error(
 				'kadence_mcp_no_custom_css',
@@ -720,7 +732,7 @@ class Kadence_MCP_Abilities_Site {
 				// is niet hetzelfde als elke post mogen zien. Wel tellen: een
 				// post die er is maar niet leesbaar, zag er tot 1.26.0 uit als
 				// een post die er niet is — en werd dan opnieuw aangemaakt.
-				if ( ! current_user_can( 'read_post', $post->ID ) ) {
+				if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
 					$onleesbaar++;
 					continue;
 				}
@@ -834,7 +846,7 @@ class Kadence_MCP_Abilities_Site {
 		foreach ( $posts as $post ) {
 			// Dezelfde regel als overal: de tool mogen gebruiken is niet
 			// hetzelfde als elke post mogen zien.
-			if ( ! current_user_can( 'read_post', $post->ID ) ) {
+			if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
 				continue;
 			}
 
@@ -895,7 +907,7 @@ class Kadence_MCP_Abilities_Site {
 		foreach ( $rijen as $rij ) {
 			$post = get_post( (int) $rij->ID );
 
-			if ( ! $post || ! current_user_can( 'read_post', $post->ID ) ) {
+			if ( ! $post || ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
 				continue;
 			}
 
@@ -958,7 +970,7 @@ class Kadence_MCP_Abilities_Site {
 		}
 
 		/** This filter is documented in includes/abilities/class-kadence-mcp-abilities-content.php */
-		if ( ! apply_filters( 'kadence_mcp_can_read_post', current_user_can( 'read_post', $post_id ), $post_id ) ) {
+		if ( ! Kadence_MCP_Capabilities::can_read_post( get_post( $post_id ) ) ) {
 			return new WP_Error(
 				'kadence_mcp_post_forbidden',
 				sprintf(
@@ -1067,7 +1079,7 @@ class Kadence_MCP_Abilities_Site {
 				continue;
 			}
 
-			if ( ! current_user_can( 'read_post', $post->ID ) ) {
+			if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
 				continue;
 			}
 
@@ -1184,7 +1196,7 @@ class Kadence_MCP_Abilities_Site {
 		}
 
 		/** This filter is documented in includes/abilities/class-kadence-mcp-abilities-content.php */
-		if ( ! apply_filters( 'kadence_mcp_can_read_post', current_user_can( 'read_post', $post_id ), $post_id ) ) {
+		if ( ! Kadence_MCP_Capabilities::can_read_post( get_post( $post_id ) ) ) {
 			return new WP_Error( 'kadence_mcp_post_forbidden', __( 'Geen leesrecht op deze post.', 'mcp-abilities-kadence' ) );
 		}
 
@@ -1741,7 +1753,7 @@ class Kadence_MCP_Abilities_Site {
 			$bewerk = 0;
 
 			foreach ( $ids as $id ) {
-				$lees   += current_user_can( 'read_post', $id ) ? 1 : 0;
+				$lees   += Kadence_MCP_Capabilities::can_read_post( get_post( $id ) ) ? 1 : 0;
 				$bewerk += current_user_can( 'edit_post', $id ) ? 1 : 0;
 			}
 
@@ -1887,7 +1899,7 @@ class Kadence_MCP_Abilities_Site {
 		);
 
 		foreach ( $posts as $post ) {
-			if ( ! current_user_can( 'read_post', $post->ID ) ) {
+			if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
 				continue;
 			}
 
@@ -1922,7 +1934,7 @@ class Kadence_MCP_Abilities_Site {
 		);
 
 		foreach ( $meta as $rij ) {
-			if ( ! current_user_can( 'read_post', (int) $rij->post_id ) ) {
+			if ( ! Kadence_MCP_Capabilities::can_read_post( get_post( (int) $rij->post_id ) ) ) {
 				continue;
 			}
 
@@ -2170,7 +2182,7 @@ class Kadence_MCP_Abilities_Site {
 		foreach ( $rijen as $rij ) {
 			$post = get_post( (int) $rij->ID );
 
-			if ( ! $post || ! current_user_can( 'read_post', $post->ID ) || false === strpos( $post->post_content, '<!-- wp:' ) ) {
+			if ( ! $post || ! Kadence_MCP_Capabilities::can_read_post( $post ) || false === strpos( $post->post_content, '<!-- wp:' ) ) {
 				continue;
 			}
 
@@ -2197,7 +2209,7 @@ class Kadence_MCP_Abilities_Site {
 			);
 
 			foreach ( $metarijen as $rij ) {
-				if ( ! current_user_can( 'read_post', (int) $rij->post_id ) ) {
+				if ( ! Kadence_MCP_Capabilities::can_read_post( get_post( (int) $rij->post_id ) ) ) {
 					continue;
 				}
 
@@ -2520,7 +2532,7 @@ class Kadence_MCP_Abilities_Site {
 
 		foreach ( array_keys( Kadence_MCP_Inventory::get_post_types() ) as $type ) {
 			foreach ( get_posts( array( 'post_type' => $type, 'post_status' => array( 'publish', 'private', 'draft' ), 'numberposts' => 300, 'suppress_filters' => true ) ) as $post ) {
-				if ( ! current_user_can( 'read_post', $post->ID ) ) {
+				if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
 					continue;
 				}
 

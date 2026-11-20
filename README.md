@@ -1,3 +1,17 @@
+# Tracsoft Kadence MCP
+
+Tracsoft's hardened build of [mcp-abilities-kadence](https://github.com/joostadams/mcp-abilities-kadence)
+by Joost Adams (GPL-2.0-or-later). The upstream documentation follows below in
+Dutch; Tracsoft's changes are listed in `TRACSOFT.md` and in the changelog in
+`readme.txt`.
+
+**Install:** download `tracsoft-kadence-mcp.zip` from the
+[latest release](https://github.com/TracsoftHQ/tracsoft-kadence-mcp/releases/latest)
+and upload it under Plugins → Add New. Sites then get updates from this repo's
+releases like any other plugin update, including in MainWP.
+
+---
+
 # MCP Abilities — Kadence
 
 Geeft een MCP-agent toegang tot Kadence Blocks, Kadence Blocks Pro, Kadence Pro
@@ -109,8 +123,8 @@ legt het instellingenscherm uit wat er mist.
 
 Eén bestand, en het staat niet achter de groene knop.
 
-Pak `mcp-abilities-kadence.zip` van de
-[Releases-pagina](https://github.com/joostadams/mcp-abilities-kadence/releases/latest).
+Pak `tracsoft-kadence-mcp.zip` van de
+[Releases-pagina](https://github.com/TracsoftHQ/tracsoft-kadence-mcp/releases/latest).
 Dat is de ZIP die bij die versietag is gebouwd, met de mapnaam die WordPress
 verwacht en zonder de ontwikkelbestanden.
 

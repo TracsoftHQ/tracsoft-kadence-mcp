@@ -406,6 +406,12 @@ class Kadence_MCP_Abilities_Query {
 			);
 		}
 
+		// Tracsoft hardening: describe-query and the query tools read the
+		// settings of draft or private query posts without a read check.
+		if ( ! Kadence_MCP_Capabilities::can_read_post( $post ) ) {
+			return Kadence_MCP_Capabilities::read_denied( $post->ID );
+		}
+
 		if ( 'kadence_query' !== $post->post_type ) {
 			return new WP_Error(
 				'kadence_mcp_not_a_query',
@@ -494,7 +500,7 @@ class Kadence_MCP_Abilities_Query {
 			);
 		}
 
-		if ( 0 !== strpos( (string) $post->post_type, 'kadence_' ) ) {
+		if ( ! Kadence_MCP_Capabilities::is_entity_type( $post->post_type ) ) { // Tracsoft: allowlist instead of any kadence_ type.
 			return new WP_Error(
 				'kadence_mcp_not_a_kadence_entity',
 				sprintf(
@@ -1225,6 +1231,22 @@ class Kadence_MCP_Abilities_Query {
 			);
 		}
 
+		// Tracsoft hardening: these tools insert the new post as published,
+		// so they also need the post type's publish capability, as core does.
+		$mag_publiceren = ( $type_object && isset( $type_object->cap->publish_posts ) ) ? (string) $type_object->cap->publish_posts : 'publish_posts';
+
+		if ( ! current_user_can( $mag_publiceren ) ) {
+			return new WP_Error(
+				'kadence_mcp_publish_denied',
+				sprintf(
+					/* translators: %s: capability name. */
+					__( 'Missing the "%s" capability, which is needed to publish a new Query Loop.', 'mcp-abilities-kadence' ),
+					$mag_publiceren
+				),
+				array( 'status' => 403 )
+			);
+		}
+
 		if ( ! hash_equals( $grondslag, $token ) ) {
 			return new WP_Error( 'kadence_mcp_invalid_token', Kadence_MCP_Inventory::token_reden( $token, $grondslag, $bron ) );
 		}
@@ -1446,6 +1468,22 @@ class Kadence_MCP_Abilities_Query {
 
 		if ( ! current_user_can( $type_object && isset( $type_object->cap->create_posts ) ? (string) $type_object->cap->create_posts : 'edit_posts' ) ) {
 			return new WP_Error( 'kadence_mcp_create_denied', __( 'Je mag geen Query Loop aanmaken.', 'mcp-abilities-kadence' ), array( 'status' => 403 ) );
+		}
+
+		// Tracsoft hardening: these tools insert the new post as published,
+		// so they also need the post type's publish capability, as core does.
+		$mag_publiceren = ( $type_object && isset( $type_object->cap->publish_posts ) ) ? (string) $type_object->cap->publish_posts : 'publish_posts';
+
+		if ( ! current_user_can( $mag_publiceren ) ) {
+			return new WP_Error(
+				'kadence_mcp_publish_denied',
+				sprintf(
+					/* translators: %s: capability name. */
+					__( 'Missing the "%s" capability, which is needed to publish a new Query Loop.', 'mcp-abilities-kadence' ),
+					$mag_publiceren
+				),
+				array( 'status' => 403 )
+			);
 		}
 
 		if ( ! hash_equals( $grondslag, $token ) ) {
@@ -1683,7 +1721,11 @@ class Kadence_MCP_Abilities_Query {
 		if ( $gekozen > 0 ) {
 			$post = get_post( $gekozen );
 
-			return ( $post && $post->post_type === $post_type ) ? $post : null;
+			// Tracsoft hardening: upstream returned any post of the type here,
+			// and describe-post-type then printed all of its meta (including
+			// protected _ keys) for drafts, private posts and other plugins'
+			// records such as kadence_form or shop_order.
+			return ( $post && $post->post_type === $post_type && Kadence_MCP_Capabilities::can_read_post( $post ) ) ? $post : null;
 		}
 
 		$zoek = get_posts(
@@ -1695,7 +1737,7 @@ class Kadence_MCP_Abilities_Query {
 			)
 		);
 
-		return empty( $zoek ) ? null : $zoek[0];
+		return ( empty( $zoek ) || ! Kadence_MCP_Capabilities::can_read_post( $zoek[0] ) ) ? null : $zoek[0];
 	}
 
 	/**
@@ -1718,7 +1760,7 @@ class Kadence_MCP_Abilities_Query {
 	public static function create_query_card( $input = array() ) {
 		$bron = get_post( isset( $input['source_id'] ) ? (int) $input['source_id'] : 0 );
 
-		if ( ! $bron || 'kadence_query_card' !== $bron->post_type ) {
+		if ( ! $bron || 'kadence_query_card' !== $bron->post_type || ! Kadence_MCP_Capabilities::can_read_post( $bron ) ) {
 			return new WP_Error(
 				'kadence_mcp_not_a_card',
 				__( 'Geef het ID op van een bestaande kadence_query_card. Vind ze met list-entities; het ID staat ook in het attribuut id van het blok kadence/query-card in een Query Loop.', 'mcp-abilities-kadence' )
@@ -1787,6 +1829,22 @@ class Kadence_MCP_Abilities_Query {
 					/* translators: %s: capability. */
 					__( 'Je mist de capability "%s", die nodig is om een Query Card aan te maken.', 'mcp-abilities-kadence' ),
 					$mag_maken
+				),
+				array( 'status' => 403 )
+			);
+		}
+
+		// Tracsoft hardening: these tools insert the new post as published,
+		// so they also need the post type's publish capability, as core does.
+		$mag_publiceren = ( $type_object && isset( $type_object->cap->publish_posts ) ) ? (string) $type_object->cap->publish_posts : 'publish_posts';
+
+		if ( ! current_user_can( $mag_publiceren ) ) {
+			return new WP_Error(
+				'kadence_mcp_publish_denied',
+				sprintf(
+					/* translators: %s: capability name. */
+					__( 'Missing the "%s" capability, which is needed to publish a new Query Card.', 'mcp-abilities-kadence' ),
+					$mag_publiceren
 				),
 				array( 'status' => 403 )
 			);

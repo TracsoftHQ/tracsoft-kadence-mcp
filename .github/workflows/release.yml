@@ -1,3 +1,6 @@
+# Tracsoft: actions are pinned to commit SHAs, and the zip is named
+# tracsoft-kadence-mcp.zip, the only asset the plugin's updater accepts.
+#
 # Bouwt op een versietag een installeerbare ZIP en hangt die aan de release.
 #
 # Waarom een eigen ZIP en niet de zipball van de tag: die zipball bevat ook
@@ -18,14 +21,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # PUC vergelijkt de geïnstalleerde versie met de Version-header op de tag,
       # niet met de tagnaam. Staan die uit elkaar, dan verschijnt er domweg geen
       # update en zegt niets waarom. Falen bij het taggen is veel beter.
       - name: Tag en Version-header moeten overeenkomen
         run: |
-          header="$(grep -m1 -E '^\s*\*\s*Version:' mcp-abilities-kadence.php | sed -E 's/.*Version:[[:space:]]*//' | tr -d '[:space:]')"
+          header="$(grep -m1 -E '^\s*\*\s*Version:' tracsoft-kadence-mcp.php | sed -E 's/.*Version:[[:space:]]*//' | tr -d '[:space:]')"
           tag="${GITHUB_REF_NAME#v}"
           if [ "$header" != "$tag" ]; then
             echo "::error::De plugin-header zegt Version: ${header}, maar de tag is ${GITHUB_REF_NAME}."
@@ -40,7 +43,7 @@ jobs:
       - name: Constante en Stable tag moeten ook overeenkomen
         run: |
           tag="${GITHUB_REF_NAME#v}"
-          constante="$(grep -m1 -E "define\( *'KADENCE_MCP_VERSION'" mcp-abilities-kadence.php | sed -E "s/.*'KADENCE_MCP_VERSION', *'([^']+)'.*/\1/")"
+          constante="$(grep -m1 -E "define\( *'KADENCE_MCP_VERSION'" tracsoft-kadence-mcp.php | sed -E "s/.*'KADENCE_MCP_VERSION', *'([^']+)'.*/\1/")"
           stable="$(grep -m1 -E '^Stable tag:' readme.txt | sed -E 's/Stable tag:[[:space:]]*//' | tr -d '[:space:]')"
           fout=0
           [ "$constante" = "$tag" ] || { echo "::error::KADENCE_MCP_VERSION is ${constante}, de tag is ${GITHUB_REF_NAME}."; fout=1; }
@@ -63,8 +66,8 @@ jobs:
       # zonder die bestanden meldt dat scherm dat de skillmap ontbreekt.
       - name: ZIP bouwen
         run: |
-          mkdir -p dist/mcp-abilities-kadence
-          rsync -a ./ dist/mcp-abilities-kadence/ \
+          mkdir -p dist/tracsoft-kadence-mcp
+          rsync -a ./ dist/tracsoft-kadence-mcp/ \
             --exclude '.git' \
             --exclude '/.github' \
             --exclude '/dist' \
@@ -72,13 +75,13 @@ jobs:
             --exclude '/.gitattributes' \
             --exclude '/CONTEXT.md' \
             --exclude '/tests'
-          cd dist && zip -qr mcp-abilities-kadence.zip mcp-abilities-kadence
-          unzip -l mcp-abilities-kadence.zip | tail -5
+          cd dist && zip -qr tracsoft-kadence-mcp.zip tracsoft-kadence-mcp
+          unzip -l tracsoft-kadence-mcp.zip | tail -5
 
       - name: Aan de release hangen
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/mcp-abilities-kadence.zip \
+          gh release create "$GITHUB_REF_NAME" dist/tracsoft-kadence-mcp.zip \
             --title "$GITHUB_REF_NAME" --generate-notes \
-          || gh release upload "$GITHUB_REF_NAME" dist/mcp-abilities-kadence.zip --clobber
+          || gh release upload "$GITHUB_REF_NAME" dist/tracsoft-kadence-mcp.zip --clobber

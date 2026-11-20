@@ -1,10 +1,10 @@
-=== MCP Abilities - Kadence ===
-Contributors: joostadams
+=== Tracsoft Kadence MCP ===
+Contributors: tracsoft, joostadams
 Tags: mcp, kadence, abilities, ai
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.27.1
+Stable tag: 1.27.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,17 @@ Kadence Blocks > MCP.
 Vereist de WordPress Abilities API en de MCP Adapter.
 
 == Changelog ==
+
+= 1.27.1.1 (Tracsoft) =
+* Fork: renamed to Tracsoft Kadence MCP (slug tracsoft-kadence-mcp); updates now come only from published releases of TracsoftHQ/tracsoft-kadence-mcp, and only as the built release zip. Refuses to run next to the original plugin.
+* Security: write tools now require kadence_mcp_write at the permission layer, so view-only users no longer get dry-run previews or tokens.
+* Security: every tool that loads a post by ID now checks read access, including post passwords (describe-post-type, describe-query, update-post, build previews, query usage lists, site scans).
+* Security: set-site-css requires edit_css, as core does for Additional CSS.
+* Security: set-page-status requires publish rights for private; create-query and create-query-card require publish rights and a readable source.
+* Security: export, import and set-entity-meta work only on the seven Kadence object types MCP manages, not every kadence_ type (e.g. forms).
+* Security: writing custom SVG content requires unfiltered_html.
+* Security: create-post and update-post check assign_terms per taxonomy.
+* CI: GitHub Actions pinned to commit SHAs.
 
 = 1.27.1 =
 * Fix: create-post en update-post zien nu ACF-veldgroepen die aan een term hangen (locatieregel op een tag, categorie of eigen taxonomie). De velden werden opgezocht met alleen het posttype, en ACF geeft een termregel zonder post_id altijd false; zo'n veld werd geweigerd met "hoort bij geen veldgroep". Het scherm voor ACF draagt nu het post-ID en de termen zoals ze na de aanroep staan (wat de invoer per taxonomie opgeeft vervangt de huidige termen). Waargenomen op Ondernemersfonds Utrecht: "Hero afbeelding Nieuws" (post_tag:nieuws) was niet te schrijven.

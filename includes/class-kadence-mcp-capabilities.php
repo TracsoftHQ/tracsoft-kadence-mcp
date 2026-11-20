@@ -157,6 +157,97 @@ class Kadence_MCP_Capabilities {
 	}
 
 	/**
+	 * Tracsoft hardening: may the current user read this post through MCP?
+	 *
+	 * One check for every tool that loads a post by ID, so a read or a dry-run
+	 * preview never shows a draft, private or trashed post the user could not
+	 * open in WordPress. read_post ignores post passwords, so a
+	 * password-protected post additionally needs edit_post.
+	 *
+	 * Keeps upstream's kadence_mcp_can_read_post filter so a site can tighten
+	 * the rule further.
+	 *
+	 * @param WP_Post|object|int $post A post, a raw $wpdb row with an ID, or a post ID.
+	 *
+	 * @return bool
+	 */
+	public static function can_read_post( $post ) {
+		if ( ! $post instanceof WP_Post ) {
+			// Some tools loop over raw $wpdb rows (stdClass with ID); resolve
+			// those, and plain IDs, to a real post so the password is known.
+			$post = get_post( is_object( $post ) && isset( $post->ID ) ? (int) $post->ID : $post );
+		}
+
+		if ( ! $post instanceof WP_Post ) {
+			return false;
+		}
+
+		/** This filter is documented in includes/abilities/class-kadence-mcp-abilities-content.php */
+		$allowed = (bool) apply_filters( 'kadence_mcp_can_read_post', current_user_can( 'read_post', $post->ID ), $post->ID );
+
+		if ( $allowed && '' !== (string) $post->post_password && ! current_user_can( 'edit_post', $post->ID ) ) {
+			$allowed = false;
+		}
+
+		return $allowed;
+	}
+
+	/**
+	 * Tracsoft hardening: the Kadence object types MCP may export, import and
+	 * write meta on.
+	 *
+	 * Upstream accepted any post type starting with kadence_, which also
+	 * matches Kadence's form and other add-on types, whose meta holds
+	 * notification recipients and webhook settings.
+	 *
+	 * @return string[]
+	 */
+	public static function entity_types() {
+		return array(
+			'kadence_navigation',
+			'kadence_header',
+			'kadence_element',
+			'kadence_query',
+			'kadence_query_card',
+			'kadence_vector',
+			'kadence_custom_svg',
+		);
+	}
+
+	/**
+	 * Is this a Kadence object type MCP may work with?
+	 *
+	 * @param string $post_type The post type.
+	 *
+	 * @return bool
+	 */
+	public static function is_entity_type( $post_type ) {
+		return in_array( (string) $post_type, self::entity_types(), true );
+	}
+
+	/**
+	 * The error returned when can_read_post() says no.
+	 *
+	 * Deliberately the same wording whether the post is a draft, private or
+	 * password-protected, so the reply does not reveal more than "no access".
+	 *
+	 * @param int $post_id The post ID.
+	 *
+	 * @return WP_Error
+	 */
+	public static function read_denied( $post_id ) {
+		return new WP_Error(
+			'kadence_mcp_post_forbidden',
+			sprintf(
+				/* translators: %d: post ID. */
+				__( 'No read access to post %d.', 'mcp-abilities-kadence' ),
+				(int) $post_id
+			),
+			array( 'status' => 403 )
+		);
+	}
+
+	/**
 	 * Ken de capabilities toe aan de beheerdersrol bij activering.
 	 *
 	 * Alleen aan administrator, en alleen de twee granulaire. De hoofdsleutel

@@ -103,6 +103,15 @@ class Kadence_MCP_Registry {
 			)
 		);
 
+		// Tracsoft hardening: a write tool is gated by WRITE at the permission
+		// layer, not only inside its handler. Upstream let every tool through
+		// on VIEW and checked WRITE later, which meant a VIEW-only user still
+		// received the dry-run proposal (including rewritten post_content of
+		// posts they could merely read) and a valid confirmation token.
+		if ( false === $args['readonly'] && Kadence_MCP_Capabilities::VIEW === $args['capability'] ) {
+			$args['capability'] = Kadence_MCP_Capabilities::WRITE;
+		}
+
 		// Een ability zonder invoerschema is via MCP onbruikbaar: WP_Ability
 		// weigert dan élke invoer, ook het lege object dat clients altijd
 		// meesturen. Geef hem dus een expliciet leeg objectschema.

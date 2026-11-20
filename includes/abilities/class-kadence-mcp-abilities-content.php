@@ -536,7 +536,9 @@ class Kadence_MCP_Abilities_Content {
 		 * @param bool $toegestaan Of lezen is toegestaan.
 		 * @param int  $post_id    Het post-ID.
 		 */
-		$toegestaan = apply_filters( 'kadence_mcp_can_read_post', current_user_can( 'read_post', $post_id ), $post_id );
+		// Tracsoft hardening: same filter as upstream, plus the password check
+		// in Kadence_MCP_Capabilities::can_read_post().
+		$toegestaan = Kadence_MCP_Capabilities::can_read_post( $post );
 
 		if ( ! $toegestaan ) {
 			return new WP_Error(
