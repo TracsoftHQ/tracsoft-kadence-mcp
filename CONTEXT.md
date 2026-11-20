@@ -1,279 +1,279 @@
-# Ontwerpbesluiten
+# Design decisions
 
-Waarom deze plugin is zoals hij is. Voor wie hem later aanpast.
+Why this plugin is the way it is. For whoever modifies it later.
 
-## Schrijven kan, en het is omheind
+## Writing is possible, and it is fenced in
 
-> **Bijgewerkt 11-09-2026.** Dit hoofdstuk beschreef een plugin die niet kon
-> schrijven. Dat klopt sinds 1.0.0 niet meer: er zijn zes schrijfabilities en
-> evenzoveel `wp_update_post`-aanroepen. De tekst hieronder is blijven staan als
-> beschrijving van hoe het schrijven is omheind — want dat is wat er van het
-> oorspronkelijke besluit over is.
+> **Updated 2026-09-11.** This chapter described a plugin that could not
+> write. That has no longer been true since 1.0.0: there are six write abilities and
+> as many `wp_update_post` calls. The text below has been kept as a
+> description of how writing is fenced in — because that is what remains of the
+> original decision.
 >
-> **Opnieuw bijgewerkt.** Het waren er zes; het zijn er inmiddels achttien, en
-> ze raken niet langer alleen `post_content`. De bewering dat opties nergens
-> worden aangeraakt is sinds `set-global-typography` en `set-site-css` onjuist.
+> **Updated again.** There were six; there are now eighteen, and
+> they no longer touch only `post_content`. The claim that options are never
+> touched has been incorrect since `set-global-typography` and `set-site-css`.
 
-Er zijn drie soorten schrijvers, en het verschil zit in wat er terug te draaien
-valt.
+There are three kinds of writers, and the difference lies in what can be
+rolled back.
 
-**Post content.** De meeste. Ze raken `post_content` van de post die je noemt en
-WordPress maakt er een revisie van, dus terugdraaien kan via het
-revisieoverzicht.
+**Post content.** Most of them. They touch the `post_content` of the post you name, and
+WordPress creates a revision of it, so rolling back is possible via the
+revisions screen.
 
-**Nieuwe posts.** `create-page`, `create-post`, `create-query`,
-`create-query-card` en `create-entity`. Die maken iets aan in plaats van iets te wijzigen; terugdraaien
-is weggooien. `create-entity` schrijft bij een navigatie, header of element de
-hele set geregistreerde instellingen mee, omdat `set-entity-meta` alleen
-sleutels aanneemt die er al staan. `create-post` is één ability voor alle
-gewone posttypes: wat per type mag (taxonomieën, thumbnail, excerpt,
-ACF-veldgroepen) leest hij per aanroep uit WordPress, in plaats van een variant
-per posttype.
+**New posts.** `create-page`, `create-post`, `create-query`,
+`create-query-card` and `create-entity`. These create something instead of changing something; rolling back
+means throwing it away. For a navigation, header or element, `create-entity` writes the
+whole set of registered settings along with it, because `set-entity-meta` only accepts
+keys that already exist. `create-post` is one ability for all
+regular post types: what is allowed per type (taxonomies, thumbnail, excerpt,
+ACF field groups) it reads from WordPress on each call, instead of having a variant
+per post type.
 
-**Post meta.** `set-entity-meta`, `set-card-layout`, `set-query` en
-`sync-query-facets`. WordPress bewaart post meta niet in revisies, dus de oude
-waarde in het veld `before` van het antwoord is de enige weg terug. Dat staat ook
-in elke statusregel.
+**Post meta.** `set-entity-meta`, `set-card-layout`, `set-query` and
+`sync-query-facets`. WordPress does not keep post meta in revisions, so the old
+value in the response's `before` field is the only way back. That is also stated
+in every status line.
 
-**Site-breed.** `set-global-typography` schrijft theme mods, `set-site-css`
-schrijft de Extra CSS van de Customizer. Die raken elke pagina, en theme mods
-kennen evenmin revisies. Ze zitten daarom achter een extra poort:
-`edit_theme_options` bovenop `kadence_mcp_write`, en de typografie accepteert
-alleen een vaste lijst sleutels — theme mods bevatten ook de header, de kleuren
-en de layout, en daar hoort een typefout niet in te kunnen landen.
+**Site-wide.** `set-global-typography` writes theme mods, `set-site-css`
+writes the Customizer's Additional CSS. These affect every page, and theme mods
+have no revisions either. They therefore sit behind an extra gate:
+`edit_theme_options` on top of `kadence_mcp_write`, and the typography accepts
+only a fixed list of keys — theme mods also contain the header, the colors
+and the layout, and a typo must not be able to land there.
 
-Alle achttien vragen de capability `kadence_mcp_write` (bij installatie aan
-niemand gegeven), het bijbehorende WordPress-recht, en een token uit een
-voorafgaande controlestap. Bestanden en caches worden nergens aangeraakt.
+All eighteen require the capability `kadence_mcp_write` (granted to
+no one on installation), the corresponding WordPress capability, and a token from a
+preceding check step. Files and caches are never touched.
 
-De oorspronkelijke tekst, die nog steeds geldt voor de achttien leestools:
+The original text, which still applies to the eighteen read tools:
 
-Er is geen schrijfability, en de plugin heeft geen enkele plek waar hij een
-post, optie, bestand of cache aanraakt. "Alleen lezen" is hier dus geen
-afspraak maar een controleerbaar feit: `grep` op `update_option`,
-`wp_update_post` en `wp_insert_post` levert niets op.
+There is no write ability, and the plugin has no place at all where it touches a
+post, option, file or cache. "Read-only" is therefore not an
+agreement here but a verifiable fact: `grep` for `update_option`,
+`wp_update_post` and `wp_insert_post` returns nothing.
 
-Dat is bewust. Een generieke blok-editor-plugin die schrijven meebrengt
-installeer je niet op een site die volgende week live gaat, ook niet met de
-afspraak dat je die tools niet aanroept — ze bestaan dan.
+That is deliberate. A generic block editor plugin that brings writing along is
+not something you install on a site that goes live next week, not even with the
+agreement that you won't call those tools — they exist at that point.
 
-## De grendel zit op uitvoeringstijd, niet op registratietijd
+## The lock is at execution time, not at registration time
 
-`Kadence_MCP_Ability::check_permissions()` stelt de vraag "staat deze tool
-aan?" opnieuw bij elke aanroep. Een vlag die bij registratie wordt gezet ligt
-vast zolang het request duurt.
+`Kadence_MCP_Ability::check_permissions()` asks the question "is this tool
+on?" again on every call. A flag set at registration stays
+fixed for as long as the request lasts.
 
-Dat is overgenomen uit Gravity Forms, waar de reden expliciet in de code staat:
-de poort moet op elk oppervlak gelden — de REST-run-route van de Abilities API,
-de gedeelde MCP-server en de eigen server — en niet alleen op de plek waar de
-ability geregistreerd werd.
+This is taken from Gravity Forms, where the reason is stated explicitly in the code:
+the gate must apply on every surface — the Abilities API's REST run route,
+the shared MCP server and the plugin's own server — and not only at the place where the
+ability was registered.
 
-De klasse faalt daarbij dicht: ontbreekt `Kadence_MCP_Settings`, dan geldt de
-tool als uit. Een halve bootstrap mag de poort nooit openzetten.
+The class fails closed in doing so: if `Kadence_MCP_Settings` is missing, the
+tool counts as off. A half-finished bootstrap must never open the gate.
 
-## Twee lagen, en ze zijn niet inwisselbaar
+## Two layers, and they are not interchangeable
 
-De toggle bepaalt of een ability wordt aangeboden. De capability bepaalt of dit
-account hem mag uitvoeren.
+The toggle determines whether an ability is offered. The capability determines whether this
+account may run it.
 
-Een uitgezette toggle die je weer aanzet geeft meteen toegang; een ontbrekende
-capability niet. Wie wil weten wat een MCP-account écht kan, kijkt dus naar de
-rol en niet naar dit scherm.
+A toggle that was turned off and is turned back on grants access immediately; a missing
+capability does not. Anyone who wants to know what an MCP account can really do therefore looks at the
+role and not at this screen.
 
-## Geen verruiming van het invoerschema
+## No loosening of the input schema
 
-Er stond hier eerder een verruiming van `type` naar `["object","array","null"]`
-voor schema's zonder verplichte velden, overgenomen uit een andere add-on. Die
-is verwijderd en mag niet terugkomen.
+There used to be a loosening of `type` to `["object","array","null"]` here
+for schemas without required fields, taken from another add-on. It
+has been removed and must not come back.
 
-De MCP Adapter vergelijkt strikt met de string `'object'`
-(`SchemaTransformer.php:62`). Een array valt door naar `wrap_in_object()` en het
-gepubliceerde schema wordt `{type:object, properties:{input:…},
-required:["input"]}`. De client stuurt dan `{"search":"row"}` plat, de adapter
-pelt `$arguments['input']` eraf, vindt niets, en de ability draait met lege
-invoer — zonder foutmelding, met een volledige ongefilterde lijst als antwoord.
-De toegevoegde `"null"` maakte dat onzichtbaar: zonder verruiming zou de
-validatie netjes `ability_invalid_input` hebben gegeven.
+The MCP Adapter compares strictly against the string `'object'`
+(`SchemaTransformer.php:62`). An array falls through to `wrap_in_object()` and the
+published schema becomes `{type:object, properties:{input:…},
+required:["input"]}`. The client then sends `{"search":"row"}` flat, the adapter
+strips `$arguments['input']` off it, finds nothing, and the ability runs with empty
+input — without an error message, with a complete unfiltered list as the response.
+The added `"null"` made that invisible: without the loosening, the
+validation would have cleanly returned `ability_invalid_input`.
 
-De juiste oplossing voor "de client stuurt niets" is een `default` op het
-roottschema, zoals Gravity Forms het doet.
+The right solution for "the client sends nothing" is a `default` on the
+root schema, as Gravity Forms does it.
 
-## De capabilities blijven bij deactivering staan
+## The capabilities stay in place on deactivation
 
-`WP_Role::remove_cap()` schrijft persistent weg, terwijl de activering alleen
-`kadence_mcp_view` en `kadence_mcp_manage` teruggeeft, en alleen aan
-administrator. Een eigen rol `mcp-agent` — precies wat het instellingenscherm
-aanraadt — zou na één deactiveer-activeercyclus leeg zijn, en elke tool zou
-zonder melding permission denied geven.
+`WP_Role::remove_cap()` writes persistently, while activation only gives back
+`kadence_mcp_view` and `kadence_mcp_manage`, and only to
+administrator. A custom role `mcp-agent` — exactly what the settings screen
+recommends — would be empty after a single deactivate-activate cycle, and every tool would
+return permission denied without any message.
 
-Opruimen gebeurt daarom in `uninstall.php`, niet in een deactivation hook.
-Gravity Forms raakt bij deactivering evenmin een capability aan. Let op dat
-WordPress bij uninstall alléén dat bestand laadt, dus de capability-klasse wordt
-daar apart ingeladen.
+Cleanup therefore happens in `uninstall.php`, not in a deactivation hook.
+Gravity Forms does not touch any capability on deactivation either. Note that
+on uninstall WordPress loads only that file, so the capability class is
+loaded separately there.
 
-## Een eigen server, niet de gedeelde
+## A server of its own, not the shared one
 
-Op de gedeelde standaardserver van de MCP Adapter staan abilities achter
-generieke discovery-tools. Een assistent moet eerst vragen wát er is en daarna
-via een omweg uitvoeren. Op een eigen server staat elke ingeschakelde ability
-als losse tool in de lijst.
+On the MCP Adapter's shared default server, abilities sit behind
+generic discovery tools. An assistant first has to ask what is available and then
+execute it in a roundabout way. On a server of its own, every enabled ability appears
+as a separate tool in the list.
 
-Gravity Forms komt tot dezelfde keuze en zet dedicated als standaard, met
-dezelfde motivering. De gedeelde stand blijft beschikbaar voor wie bewust één
-verbinding voor de hele site wil.
+Gravity Forms arrives at the same choice and makes dedicated the default, with
+the same reasoning. The shared mode remains available for anyone who deliberately wants one
+connection for the whole site.
 
-`meta.mcp.public` volgt die keuze: op de eigen server wordt hij `false`, want
-een ability die daar al als losse tool staat hoef je niet óók nog op de
-gedeelde server te publiceren — dan verschijnt dezelfde tool twee keer.
+`meta.mcp.public` follows that choice: on the plugin's own server it becomes `false`, because
+an ability that already appears there as a separate tool doesn't also need to be published
+on the shared server — then the same tool appears twice.
 
-## Een ability zonder invoerschema is onbruikbaar
+## An ability without an input schema is unusable
 
-`WP_Ability::execute()` weigert élke invoer wanneer er geen schema is, ook het
-lege object dat MCP-clients altijd meesturen. `Kadence_MCP_Registry` geeft een
-schemaloze ability daarom een expliciet leeg objectschema.
+`WP_Ability::execute()` rejects any input when there is no schema, even the
+empty object that MCP clients always send along. `Kadence_MCP_Registry` therefore gives a
+schemaless ability an explicit empty object schema.
 
-Dat is geen theorie. De ACF-abilities op deze site lopen er live op vast:
+That is not theory. The ACF abilities on this site are getting stuck on it live:
 
 ```
 Ability "mcp-adapter/discover-abilities" definieert geen invoerschema
 vereist om de invoer te valideren.
 ```
 
-Let op dat het type de STRING `'object'` moet blijven. Er stond hier eerder een
-verruiming naar `["object","array","null"]`; die is verwijderd om de reden die
-hierboven bij "Geen verruiming van het invoerschema" staat, en dit hoofdstuk
-beschreef hem daarna nog als huidig gedrag. Dat klopte niet.
+Note that the type must remain the STRING `'object'`. There used to be a
+loosening to `["object","array","null"]` here; it was removed for the reason
+given above under "No loosening of the input schema", and this chapter
+then still described it as current behavior. That was not correct.
 
-## Foutteksten worden geschoond
+## Error texts are sanitized
 
-De Abilities API vangt een exception uit een callback af en geeft het bericht
-letterlijk terug, inclusief absolute serverpaden, en dat bericht gaat door naar
-de MCP-client. `Kadence_MCP_Ability::do_execute()` logt het echte bericht en
-geeft een algemeen bericht terug. Een `WP_Error` die een handler zelf
-teruggeeft is een bewuste melding en gaat ongemoeid door.
+The Abilities API catches an exception from a callback and returns the message
+verbatim, including absolute server paths, and that message goes through to
+the MCP client. `Kadence_MCP_Ability::do_execute()` logs the real message and
+returns a generic message. A `WP_Error` that a handler returns itself
+is a deliberate message and passes through untouched.
 
-## Uitvoergrootte is een ontwerpeis, geen comfort
+## Output size is a design requirement, not a convenience
 
-`kadence/rowlayout` heeft 170 attributen en zijn `block.json` is 17,6 KB. Dat
-past niet in één MCP-antwoord.
+`kadence/rowlayout` has 170 attributes and its `block.json` is 17.6 KB. That
+does not fit in one MCP response.
 
-Daarom pagineert `describe-block` standaard op 40 attributen, en worden
-standaardwaarden die zelf een grote structuur zijn samengevat in plaats van
-uitgeschreven. Gemeten: hetzelfde blok komt er als 3,0 KB uit in plaats van
-17,6 KB.
+That is why `describe-block` paginates at 40 attributes by default, and
+default values that are themselves a large structure are summarized instead of
+written out. Measured: the same block comes out as 3.0 KB instead of
+17.6 KB.
 
-Een expliciete lijst via `attributes` wordt niet gepagineerd — dat is per
-definitie de hele vraag, en er minder van teruggeven dan gevraagd is verwarrend.
+An explicit list via `attributes` is not paginated — that is by
+definition the whole question, and returning less than was asked for is confusing.
 
-## Herkomst komt van schijf, bestaan uit het register
+## Origin comes from disk, existence from the registry
 
-Een geregistreerd `WP_Block_Type` draagt niet met zich mee uit welke plugin hij
-komt. De herkomst wordt daarom afgeleid uit de `block.json`-bestanden onder
-`dist/blocks/` van beide plugins.
+A registered `WP_Block_Type` does not carry with it which plugin it
+comes from. The origin is therefore derived from the `block.json` files under
+`dist/blocks/` of both plugins.
 
-Het blokkenregister blijft de bron van waarheid voor wát er bestaat. Levert de
-bestandsscan geen treffer op, dan krijgt het blok `onbekend` in plaats van een
-gok.
+The block registry remains the source of truth for what exists. If the
+file scan yields no match, the block gets `onbekend` instead of a
+guess.
 
-`attribute_count` telt de twee attributen die WordPress zelf aan elk blok
-toevoegt — `lock` en `metadata` — niet mee, want anders meldt
-`kadence/rowlayout` 172 terwijl zijn `block.json` er 170 heeft. De vergelijking
-gaat op identieke definitie en niet op sleutel: `kadence/repeatertemplate`
-definieert `lock` zelf, met een eigen default, en houdt hem daarom.
+`attribute_count` does not count the two attributes that WordPress itself adds to every block
+— `lock` and `metadata` — because otherwise
+`kadence/rowlayout` would report 172 while its `block.json` has 170. The comparison
+is on identical definition and not on key: `kadence/repeatertemplate`
+defines `lock` itself, with its own default, and therefore keeps it.
 
-`kadence/videopopup` staat in beide plugins. De eerste treffer wint, en dat is
-de gratis plugin — dezelfde die WordPress ook als eerste registreert.
+`kadence/videopopup` is in both plugins. The first match wins, and that is
+the free plugin — the same one that WordPress also registers first.
 
-## Posttypes worden ontdekt, niet opgesomd
+## Post types are discovered, not enumerated
 
-`Kadence_MCP_Inventory::get_post_types()` filtert op het prefix `kadence_` in
-plaats van een vaste lijst aan te houden. Een nieuwe Kadence-versie of een
-ander Kadence-product verschijnt daarmee vanzelf, zonder codewijziging.
+`Kadence_MCP_Inventory::get_post_types()` filters on the prefix `kadence_` instead
+of maintaining a fixed list. A new Kadence version or another
+Kadence product thereby appears automatically, without a code change.
 
-Op het moment van schrijven zijn dat `kadence_header`, `kadence_navigation`,
+At the time of writing these are `kadence_header`, `kadence_navigation`,
 `kadence_element`, `kadence_form`, `kadence_lottie`, `kadence_vector`,
-`kadence_adv_page`, `kadence_query` en `kadence_query_card` — maar de code gaat
-daar niet van uit.
+`kadence_adv_page`, `kadence_query` and `kadence_query_card` — but the code does not
+assume that.
 
-Op één uitzondering na: Kadence Blocks Pro registreert zijn iconenbibliotheek
-als **`kb_icon`**, zonder prefix. Die staat in `EXTRA_POST_TYPES`. Een
-prefixfilter alleen zou hem missen, en dan bestaat hij voor de agent niet.
+With one exception: Kadence Blocks Pro registers its icon library
+as **`kb_icon`**, without the prefix. That one is in `EXTRA_POST_TYPES`. A
+prefix filter alone would miss it, and then it would not exist for the agent.
 
-## Vier blokken die er niet lijken te zijn
+## Four blocks that don't seem to be there
 
-Kadence registreert `kadence/pane`, `kadence/tab`, `kadence/countdown-inner` en
-`kadence/countdown-timer` uitsluitend in JavaScript. Ze staan dus niet in
-`WP_Block_Type_Registry`, terwijl `inspect-post` ze wél in de blokkenboom laat
-zien — een accordeon is alledaags. `describe-block` antwoordde daarop "bestaat
-niet op deze site", en dat was onjuist.
+Kadence registers `kadence/pane`, `kadence/tab`, `kadence/countdown-inner` and
+`kadence/countdown-timer` exclusively in JavaScript. So they are not in
+`WP_Block_Type_Registry`, while `inspect-post` does show them in the block tree
+— an accordion is commonplace. `describe-block` answered "does
+not exist on this site", and that was incorrect.
 
-De terugval leest nu de `block.json` op schijf en markeert het resultaat met
-`registration: "editor-only"`, zodat het verschil zichtbaar blijft. Pas als een
-blok ook daar niet staat volgt een `WP_Error`.
+The fallback now reads the `block.json` on disk and marks the result with
+`registration: "editor-only"`, so the difference stays visible. Only if a
+block is not there either does a `WP_Error` follow.
 
-Eén van die vier, `accordion/pane/block.json`, mist bovendien het veld `name` —
-als enige in de hele stack. De naam wordt daar uit de mapnaam afgeleid en
-gemarkeerd met `name_source: "directory"`. Dat is geen algemene regel: elk ander
-bestand draagt zijn naam gewoon zelf, en blind afleiden zou van
-`header/children/row` ten onrechte `kadence/row` maken in plaats van
+One of those four, `accordion/pane/block.json`, also lacks the `name` field —
+the only one in the whole stack. The name is derived there from the folder name and
+marked with `name_source: "directory"`. That is not a general rule: every other
+file carries its own name, and blindly deriving it would turn
+`header/children/row` into `kadence/row` instead of
 `kadence/header-row`.
 
-## Leesrecht op een post is iets anders dan recht op de tool
+## Read access to a post is something other than access to the tool
 
-`kadence_mcp_view` zegt dat dit account de tool mag gebruiken. Of het déze post
-mag lezen is een aparte vraag, en `inspect-post` en `list-entities` stellen hem
-allebei met `current_user_can( 'read_post', $id )`.
+`kadence_mcp_view` says that this account may use the tool. Whether it may read this particular post
+is a separate question, and `inspect-post` and `list-entities` both ask it
+with `current_user_can( 'read_post', $id )`.
 
-Zonder die controle zou een MCP-account met alleen `kadence_mcp_view` de inhoud
-van concepten en privéposts kunnen uitlezen.
+Without that check, an MCP account with only `kadence_mcp_view` could read the content
+of drafts and private posts.
 
-## Wat hier bewust niet staat
+## What is deliberately not here
 
-**De plugin van bjornfix is niet geforkt.** `mcp-abilities-block-editor` biedt
-generieke `parse_blocks`/`serialize_blocks` en blok-CRUD die ook op
-Kadence-blokken werkt, want die is formaatonafhankelijk. Forken zou betekenen
-dat je 67 abilities gaat onderhouden en upstream-fixes misloopt. De auteur
-gebruikt zelf het patroon basis-stack plus losse add-ons, met 22 add-ons naast
-elkaar; deze plugin volgt dat patroon.
+**bjornfix's plugin has not been forked.** `mcp-abilities-block-editor` offers
+generic `parse_blocks`/`serialize_blocks` and block CRUD that also works on
+Kadence blocks, because it is format-independent. Forking would mean
+maintaining 67 abilities and missing upstream fixes. The author
+himself uses the pattern of a base stack plus separate add-ons, with 22 add-ons side by
+side; this plugin follows that pattern.
 
-**Er is geen cache-flush.** Kadence Blocks genereert zijn CSS per request via
-`wp_add_inline_style` op `wp_enqueue_scripts` prioriteit 180. Er is geen
-bestandscache om leeg te maken. Komt er ooit schrijven bij, dan is dit het
-eerste dat opnieuw nagekeken moet worden.
+**There is no cache flush.** Kadence Blocks generates its CSS per request via
+`wp_add_inline_style` on `wp_enqueue_scripts` priority 180. There is no
+file cache to empty. If writing is ever added, this is the
+first thing that needs to be rechecked.
 
 
-## Kennen en bouwen zijn twee dingen (1.21.0)
+## Knowing and building are two things (1.21.0)
 
-Tot 1.21.0 betekende "er is een profiel" ook "de generator mag het bouwen".
-Daardoor kon je een blok niet deels kennen: wie de waardenlijsten van tabs
-wilde vastleggen, maakte tabs daarmee bouwbaar — met een wrapper die niet is
-waargenomen. `bouwbaar: false` scheidt die twee. `bekend()` zegt of er gebouwd
-mag worden, `heeft_profiel()` of er iets bekend is.
+Until 1.21.0, "there is a profile" also meant "the generator may build it".
+As a result you could not partially know a block: anyone who wanted to record the value lists of tabs
+thereby made tabs buildable — with a wrapper that had not been
+observed. `bouwbaar: false` separates the two. `bekend()` says whether building
+is allowed, `heeft_profiel()` whether anything is known.
 
-Afgeleide markup zit niet altijd op het buitenste element. De slide zet zijn
-uitlijning op de tweede div en heeft een overlay-element dat alleen bestaat als
-er een overlaykleur is. Daarvoor zijn twee regelsoorten bij gekomen: `reeks`
-(klassen uit een array-attribuut, per breakpoint) en `element` (een stuk HTML
-dat er wel of niet staat). Regels met `overal` worden in de hele eigen
-innerHTML getoetst, niet alleen op het eerste class-attribuut.
+Derived markup is not always on the outermost element. The slide puts its
+alignment on the second div and has an overlay element that only exists if
+there is an overlay color. For that, two kinds of rules were added: `reeks`
+(classes from an array attribute, per breakpoint) and `element` (a piece of HTML
+that is or is not there). Rules with `overal` are checked against the block's whole own
+innerHTML, not only against the first class attribute.
 
-## Import zonder tweede schrijfroute (1.21.0)
+## Import without a second write route (1.21.0)
 
-`prepare-import` is bewust een LEES-ability. Hij geeft hetzelfde token uit als
-`generate-section`, over zijn eigen opgeschoonde markup, en het schrijven
-blijft bij `insert-blocks` met al zijn controles. Een aparte import-schrijver
-zou een tweede plek zijn waar dezelfde grendels moeten kloppen.
+`prepare-import` is deliberately a READ ability. It issues the same token as
+`generate-section`, over its own cleaned-up markup, and the writing
+stays with `insert-blocks` with all its checks. A separate import writer
+would be a second place where the same locks have to be right.
 
-Verwijzingen worden gemeld en nooit geraden. Een media-ID op een andere site is
-een ander bestand; een term-ID ook. Omzetten gaat alleen met een kaart die de
-gebruiker opgeeft (`replace`, `media_map`, `term_map`, en sinds 1.22.0
-`post_map`). Welke blokken met hun `id` naar een post verwijzen staat in één
-tabel (`post_verwijzing()`), afgelezen uit de render van Kadence, die bij elk van
-die blokken het posttype controleert. Andere blokken gebruiken `id` voor iets
-anders — een bijlage, een volgnummer — en blijven erbuiten. Een onopgeloste
-verwijzing geeft geen token zonder `accept_warnings`, omdat "het icoon bestaat
-hier niet" een beslissing is en geen detail.
+References are reported and never guessed. A media ID on another site is
+a different file; a term ID too. Converting only happens with a map that the
+user provides (`replace`, `media_map`, `term_map`, and since 1.22.0
+`post_map`). Which blocks refer to a post with their `id` is listed in one
+table (`post_verwijzing()`), read from Kadence's render, which checks the post type for each of
+those blocks. Other blocks use `id` for something
+else — an attachment, a sequence number — and are left out. An unresolved
+reference yields no token without `accept_warnings`, because "the icon does not exist
+here" is a decision and not a detail.
 
-Wat de import niet kan: de geldigheid in de editor bewijzen. Die toets zit in de
-JavaScript van elk blok. De skill schrijft daarom voor de post na het invoegen
-in de editor te openen.
+What the import cannot do: prove validity in the editor. That check lives in each
+block's JavaScript. The skill therefore prescribes opening the post in the editor
+after inserting.

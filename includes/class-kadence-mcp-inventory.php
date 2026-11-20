@@ -545,7 +545,7 @@ class Kadence_MCP_Inventory {
 			'type'          => 'boolean',
 			'default'       => false,
 			'renderer_only' => true,
-			'note'          => 'staat alleen in de block.json van kadence/query-filter-buttons, maar het taxonomiefilter leest hem voor elke weergave (kadence-blocks-pro/includes/query/frontend-filters/class-taxonomy-filter.php): true zet een optie "Alle" bovenaan.',
+			'note'          => 'only in the block.json of kadence/query-filter-buttons, but the taxonomy filter reads it for every display (kadence-blocks-pro/includes/query/frontend-filters/class-taxonomy-filter.php): true puts an "All" option at the top.',
 		);
 
 		$lijst = array(
@@ -1943,7 +1943,7 @@ class Kadence_MCP_Inventory {
 				$waarde = $thema->option( $sleutel );
 			} catch ( \Throwable $e ) {
 				error_log( sprintf(
-					'Kadence MCP: thema-optie "%s" is niet op te vragen — %s',
+					'Kadence MCP: theme option "%s" could not be read — %s',
 					$sleutel,
 					$e->getMessage()
 				) );

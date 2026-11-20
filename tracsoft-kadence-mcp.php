@@ -3,7 +3,7 @@
  * Plugin Name:       Tracsoft Kadence MCP
  * Plugin URI:        https://github.com/TracsoftHQ/tracsoft-kadence-mcp
  * Description:       Tracsoft's hardened build of MCP Abilities — Kadence. Gives an MCP agent access to Kadence Blocks, Kadence Blocks Pro, Kadence Pro and the Kadence theme through the WordPress Abilities API. Everything is off by default, and writing needs its own capability that nobody gets automatically. Based on mcp-abilities-kadence by Joost Adams.
- * Version:           1.27.1.1
+ * Version:           1.27.1.2
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            Tracsoft (based on work by Joost Adams)
@@ -11,6 +11,7 @@
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       mcp-abilities-kadence
+ * Domain Path:       /languages
  * Update URI:        https://github.com/TracsoftHQ/tracsoft-kadence-mcp
  *
  * @package Kadence_MCP
@@ -47,7 +48,7 @@ if ( defined( 'KADENCE_MCP_VERSION' ) ) {
  * orders 1.27.1.1 above 1.27.1, and a later upstream merge to 1.28.0 starts
  * again at 1.28.0.1.
  */
-define( 'KADENCE_MCP_VERSION', '1.27.1.1' );
+define( 'KADENCE_MCP_VERSION', '1.27.1.2' );
 define( 'KADENCE_MCP_FILE', __FILE__ );
 define( 'KADENCE_MCP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'KADENCE_MCP_BASENAME', plugin_basename( __FILE__ ) );
@@ -59,6 +60,29 @@ define( 'KADENCE_MCP_BASENAME', plugin_basename( __FILE__ ) );
  * instellingen groeperen hierop, en de capability-controle leest hem.
  */
 define( 'KADENCE_MCP_NAMESPACE', 'kadence' );
+
+/**
+ * Tracsoft: show the plugin in English.
+ *
+ * Upstream writes its source strings in Dutch. Tracsoft ships an English
+ * translation of every string in languages/mcp-abilities-kadence-en_US.mo
+ * and loads it on every site whose language is not Dutch, so the settings
+ * screen, the tool descriptions Claude reads and the error messages are all
+ * English. Keeping the translation in a .mo file instead of rewriting the
+ * source keeps upstream merges simple.
+ *
+ * Regenerate after a merge: see "Translations" in TRACSOFT.md.
+ */
+function kadence_mcp_load_english() {
+	$locale = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
+
+	if ( 0 === strpos( (string) $locale, 'nl' ) ) {
+		return; // Dutch sites keep upstream's original strings.
+	}
+
+	load_textdomain( 'mcp-abilities-kadence', KADENCE_MCP_PATH . 'languages/mcp-abilities-kadence-en_US.mo', $locale );
+}
+add_action( 'plugins_loaded', 'kadence_mcp_load_english', -100 );
 
 require_once KADENCE_MCP_PATH . 'includes/class-kadence-mcp-capabilities.php';
 require_once KADENCE_MCP_PATH . 'includes/class-kadence-mcp-settings.php';

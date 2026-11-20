@@ -93,6 +93,35 @@ Resolve conflicts keeping every `Tracsoft` change, re-check the table above
 against the new code (new tools may load posts or write meta in new places),
 then release as above.
 
+## Translations
+
+Upstream writes its source strings in Dutch. Tracsoft keeps the source as is
+and ships an English translation in
+`languages/mcp-abilities-kadence-en_US.mo`, loaded on every site whose
+language is not Dutch (`kadence_mcp_load_english()` in the main file).
+
+- `languages/en_US.json` is the file to edit: Dutch source string → English.
+- Some Dutch words are data, not prose: the plugin returns and accepts them as
+  values (verdicts `veilig`, `riskant`, `blokkeer`; the `pad:` path prefix;
+  attribute group names such as `kleur`, `achtergrond`; keys such as `soort`).
+  Translations keep those words in backticks with an English gloss.
+- A few texts sit in PHP constants, where a translation function can't run;
+  those 33 were replaced with English directly in the source. After an
+  upstream merge, check new hard-coded Dutch with `grep` before releasing.
+- The skill, README, readme and CONTEXT.md were translated in place; on an
+  upstream merge, translate the changed sections of those files by hand.
+
+After merging upstream changes (needs `brew install gettext`):
+
+```bash
+python3 bin/build-translations.py extract   # lists new strings in languages/untranslated.json
+# add English for each one to languages/en_US.json
+python3 bin/build-translations.py build     # checks placeholders, compiles the .mo
+```
+
+`build` refuses to compile if any string is missing or a `%s`-style
+placeholder differs between Dutch and English.
+
 ## Protecting the release channel
 
 Because releases are unsigned, the repo is the security boundary:

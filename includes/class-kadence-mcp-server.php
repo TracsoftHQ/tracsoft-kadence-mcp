@@ -99,7 +99,7 @@ class Kadence_MCP_Server {
 		$observability = 'WP\\MCP\\Infrastructure\\Observability\\NullMcpObservabilityHandler';
 
 		if ( ! class_exists( $transport ) || ! class_exists( $foutafhandelaar ) || ! class_exists( $observability ) ) {
-			error_log( 'Kadence MCP: de MCP Adapter mist een verwachte klasse; de eigen server is niet aangemaakt.' );
+			error_log( 'Kadence MCP: the MCP Adapter is missing an expected class; the dedicated server was not created.' );
 
 			return;
 		}

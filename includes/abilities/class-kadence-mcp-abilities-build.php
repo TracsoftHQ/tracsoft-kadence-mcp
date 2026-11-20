@@ -4067,12 +4067,12 @@ class Kadence_MCP_Abilities_Build {
 			$schoner->setAllowedAttrs( new KadenceBlocksAllowedAttributes() );
 			$geschoond = $schoner->sanitize( $uit );
 			$uit       = false === $geschoond ? '' : (string) $geschoond;
-			$stappen[] = 'sanitizer van Kadence';
+			$stappen[] = 'Kadence\'s sanitizer';
 		}
 
 		if ( ! current_user_can( 'unfiltered_html' ) ) {
 			$uit       = wp_unslash( wp_filter_post_kses( wp_slash( $uit ) ) );
-			$stappen[] = 'kses van WordPress (geen unfiltered_html)';
+			$stappen[] = 'WordPress kses (no unfiltered_html)';
 		}
 
 		$verlies = self::svg_verlies( $svg, $uit );

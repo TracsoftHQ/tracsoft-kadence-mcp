@@ -1,64 +1,64 @@
 ---
 name: kadence-blocks
-description: "Werkwijze en valkuilen bij het uitlezen én wijzigen van een Kadence-site via de Kadence MCP-server (kadence/list-blocks, describe-block, inspect-post, diff-blocks, list-entities, find-post, get-global-styles, validate-write, preview-write, set-attributes, set-text, move-blocks, update-post, duplicate-blocks, prepare-import, check-access, audit-colors, replace-colors, site-fingerprint, export-entity, import-entity, update-entity-content, trash-post). Laad dit vóór je een vraag beantwoordt over hoe een Kadence-pagina is opgebouwd, waarom twee blokken er anders uitzien, wat er moet veranderen voor mobiel, of voordat je iets schrijft."
+description: "How to read and modify a Kadence site through the Kadence MCP server, and the pitfalls involved (kadence/list-blocks, describe-block, inspect-post, diff-blocks, list-entities, find-post, get-global-styles, validate-write, preview-write, set-attributes, set-text, move-blocks, update-post, duplicate-blocks, prepare-import, check-access, audit-colors, replace-colors, site-fingerprint, export-entity, import-entity, update-entity-content, trash-post). Load this before you answer a question about how a Kadence page is built, why two blocks look different, what needs to change for mobile, or before you write anything."
 ---
 
-# Kadence uitlezen via MCP
+# Reading Kadence through MCP
 
-Deze skill beschrijft hoe je de Kadence MCP-server gebruikt zonder de fouten te
-maken die de toolschema's niet kunnen voorkomen.
+This skill describes how to use the Kadence MCP server without making the
+mistakes that the tool schemas cannot prevent.
 
-De server telt negenenveertig abilities: drieëntwintig lezen, zesentwintig schrijven.
-**Schrijven is dus geen uitzondering** — controleer per tool of hij schrijft, in
-plaats van ervan uit te gaan dat lezen de norm is.
+The server has forty-nine abilities: twenty-three read, twenty-six write.
+**So writing is not the exception** — check per tool whether it writes, instead
+of assuming that reading is the norm.
 
-Elke schrijfability vraagt de capability `kadence_mcp_write`, bewerkrecht op de
-post volgens WordPress, en een token uit een voorafgaande controlestap. Lees
-hieronder eerst hoe die controle werkt voordat je er een gebruikt.
+Every write ability requires the capability `kadence_mcp_write`, edit rights on
+the post according to WordPress, and a token from a preceding check step. Read
+below how that check works before you use one.
 
-Let op dat ze niet allemaal hetzelfde raken. De meeste schrijven `post_content`
-en maken dus een revisie. `set-entity-meta` en `set-card-layout` schrijven post
-meta, en die kent géén revisies — de oude waarde in het antwoord is je enige weg
-terug. `set-global-typography` en `set-site-css` raken de hele site in plaats van
-één post.
+Note that they do not all touch the same thing. Most write `post_content`
+and therefore create a revision. `set-entity-meta` and `set-card-layout` write post
+meta, and post meta has **no** revisions — the old value in the response is your only way
+back. `set-global-typography` and `set-site-css` affect the whole site instead of
+a single post.
 
-## Vóór je een wijziging voorstelt
+## Before you propose a change
 
-Zodra je een wijziging AANRAADT of SCHRIJFT, hoort die getoetst te zijn —
-anders stel je iets voor dat stil niets doet of stil iets breekt.
+As soon as you RECOMMEND or WRITE a change, it must have been checked —
+otherwise you propose something that silently does nothing or silently breaks something.
 
-**Roep altijd `kadence/validate-write` aan** met het blok en de voorgenomen
-attributen. Hij schrijft niets; hij geeft `veilig`, `riskant` of `blokkeer`.
+**Always call `kadence/validate-write`** with the block and the intended
+attributes. It writes nothing; it returns `veilig` (safe), `riskant` (risky) or `blokkeer` (block).
 
-Bij `veilig` komt er een **token** terug. Dat is gebonden aan deze post, dit
-blok, deze exacte attributen én de wijzigingsdatum van de post. Een toekomstige
-schrijfactie eist dat token: overslaan kan niet, en iets anders schrijven dan
-wat getoetst is ook niet. Is de post intussen door iemand anders aangepast, dan
-vervalt het token — een goedkeuring op een versie die niet meer bestaat is geen
-goedkeuring.
+On `veilig` a **token** comes back. It is bound to this post, this
+block, these exact attributes, and the post's modification date. A subsequent
+write action requires that token: you cannot skip it, and you cannot write something other than
+what was checked. If someone else has changed the post in the meantime, the token
+expires — an approval of a version that no longer exists is not an
+approval.
 
-Toon daarna met **`kadence/preview-write`** hoe de markup eruit zou zien. Dat
-slaat niets op en is de laatste stap voordat je iets aanraadt: de gebruiker
-kijkt er één keer naar in plaats van het achteraf te moeten repareren. Let in
-het resultaat vooral op de `innerHTML` — verwijst die nog naar een oude waarde,
-dan is de wijziging niet compleet.
+Then use **`kadence/preview-write`** to show what the markup would look like. It
+saves nothing and is the last step before you recommend something: the user
+looks at it once instead of having to repair it afterwards. In the
+result, pay particular attention to the `innerHTML` — if it still refers to an old value,
+the change is not complete.
 
-Bij `riskant` komt er **geen** token. Dat is opzet: daar hoort een mens te
-beslissen, niet een hash.
+On `riskant` **no** token comes back. That is deliberate: a human should
+decide there, not a hash.
 
-Waarom de typetoets ertoe doet: `WP_Block_Type::prepare_attributes_for_render()`
-draait bij élke render `rest_validate_value_from_schema()` over je attributen en
-**gooit een waarde die niet slaagt stil weg**, waarna de standaardwaarde ervoor
-in de plaats komt (`wp-includes/class-wp-block-type.php:513-520`). Je
-schrijfactie lijkt dan geslaagd en doet niets. `validate-write` gebruikt exact
-diezelfde functie, dus wat hij goedkeurt overleeft het renderen.
+Why the type check matters: `WP_Block_Type::prepare_attributes_for_render()`
+runs `rest_validate_value_from_schema()` over your attributes on **every** render and
+**silently discards a value that fails**, after which the default value takes
+its place (`wp-includes/class-wp-block-type.php:513-520`). Your
+write action then appears to succeed and does nothing. `validate-write` uses exactly
+that same function, so whatever it approves survives rendering.
 
-De kern van die toets is een waarneming, geen lijst. Een blok dat **zelfsluitend**
-is opgeslagen (`/-->`, dus lege `innerHTML`) heeft geen eigen markup die kan gaan
-afwijken — daar is elk attribuut vrij. Heeft het blok wél markup, dan is de vraag
-of de huidige waarde daar **letterlijk** in voorkomt.
+The core of that check is an observation, not a list. A block that is saved
+**self-closing** (`/-->`, so empty `innerHTML`) has no markup of its own that can
+drift — there, every attribute is free. If the block **does** have markup, the question is
+whether the current value appears in it **literally**.
 
-Waargenomen voorbeeld:
+Observed example:
 
 ```html
 <!-- wp:kadence/rowlayout {"uniqueID":"228_2b2d4e-25",...} -->
@@ -66,210 +66,210 @@ Waargenomen voorbeeld:
 <div class="wp-block-kadence-column kadence-column228_4ec348-d0">
 ```
 
-De rowlayout slaat **niets** op. De column bakt zijn `uniqueID` in de klasse.
-Diezelfde waarde wijzigen is dus op het ene blok risicoloos en op het andere een
-stille breuk. `get-raw-markup` laat dat zien; `validate-write` toetst het.
+The rowlayout saves **nothing**. The column bakes its `uniqueID` into the class.
+Changing that same value is therefore risk-free on one block and a
+silent break on the other. `get-raw-markup` shows this; `validate-write` checks it.
 
-**`is_dynamic` is géén veiligheidssignaal.** Elk Kadence-blok krijgt een
-render_callback, dus dat veld is bij állemaal `true`. Het zegt niets over
-validatie.
+**`is_dynamic` is not a safety signal.** Every Kadence block gets a
+render_callback, so that field is `true` on **all** of them. It says nothing about
+validation.
 
-Drie attributen hebben daarnaast een eigen faalpad, geen van drieën zichtbaar in
-de markup: `uniqueID` (leeg laat wrapper én CSS vervallen; botsing laat twee
-blokken hun CSS delen), `kbVersion` (op 1 schakelt de hele rendertak om), en
-`columns` op een rowlayout (klopt de layoutklasse niet meer met het aantal
-kinderen).
+In addition, three attributes have their own failure path, none of the three visible in
+the markup: `uniqueID` (empty drops both the wrapper and the CSS; a collision makes two
+blocks share their CSS), `kbVersion` (at 1 the entire render branch switches), and
+`columns` on a rowlayout (the layout class no longer matches the number of
+children).
 
-## Verwijzingen controleren
+## Checking references
 
-`kadence/check-bindings` loopt een post na op alles wat naar buiten wijst. Doe dat
-vóór je iets aanraadt over dynamische inhoud of een Query Loop, want **Kadence
-logt hier niets en toont geen foutmelding**:
+`kadence/check-bindings` goes through a post for everything that points outward. Do this
+before you recommend anything about dynamic content or a Query Loop, because **Kadence
+logs nothing here and shows no error message**:
 
-- een kapotte dynamische verwijzing laat het blok **stil verdwijnen**
-- een `fallback` maskeert dat actief
-- een ongeldig posttype in een Query Loop valt terug op `post` en toont
-  **blogberichten**
-- een taxonomie die aan geen enkel posttype hangt geeft een leeg filter
+- a broken dynamic reference makes the block **silently disappear**
+- a `fallback` actively masks that
+- an invalid post type in a Query Loop falls back to `post` and shows
+  **blog posts**
+- a taxonomy that is not attached to any post type produces an empty filter
 
-Let op dat dezelfde instelling op meerdere plekken staat. Een dynamische knop
-bewaart zijn koppeling zowel in `kadenceDynamic.link` als **nog een keer** als
-`[kb-dynamic field='…']`-shortcode in het `link`-attribuut zelf. Op deze site
-lopen die twee al uiteen. Wie er één aanpast, maakt het erger.
+Note that the same setting lives in multiple places. A dynamic button
+stores its binding both in `kadenceDynamic.link` and **once more** as a
+`[kb-dynamic field='…']` shortcode in the `link` attribute itself. On this site
+the two have already diverged. Whoever changes only one makes it worse.
 
-## De regel die er het meest toe doet
+## The rule that matters most
 
-**Trek nooit een conclusie over wat een blok kan uit een gefilterde lijst.**
+**Never draw a conclusion about what a block can do from a filtered list.**
 
-`describe-block` heeft `search`, en die matcht op de attribuut**naam**. Kadence
-bewaart responsive waarden vaak als array `[desktop, tablet, mobiel]` onder één
-naam. Het attribuut dat de mobiele richting van een Sectie bepaalt heet
-`direction`. Zoek je op `mobile`, dan vind je hem niet — en concludeer je ten
-onrechte dat een Sectie geen mobiele instellingen heeft. Die heeft er dertig.
+`describe-block` has `search`, and it matches on the attribute **name**. Kadence
+often stores responsive values as an array `[desktop, tablet, mobiel]` under one
+name. The attribute that determines the mobile direction of a Section is called
+`direction`. If you search for `mobile`, you will not find it — and you will wrongly
+conclude that a Section has no mobile settings. It has thirty.
 
-Gebruik in plaats daarvan `group` (`responsive`, `spacing`, `achtergrond`,
+Use `group` instead (`responsive`, `spacing`, `achtergrond`,
 `rand`, `typografie`, `kleur`, `link`, `afmeting`, `conditioneel`,
-`identiteit`), of haal alles op met `per_page: 100`. Het veld `groups` in het
-antwoord telt per groep over het héle blok, ook wat niet op deze pagina staat.
+`identiteit`), or fetch everything with `per_page: 100`. The `groups` field in the
+response counts per group across the **whole** block, including what is not on this page.
 
-## De conventies zijn niet uniform
+## The conventions are not uniform
 
-Dit is de tweede valkuil, en hij ziet eruit als de eerste.
+This is the second pitfall, and it looks like the first.
 
-| Blok | Hoe responsive is opgeslagen |
+| Block | How responsive values are stored |
 |---|---|
-| `kadence/column` | `direction`, `justifyContent`, `gutter` als array van 3 |
-| `kadence/advancedheading` | `fontSize` als array van 3, met `sizeType` voor de eenheid |
-| `kadence/tabs` | `tabWidth` als array van 3, maar `mobileLayout` en `tabletLayout` als losse strings |
-| `kadence/rowlayout` | `mobilePadding`, `tabletPadding`, `mobileLayout` als losse attributen |
+| `kadence/column` | `direction`, `justifyContent`, `gutter` as an array of 3 |
+| `kadence/advancedheading` | `fontSize` as an array of 3, with `sizeType` for the unit |
+| `kadence/tabs` | `tabWidth` as an array of 3, but `mobileLayout` and `tabletLayout` as separate strings |
+| `kadence/rowlayout` | `mobilePadding`, `tabletPadding`, `mobileLayout` as separate attributes |
 
-Er is dus geen regel die voor alle blokken geldt. Controleer per blok.
+So there is no rule that applies to all blocks. Check per block.
 
-## Invoegstandaarden: wat een nieuw blok hier krijgt
+## Insert defaults: what a new block gets here
 
-`get-global-styles` geeft onder `block_defaults` de site-brede standaarden per
-blok terug. Lees goed wat dat wel en niet is.
+`get-global-styles` returns the site-wide defaults per block under `block_defaults`.
+Read carefully what that is and what it is not.
 
-Deze optie gaat **uitsluitend naar de editor** — er is geen render-filter. Het is
-een invoegstandaard: bij een nieuw blok vult de editor die waarden in, en ze
-worden bij het opslaan in de markup geschreven. Een ontbrekend attribuut op een
-**bestaand** blok betekent dus gewoon de standaardwaarde uit `describe-block`.
+This option goes **exclusively to the editor** — there is no render filter. It is
+an insert default: for a new block the editor fills in those values, and they
+are written into the markup on save. A missing attribute on an
+**existing** block therefore simply means the default value from `describe-block`.
 
-Waar het wél voor dient: weten welke vorm iets op deze site hoort te krijgen.
-Staat er bijvoorbeeld `kadence/advancedheading: {htmlTag: "p"}`, dan is een nieuw
-"Geavanceerde tekst"-blok op die site standaard een alinea en geen kop. Dat is
-huisstijl, en het is nuttig als je iets voorstelt om te maken.
+What it **is** useful for: knowing what form something should take on this site.
+If, for example, it says `kadence/advancedheading: {htmlTag: "p"}`, then a new
+"Advanced Text" block on that site is a paragraph by default, not a heading. That is
+house style, and it is useful when you propose something to create.
 
-## Plaatsing en gegevensstroom zijn twee verschillende beperkingen
+## Placement and data flow are two different constraints
 
-Vier velden, en ze doen allemaal iets anders.
+Four fields, and each of them does something different.
 
-| Veld | Betekent |
+| Field | Means |
 |---|---|
-| `parent` | in welk blok dit blok DIRECT mag staan |
-| `ancestor` | onder welk blok het ergens moet hangen, hoe diep ook |
-| `uses_context` | welke gegevens het van een voorouder ontvangt |
-| `provides_context` | welke gegevens het aan zijn nakomelingen levert |
+| `parent` | which block this block may sit in DIRECTLY |
+| `ancestor` | which block it must hang under somewhere, however deep |
+| `uses_context` | which data it receives from an ancestor |
+| `provides_context` | which data it supplies to its descendants |
 
-Dat verschil verklaart iets dat anders raadselachtig is. De queryblokken —
-`query-filter`, `query-pagination`, `query-sort`, `query-result-count` — hebben
-`parent: [kadence/query, kadence/column, kadence/modal]` én
-`ancestor: [kadence/query]`. Ze mogen dus direct in een Sectie staan, maar
-alleen als die Sectie zelf onder een query hangt. **Daarom verschijnen ze in de
-editor pas zodra je in de Query Loop staat.** 29 van de 92 Kadence-blokken
-gebruiken `ancestor`.
+That difference explains something that is otherwise puzzling. The query blocks —
+`query-filter`, `query-pagination`, `query-sort`, `query-result-count` — have
+`parent: [kadence/query, kadence/column, kadence/modal]` **and**
+`ancestor: [kadence/query]`. So they may sit directly in a Section, but
+only if that Section itself hangs under a query. **That is why they only appear in the
+editor once you are inside the Query Loop.** 29 of the 92 Kadence blocks
+use `ancestor`.
 
-Twee blokken hebben wél `ancestor` maar géén `parent`:
-`kadence/navigation-link` en `kadence/off-canvas-trigger`. Op alleen `parent`
-filteren doet die ten onrechte doorgaan voor vrij plaatsbaar.
+Two blocks **do** have `ancestor` but **no** `parent`:
+`kadence/navigation-link` and `kadence/off-canvas-trigger`. Filtering on `parent` alone
+wrongly makes them pass as freely placeable.
 
-`uses_context` en `provides_context` gaan niet over plaatsing maar over
-gegevens: een query-card weet welke post hij rendert doordat `kadence/query`
-die context levert. Werkt dynamische inhoud in het ene blok wel en in het andere
-niet, kijk dan daar.
+`uses_context` and `provides_context` are not about placement but about
+data: a query-card knows which post it renders because `kadence/query`
+supplies that context. If dynamic content works in one block but not in another,
+look there.
 
-## Waar welke waarde staat
+## Where each value lives
 
-**Tekst staat in de markup, niet in de attributen.** `kadence/listitem`,
-`kadence/advancedheading` en `kadence/singlebtn` bewaren hun inhoud in de
-innerHTML. Wil je weten wát er staat, gebruik `include_text: true` op
-`inspect-post`. Containers leveren dan terecht niets op.
+**Text lives in the markup, not in the attributes.** `kadence/listitem`,
+`kadence/advancedheading` and `kadence/singlebtn` store their content in the
+innerHTML. If you want to know **what** it says, use `include_text: true` on
+`inspect-post`. Containers then rightly return nothing.
 
-**Of een blok verborgen is, staat in `metadata`.** Dat is de native
-verbergoptie van WordPress zelf — `blockVisibility` zit in
-`wp-includes/js/dist/block-editor.js` en komt in de Kadence-stack nergens voor.
-Hij geldt dus voor élk blok, niet alleen voor Kadence-blokken. Aan de attributen is dat niet te zien.
-`inspect-post` geeft `metadata` daarom standaard mee. In datzelfde veld staat
-`name` — dat is de naam die de lijstweergave in de editor toont.
+**Whether a block is hidden lives in `metadata`.** That is WordPress's own native
+hide option — `blockVisibility` lives in
+`wp-includes/js/dist/block-editor.js` and appears nowhere in the Kadence stack.
+So it applies to **every** block, not just Kadence blocks. You cannot see it in the attributes.
+That is why `inspect-post` returns `metadata` by default. The same field contains
+`name` — that is the name the list view in the editor shows.
 
-**Kleuren zijn verwijzingen.** `palette1` tot en met `palette15` wijzen naar het
-globale palet; vraag `get-global-styles` voor de hexwaarden. Let op dat het
-palet drie sets kent en dat `active` zegt welke geldt. En achtergrond staat niet
-overal op dezelfde plek: `bgColor` op `kadence/rowlayout`, `background` op
-`kadence/column`, en soms op het bovenliggende blok — bij een mega-menu kan hij
-op de `kadence/navigation-link` zelf staan.
+**Colors are references.** `palette1` through `palette15` point to the
+global palette; ask `get-global-styles` for the hex values. Note that the
+palette has three sets and that `active` says which one applies. And background is not
+stored in the same place everywhere: `bgColor` on `kadence/rowlayout`, `background` on
+`kadence/column`, and sometimes on the parent block — in a mega menu it can sit
+on the `kadence/navigation-link` itself.
 
-**Een ontbrekend attribuut betekent "niet ingesteld", niet "leeg".** `parse_blocks`
-geeft alleen wat expliciet is opgeslagen. Staat er geen `mobileLayout`, dan
-geldt de standaardwaarde uit `describe-block` — niet de waarde nul.
+**A missing attribute means "not set," not "empty."** `parse_blocks`
+returns only what is explicitly saved. If there is no `mobileLayout`, then
+the default value from `describe-block` applies — not the value zero.
 
-**`uniqueID` is `{postID}_{hash}`.** Een blok met `6_` ervoor komt uit post 6,
-ook als je het in een andere post tegenkomt: dat gebeurt bij herbruikbare
-onderdelen zoals headers en mega-menus.
+**`uniqueID` is `{postID}_{hash}`.** A block prefixed with `6_` comes from post 6,
+even if you come across it in another post: that happens with reusable
+parts such as headers and mega menus.
 
-## Niet alles staat in de blokken
+## Not everything lives in the blocks
 
-Dit is de valkuil die het duurst is om zelf te ontdekken.
+This is the pitfall that is most expensive to discover on your own.
 
-Een **Query Loop** is een `kadence_query`-post die via een `id`-attribuut in een
-pagina wordt opgenomen. Het blok `kadence/query` heeft precies zes attributen —
-`id`, `uniqueID`, `className`, `style` en twee GPEB-velden — en **geen daarvan
-gaat over de query**. Posttype, sortering, `meta_key`, aantal per pagina en de
-filters staan in post meta onder `_kad_query_query`. Vraag `get-post-meta` zodra
-de vraag is hoe iets is ingesteld in plaats van dat het er staat.
+A **Query Loop** is a `kadence_query` post that is included in a page through an `id`
+attribute. The `kadence/query` block has exactly six attributes —
+`id`, `uniqueID`, `className`, `style` and two GPEB fields — and **none of them
+is about the query**. Post type, sorting, `meta_key`, items per page and the
+filters live in post meta under `_kad_query_query`. Ask `get-post-meta` as soon as
+the question is how something is configured rather than whether it is there.
 
-Hetzelfde geldt voor `kadence_query_card` (`_kad_query_card_*`) en voor de
-Kadence-header. Deze objecten zijn los bewerkbaar in het beheer — Queries,
-Navigaties, Cards — en worden op meerdere plekken hergebruikt. Ga daarom nooit
-iets voorstellen aan zo'n object zonder eerst `find-usages` te draaien: dan weet
-je waar de wijziging nog meer landt.
+The same applies to `kadence_query_card` (`_kad_query_card_*`) and to the
+Kadence header. These objects can be edited separately in the admin — Queries,
+Navigation, Cards — and are reused in multiple places. So never
+propose anything for such an object without running `find-usages` first: then you know
+where else the change lands.
 
-## Query Loops, en waarom ze anders zijn dan ze lijken
+## Query Loops, and why they are different than they look
 
-Een Query Loop is géén blok met instellingen. Het is een **`kadence_query`-post**
-die via een `id`-attribuut in een pagina wordt opgenomen:
+A Query Loop is **not** a block with settings. It is a **`kadence_query` post**
+that is included in a page through an `id` attribute:
 
 ```html
 <!-- wp:kadence/query {"uniqueID":"420_9c962e-39","id":1456} /-->
 ```
 
-Daaruit volgen vier dingen die je moet weten voordat je iets voorstelt.
+Four things follow from that, which you need to know before you propose anything.
 
-**De instellingen staan in post meta, niet in het blok.** Het blok
-`kadence/query` heeft zes attributen en geen daarvan gaat over de query. Alles —
-posttype, sortering, `meta_key`, aantal per pagina — staat in
-`_kad_query_query`. Vraag `get-post-meta`.
+**The settings live in post meta, not in the block.** The
+`kadence/query` block has six attributes and none of them is about the query. Everything —
+post type, sorting, `meta_key`, items per page — lives in
+`_kad_query_query`. Ask `get-post-meta`.
 
-De toegestane waarden voor `orderBy` zijn `date`, `title`, `author`,
-`menu_order` en `meta_value`. Bij `meta_value` vullen `orderMetaKey` en
-`orderMetaKeyType` de `meta_key` en `meta_type` van de onderliggende WP_Query.
+The allowed values for `orderBy` are `date`, `title`, `author`,
+`menu_order` and `meta_value`. With `meta_value`, `orderMetaKey` and
+`orderMetaKeyType` fill the `meta_key` and `meta_type` of the underlying WP_Query.
 
-**Dezelfde query op twee pagina's is één object.** Kopieer je een Query Loop
-naar een andere pagina en pas je daar de filters aan, dan verandert hij op beide
-plekken. Een afwijkende weergave vraagt een nieuwe `kadence_query`. Dat is een
-beperking van het model, geen instelling die je over het hoofd ziet. Draai
-daarom `find-usages` vóór je iets voorstelt aan een bestaande query.
+**The same query on two pages is one object.** If you copy a Query Loop
+to another page and change the filters there, it changes in both
+places. A different display requires a new `kadence_query`. That is a
+limitation of the model, not a setting you are overlooking. So run
+`find-usages` before you propose anything for an existing query.
 
-**Filters en paginering zijn losse blokken**, geen instellingen van het
-queryblok. `kadence/query-filter`, `-filter-checkbox`, `-filter-search`,
-`-filter-reset`, `kadence/query-pagination`, `kadence/query-sort` en
-`kadence/query-result-count` staan als eigen blokken in de markup van de
-query-post. Hun configuratie staat daarnaast óók in `_kad_query_facets`, per
-facet als JSON met de `uniqueID` van het bijbehorende blok erin.
+**Filters and pagination are separate blocks**, not settings of the
+query block. `kadence/query-filter`, `-filter-checkbox`, `-filter-search`,
+`-filter-reset`, `kadence/query-pagination`, `kadence/query-sort` and
+`kadence/query-result-count` sit as blocks of their own in the markup of the
+query post. Their configuration is **also** stored in `_kad_query_facets`, per
+facet as JSON containing the `uniqueID` of the corresponding block.
 
-**Er is één card per query.** `kadence_query_card` bepaalt de opmaak van een
-resultaat en je kunt er maar één vorm in kwijt. Variatie loopt via dynamische
-inhoud en per element wel of niet tonen — niet via een tweede card.
+**There is one card per query.** `kadence_query_card` determines the layout of a
+result, and it can hold only one form. Variation goes through dynamic
+content and showing or hiding individual elements — not through a second card.
 
-**Een facet op een taxonomie die niet aan het posttype hangt toont niets.**
-Controleer dat voordat je concludeert dat een filter stuk is. De taxonomie moet
-daadwerkelijk bij het posttype geregistreerd staan.
+**A facet on a taxonomy that is not attached to the post type shows nothing.**
+Check that before you conclude that a filter is broken. The taxonomy must
+actually be registered to the post type.
 
-**Kadence toont alleen gepubliceerde items.** Een taxonomie waaraan nog niets
-gekoppeld is verschijnt daarom niet in de taxonomielijst, ook al bestaat hij en
-heeft hij termen. Staan alle termen op `count: 0`, dan is dat het signaal — en
-meestal betekent het dat de taxonomie aan het verkeerde posttype hangt of dat de
-items hun term nog niet dragen. Zeg dan niet "de taxonomie bestaat niet".
+**Kadence shows only published items.** A taxonomy that nothing is
+assigned to yet therefore does not appear in the taxonomy list, even though it exists and
+has terms. If all terms are at `count: 0`, that is the signal — and
+it usually means the taxonomy is attached to the wrong post type or that the
+items do not carry their term yet. In that case, do not say "the taxonomy does not exist."
 
-**Welke posttypes Kadence aanbiedt** wordt bepaald door `public => true` en
-`show_in_rest => true` (`kadence-blocks-pro/includes/init.php:195-201`), níet
-door `exclude_from_search`. Die laatste vlag bepaalt alleen welke posttypes de
-frontend-filters meenemen.
+**Which post types Kadence offers** is determined by `public => true` and
+`show_in_rest => true` (`kadence-blocks-pro/includes/init.php:195-201`), **not**
+by `exclude_from_search`. That last flag only determines which post types the
+frontend filters include.
 
-## Dynamische inhoud: twee mechanismen die op elkaar lijken
+## Dynamic content: two mechanisms that look alike
 
-**Blokken die normaal statisch zijn** — knoppen, afbeeldingen, koppen — krijgen
-een `kadenceDynamic`-object waarin per eigenschap staat of die dynamisch wordt:
+**Blocks that are normally static** — buttons, images, headings — get
+a `kadenceDynamic` object that states, per property, whether it becomes dynamic:
 
 ```json
 "kadenceDynamic": {
@@ -278,156 +278,156 @@ een `kadenceDynamic`-object waarin per eigenschap staat of die dynamisch wordt:
 }
 ```
 
-Dat attribuut staat in géén enkele `block.json` en ook niet in het live register:
-Kadence Blocks Pro leest het bij het renderen uit de opgeslagen attributen. Je
-ziet het dus wel met `inspect-post`, maar nooit met `describe-block`.
+That attribute is in **no** `block.json` at all, and not in the live registry either:
+Kadence Blocks Pro reads it from the saved attributes at render time. So you
+do see it with `inspect-post`, but never with `describe-block`.
 
-**Blokken die er speciaal voor zijn** — `kadence/dynamichtml`,
-`kadence/dynamiclist` — hebben géén `kadenceDynamic`. Hun hele inhoud ís de
-koppeling, dus die staat in gewone attributen:
+**Blocks that exist specifically for this** — `kadence/dynamichtml`,
+`kadence/dynamiclist` — have **no** `kadenceDynamic`. Their entire content **is** the
+binding, so it lives in ordinary attributes:
 
 ```
 source · field · metaField · customMeta · relate · relcustom
 wrapTag · stripHTML · limitWords · maxWords · showEllipsis · showAllFields
 ```
 
-Het formaat van `field` is `bron|veld`, bijvoorbeeld `post|post_title`. ACF- en
-andere metavelden lopen via `metaField` of `customMeta`; `relate` en `relcustom`
-wijzen naar een gerelateerde post — dat is de route als je op een item iets van
-zijn ouder wil tonen.
+The format of `field` is `bron|veld` (source|field), for example `post|post_title`. ACF and
+other meta fields go through `metaField` or `customMeta`; `relate` and `relcustom`
+point to a related post — that is the route if you want to show something from
+an item's parent on that item.
 
-Zoeken op "dynamic" in `describe-block` levert bij deze blokken **niets** op. De
-koppeling zit in `source` en `field`, en die woorden bevatten dat niet.
+Searching for "dynamic" in `describe-block` returns **nothing** for these blocks. The
+binding lives in `source` and `field`, and those words do not contain it.
 
-### Waarom een card wél herbruikbaar is
+### Why a card **is** reusable
 
-Een `kadence_query_card` is een gedeeld object: dezelfde card in twee queries is
-één post. Dat is meestal een kenmerk en geen risico, want een koppeling als
-`post|post_title` blijft betekenisvol op elk posttype.
+A `kadence_query_card` is a shared object: the same card in two queries is
+one post. That is usually a feature and not a risk, because a binding such as
+`post|post_title` remains meaningful on every post type.
 
-Het wordt pas een probleem als een koppeling typegebonden is — een `metaField`
-of `customMeta` naar een veld dat maar op één posttype bestaat, of een
-`relate`/`relcustom` naar een relatie die er elders niet is. Kijk dus naar de
-kóppelingen voordat je waarschuwt voor hergebruik, niet naar het feit dát hij
-gedeeld wordt.
+It only becomes a problem when a binding is type-bound — a `metaField`
+or `customMeta` pointing to a field that exists on only one post type, or a
+`relate`/`relcustom` pointing to a relationship that does not exist elsewhere. So look at the
+**bindings** before you warn about reuse, not at the fact **that** it is
+shared.
 
-### Waar de gegevens vandaan komen
+### Where the data comes from
 
-`kadence/dynamichtml` heeft `uses_context: postId, queryId,
+`kadence/dynamichtml` has `uses_context: postId, queryId,
 kadence/dynamicSource, kadence/repeaterRowData, kadence/repeaterRow`. `postId` is
-de post die de query op dat moment rendert. Daarom werkt zo'n blok binnen een
-query en daarbuiten niet: zonder die context weet het niet welke post het is.
-Werkt dynamische inhoud ergens niet, kijk dan eerst of de context er wel is.
+the post the query is rendering at that moment. That is why such a block works inside a
+query and not outside it: without that context it does not know which post it is.
+If dynamic content does not work somewhere, first check whether the context is there.
 
-## Context is niet altijd van de blokmaker
+## Context does not always come from the block's author
 
-`uses_context` uit het live register bevat ook sleutels die andere plugins er
-tijdens het draaien bij zetten. Gravity Perks Entry Blocks hangt zijn
-entry-context via het filter `get_block_type_uses_context` aan **élk** niet-GPEB
-blok. Op `kadence/dynamichtml` zie je daardoor twaalf sleutels, waarvan er vijf
-van Kadence zijn en zeven van GravityWiz.
+`uses_context` from the live registry also contains keys that other plugins add
+at runtime. Gravity Perks Entry Blocks attaches its
+entry context through the `get_block_type_uses_context` filter to **every** non-GPEB
+block. On `kadence/dynamichtml` you therefore see twelve keys, of which five
+are Kadence's and seven are GravityWiz's.
 
-`describe-block` splitst dat: **`uses_context_own`** komt uit de eigen
-`block.json`, **`uses_context_added`** is er door iets anders bij gezet.
-Concludeer niet dat Kadence iets met entry blocks doet omdat die sleutels er
-staan — dat is GPEB dat zichzelf breed beschikbaar maakt.
+`describe-block` splits that: **`uses_context_own`** comes from the block's own
+`block.json`, **`uses_context_added`** was added by something else.
+Do not conclude that Kadence does anything with entry blocks because those keys are
+there — that is GPEB making itself broadly available.
 
-## Zichtbaarheid zit op twee niveaus
+## Visibility lives on two levels
 
-Dit verschilt per blok en is een veelgemaakte fout.
+This differs per block and is a common mistake.
 
-| Blok | Zichtbaarheidsopties |
+| Block | Visibility options |
 |---|---|
-| `kadence/rowlayout` | `loggedIn`, `loggedOut` én `vsdesk`, `vstablet`, `vsmobile` |
-| `kadence/column` (Sectie) | alleen `vsdesk`, `vstablet`, `vsmobile` |
+| `kadence/rowlayout` | `loggedIn`, `loggedOut` **and** `vsdesk`, `vstablet`, `vsmobile` |
+| `kadence/column` (Section) | only `vsdesk`, `vstablet`, `vsmobile` |
 
-Verbergen op grond van inlogstatus kan dus **alleen op een Row Layout**. Moet
-een Sectie voor uitgelogde bezoekers verdwijnen, dan hoort daar een Row Layout
-omheen. Beide vallen in `describe-block` onder de groep `conditioneel`.
+Hiding based on login status is therefore **only possible on a Row Layout**. If
+a Section needs to disappear for logged-out visitors, it needs a Row Layout
+around it. In `describe-block`, both fall under the `conditioneel` group.
 
-## Werkwijzen
+## Workflows
 
-**"Hoe is deze pagina opgebouwd?"**
-`find-post` → `inspect-post` met `kadence_only: true`. Voeg `include_text: true`
-toe als de vraag over inhoud gaat in plaats van over opmaak.
+**"How is this page built?"**
+`find-post` → `inspect-post` with `kadence_only: true`. Add `include_text: true`
+if the question is about content rather than layout.
 
-**"Waarom ziet A er anders uit dan B?"**
-Gebruik `diff-blocks`. Zelf attributen selecteren en vergelijken is
-onbetrouwbaar: je mist wat je niet hebt opgevraagd. Een `null` in het antwoord
-betekent "niet ingesteld bij deze", dus daar geldt de standaardwaarde.
+**"Why does A look different from B?"**
+Use `diff-blocks`. Selecting and comparing attributes yourself is
+unreliable: you miss what you did not request. A `null` in the response
+means "not set on this one," so the default value applies there.
 
-**"Wat moet ik aanpassen voor mobiel?"**
-Eerst `inspect-post` voor de structuur, dan `describe-block` met
-`group: "responsive"` op het blok in kwestie, dan gericht `inspect-post` met die
-attribuutnamen om de huidige waarden te zien. Vergelijk de mobiele waarde met de
-desktopwaarde — een mobiele padding die groter is dan de desktopvariant is
-bijna altijd onbedoeld.
+**"What do I need to change for mobile?"**
+First `inspect-post` for the structure, then `describe-block` with
+`group: "responsive"` on the block in question, then a targeted `inspect-post` with those
+attribute names to see the current values. Compare the mobile value with the
+desktop value — a mobile padding that is larger than the desktop variant is
+almost always unintended.
 
-**"Bouw een Query Loop / pas er een aan"**
-`list-entities` met `post_types: ["kadence_query"]` voor de bestaande queries,
-dan `find-usages` op elke kandidaat om te zien welke daadwerkelijk in gebruik is
-— een verlaten query als model nemen kopieert een vormtaal die niemand meer
-ziet. Daarna `get-post-meta` op de query die wél gebruikt wordt, en
-`inspect-post` op de query-post voor de blokopbouw eromheen.
+**"Build a Query Loop / change one"**
+`list-entities` with `post_types: ["kadence_query"]` for the existing queries,
+then `find-usages` on each candidate to see which one is actually in use
+— taking an abandoned query as a model copies a design language that nobody
+sees anymore. Then `get-post-meta` on the query that **is** in use, and
+`inspect-post` on the query post for the block structure around it.
 
-Bij het aanmaken toont Kadence een keuzescherm met presets (no filters, simple
+When you create one, Kadence shows a selection screen with presets (no filters, simple
 filters, advanced filters, sidebar left, sidebar right, sidebar left single).
-Die keuze bepaalt welke filterblokken er meteen in staan; hij is over te slaan.
-De titel die daarna gevraagd wordt is intern en wordt de titel van de
-`kadence_query`-post.
+That choice determines which filter blocks are included right away; it can be skipped.
+The title that is asked for afterwards is internal and becomes the title of the
+`kadence_query` post.
 
-**"Welke kleur is dit?"**
-`get-global-styles`, en kijk naar `active` om te weten welke van de drie
-paletsets geldt.
+**"What color is this?"**
+`get-global-styles`, and look at `active` to know which of the three
+palette sets applies.
 
-## Row Layout tegenover Sectie
+## Row Layout versus Section
 
-Beide zijn containers en een pagina gebruikt ze vaak door elkaar.
+Both are containers, and a page often mixes them.
 
-`kadence/rowlayout` regelt kolomaantallen, `collapseOrder` en hoe kolommen op
-tablet en mobiel opbreken. `kadence/column` (in de editor "Sectie") is een
-flex-container met `direction`, `justifyContent`, `gutter`, `flexBasis` en
-`flexGrow`, elk per breakpoint.
+`kadence/rowlayout` handles column counts, `collapseOrder` and how columns break
+on tablet and mobile. `kadence/column` ("Section" in the editor) is a
+flex container with `direction`, `justifyContent`, `gutter`, `flexBasis` and
+`flexGrow`, each per breakpoint.
 
-Zit iets niet goed op mobiel, kijk dan éérst welke van de twee het omhullende
-blok is. Een geneste Sectie los je op met `direction`, een Row Layout met
+If something is off on mobile, **first** check which of the two is the enclosing
+block. A nested Section you fix with `direction`, a Row Layout with
 `mobileLayout`.
 
-## Blokken die niet in het register staan
+## Blocks that are not in the registry
 
-`kadence/pane`, `kadence/tab`, `kadence/countdown-inner` en
-`kadence/countdown-timer` registreert Kadence alleen in JavaScript. `describe-block`
-valt voor die vier terug op de `block.json` op schijf en zet
-`registration: "editor-only"` in het antwoord. Ze bestaan dus wel degelijk; je
-komt ze in elke accordeon tegen.
+Kadence registers `kadence/pane`, `kadence/tab`, `kadence/countdown-inner` and
+`kadence/countdown-timer` only in JavaScript. For those four, `describe-block`
+falls back to the `block.json` on disk and sets
+`registration: "editor-only"` in the response. So they definitely do exist; you
+come across them in every accordion.
 
-## Meer dan één blok opmaken: `style-blocks`
+## Styling more than one block: `style-blocks`
 
-`set-attributes` doet één blok per aanroep. Zodra je een hele sectie opmaakt is
-dat de verkeerde tool, en niet uit gemakzucht: een hero opmaken raakt de rij, de
-kolom, twee tekstblokken, de knoppenrij en de knop. Dat is met `validate-write`
-plus `set-attributes` veertien aanroepen — en bij elke tussenstap verandert
-`post_modified`, dus **elk volgend token vervalt** en je moet opnieuw toetsen.
+`set-attributes` handles one block per call. As soon as you style a whole section, it is
+the wrong tool, and not out of laziness: styling a hero touches the row, the
+column, two text blocks, the button row and the button. With `validate-write`
+plus `set-attributes` that is fourteen calls — and every intermediate step changes
+`post_modified`, so **every subsequent token expires** and you have to check again.
 
-`style-blocks` neemt een lijst van `{unique_id, attributes}` en werkt in twee
-stappen: zonder token wordt elk blok afzonderlijk getoetst (letterlijk met
-`validate_write()`, dus exact dezelfde controles), met token gaat alles in één
-opslag en dus één revisie.
+`style-blocks` takes a list of `{unique_id, attributes}` and works in two
+steps: without a token, each block is checked individually (literally with
+`validate_write()`, so exactly the same checks); with a token, everything goes into a single
+save and therefore a single revision.
 
-**Alles of niets.** Is één blok `blokkeer` of `riskant`, dan komt er geen token
-en wordt er niets geschreven. Half doorvoeren laat de pagina achter in een staat
-die niemand heeft bedoeld en die niet met één revisie terug te draaien is. Haal
-dat ene blok uit de lijst en doe het apart.
+**All or nothing.** If one block is `blokkeer` or `riskant`, no token comes back
+and nothing is written. Applying it halfway leaves the page in a state
+nobody intended and that cannot be rolled back with a single revision. Take
+that one block out of the list and do it separately.
 
-Een blok dat twee keer in de lijst staat wordt geweigerd — anders overschrijft
-de tweede vermelding stil de eerste.
+A block that appears twice in the list is rejected — otherwise the
+second entry silently overwrites the first.
 
-Vuistregel: **één blok → `set-attributes`** (met `preview-write` ertussen als je
-de markup wil zien). **Meer dan één → `style-blocks`.**
+Rule of thumb: **one block → `set-attributes`** (with `preview-write` in between if you
+want to see the markup). **More than one → `style-blocks`.**
 
-## Tekst schrijven is een andere ability dan attributen schrijven
+## Writing text is a different ability from writing attributes
 
-De tekst van een kop of alinea staat **niet in de attributen**. Hij staat in de
+The text of a heading or paragraph is **not in the attributes**. It is in the
 innerHTML:
 
 ```html
@@ -437,113 +437,113 @@ innerHTML:
 <!-- /wp:kadence/advancedheading -->
 ```
 
-`kadence/advancedheading` heeft wel een attribuut `content`, maar dat heeft
-`source: html` — het wordt uit de markup gelezen, niet uit het blokcommentaar.
-Schrijf je het naar het commentaar, dan gebeurt er niets. `validate-write` geeft
-daar `blokkeer` op, met precies die reden.
+`kadence/advancedheading` does have a `content` attribute, but it has
+`source: html` — it is read from the markup, not from the block comment.
+If you write it to the comment, nothing happens. `validate-write` returns
+`blokkeer` for that, with exactly that reason.
 
-Gebruik daarvoor **`kadence/set-text`**. Die werkt in **twee** stappen, niet in
-drie:
+Use **`kadence/set-text`** for this. It works in **two** steps, not
+three:
 
-1. Roep hem aan **zonder token**. Je krijgt `before`, `after` en een token
-   terug, en er wordt niets opgeslagen.
-2. Roep hem opnieuw aan **met dat token** om te schrijven.
+1. Call it **without a token**. You get back `before`, `after` and a token,
+   and nothing is saved.
+2. Call it again **with that token** to write.
 
-Een aparte `validate`-stap zou niets toevoegen: er is geen schema waartegen je
-een tekst kunt toetsen, dus de enige zinvolle controle is de markup lezen.
+A separate `validate` step would add nothing: there is no schema to check
+a text against, so the only meaningful check is reading the markup.
 
-`set-text` vervangt uitsluitend het deel tussen de buitenste tag en laat die tag
-letterlijk staan. Dat is geen netheid maar noodzaak: die klassen en dat
-`data-kb-block` worden door `save()` opnieuw opgebouwd uit de attributen, en
-wijkt de opgeslagen markup daarvan af, dan meldt Gutenberg bij het openen "deze
-blokinhoud is onverwacht gewijzigd". Hij weigert daarom bij een blok met
-kindblokken, bij een innerHTML die niet precies één omhullend element is, en bij
-een lege tekst.
+`set-text` replaces only the part inside the outermost tag and leaves that tag
+exactly as it is. That is not tidiness but necessity: those classes and that
+`data-kb-block` are rebuilt by `save()` from the attributes, and
+if the saved markup deviates from that, Gutenberg reports "this
+block contains unexpected or invalid content" on open. That is why it refuses a block with
+child blocks, an innerHTML that is not exactly one enclosing element, and
+empty text.
 
-Een `kadence/listitem` is de uitzondering op "tussen de buitenste tag": daar zit
-de tekst in `<span class="kt-svg-icon-list-text">`, met het icoon en eventueel een
-`<a class="kt-svg-icon-link">` eromheen. `set-text` vervangt daar alleen de
-inhoud van die span. Ontbreekt de span — markup die al eens is platgeslagen —
-dan weigert hij; herbouw het item dan met `replace-block`.
+A `kadence/listitem` is the exception to "inside the outermost tag": there
+the text sits in `<span class="kt-svg-icon-list-text">`, with the icon and possibly an
+`<a class="kt-svg-icon-link">` around it. There, `set-text` replaces only the
+content of that span. If the span is missing — markup that has been flattened at some point —
+it refuses; in that case rebuild the item with `replace-block`.
 
-HTML in de tekst overleeft alleen als opmaaktag: `strong`, `em`, `b`, `i`, `u`,
-`br`, `sub`, `sup`, `del`, `code`, `mark`, `span` en `a`. `mark` staat er bewust
-in — dat is waar Kadence Advanced Highlight mee werkt, en die zou anders bij elke
-tekstwijziging sneuvelen. Wat verwijderd is staat in `notes`.
+HTML in the text survives only as a formatting tag: `strong`, `em`, `b`, `i`, `u`,
+`br`, `sub`, `sup`, `del`, `code`, `mark`, `span` and `a`. `mark` is included deliberately
+— that is what Kadence Advanced Highlight works with, and it would otherwise break on every
+text change. Whatever was removed is listed in `notes`.
 
-## metadata en lock zijn echt, ook al staan ze in geen enkel schema
+## metadata and lock are real, even though they are in no schema
 
-`metadata` draagt de **bloknaam** (wat je in de lijstweergave ziet) en de
-zichtbaarheidsschakelaar; `lock` het slotje tegen verplaatsen of verwijderen.
-Allebei van WordPress zelf, allebei afwezig in de `block.json` van Kadence.
+`metadata` carries the **block name** (what you see in the list view) and the
+visibility toggle; `lock` carries the padlock against moving or removing.
+Both come from WordPress itself, and both are absent from Kadence's `block.json`.
 
-Dat heeft op 11-09-2026 een bloknaam gekost: een schrijfactie op pagina 1471
-slaagde, en de naam "Hero" van de rij was daarna weg omdat de normalisatie het
-attribuut als "onbekend" wegfilterde. Sinds 1.2.0 worden ze ongemoeid
-doorgegeven en staan ze achteraan in het commentaar, waar de editor ze ook
-neerzet.
+On 11-09-2026 that cost a block name: a write action on page 1471
+succeeded, and afterwards the row's name "Hero" was gone because normalization filtered the
+attribute out as "unknown." Since 1.2.0 they are passed through untouched
+and placed at the end of the comment, where the editor also
+puts them.
 
-Je kunt ze ook zelf zetten: `validate-write` geeft er `ok` op met een notitie
-erbij, zodat een naam die door een eerdere versie is weggevallen te herstellen
-is. Er valt niets te toetsen — het zijn geen Kadence-attributen, dus geen render
-hangt ervan af — maar dat betekent ook dat een verkeerde sleutel nergens opvalt.
-Controleer de vorm dus zelf: `metadata` verwacht `{"name":"Hero"}`.
+You can also set them yourself: `validate-write` returns `ok` for them with a note
+attached, so that a name lost to an earlier version can be
+restored. There is nothing to check — they are not Kadence attributes, so no render
+depends on them — but that also means a wrong key goes unnoticed.
+So check the shape yourself: `metadata` expects `{"name":"Hero"}`.
 
-Twee dingen volgen daaruit. Lees de `notes` van elke schrijfactie — daar staat
-letterlijk wat er is weggelaten en waarom. En zet bij een blok met een naam die
-naam expliciet mee als je twijfelt of hij er nog staat; `inspect-post` geeft
-`metadata` standaard mee, dus je kunt het vooraf zien.
+Two things follow from that. Read the `notes` of every write action — they state
+literally what was left out and why. And for a block with a name, include that
+name explicitly if you are unsure whether it is still there; `inspect-post` returns
+`metadata` by default, so you can see it beforehand.
 
-## Een nieuwe sectie bouwen: niet zelf markup schrijven
+## Building a new section: do not write markup yourself
 
-Verzin geen blokmarkup. Vraag `kadence/list-recipes` welke sjablonen er zijn en
-laat `kadence/generate-section` hem bouwen.
+Do not invent block markup. Ask `kadence/list-recipes` which templates exist and
+let `kadence/generate-section` build it.
 
-De reden is niet gemak maar correctheid. Kadence bakt het `uniqueID` van een
-blok in zijn eigen klassenamen — bij `advancedheading` zelfs twee keer, in de
-klasse én in `data-kb-block` — en de JSON in het blokcommentaar wordt door
-WordPress met eigen vlaggen gecodeerd, waarbij een dubbele min `\u002d\u002d`
-wordt omdat hij anders het HTML-commentaar zou afsluiten. Met de hand geschreven
-markup wijkt daar gegarandeerd van af, en dat zie je niet aan het resultaat: het
-blok verschijnt, maar zonder zijn CSS.
+The reason is not convenience but correctness. Kadence bakes a
+block's `uniqueID` into its own class names — for `advancedheading` even twice, in the
+class **and** in `data-kb-block` — and the JSON in the block comment is encoded by
+WordPress with its own flags, where a double hyphen becomes `\u002d\u002d`
+because it would otherwise close the HTML comment. Hand-written
+markup is guaranteed to deviate from that, and you cannot see it in the result: the
+block appears, but without its CSS.
 
-De volgorde is:
+The order is:
 
-1. `list-recipes` — welke sjablonen, welke slots
-2. `generate-section` met `post_id` — bouwt en controleert, slaat niets op,
-   geeft markup plus een token
-3. `insert-blocks` met dat token — plaatst het, op `append`, `prepend`, of met
+1. `list-recipes` — which templates, which slots
+2. `generate-section` with `post_id` — builds and checks, saves nothing,
+   returns markup plus a token
+3. `insert-blocks` with that token — places it, at `append`, `prepend`, or with
    `position: after`/`before` plus `relative_to`
 
-`post_id` is bij stap 2 verplicht omdat de `uniqueID`s uniek moeten zijn binnen
-de post waar de sectie in landt. De bezette IDs van die post worden opgehaald en
-vermeden.
+`post_id` is required in step 2 because the `uniqueID`s must be unique within
+the post where the section lands. That post's occupied IDs are fetched and
+avoided.
 
-Twee controles die je niet kunt overslaan. De gebouwde markup wordt geparsed en
-opnieuw geserialiseerd, en komt daar niet identiek uit, dan krijg je een fout in
-plaats van markup — dan zou WordPress hem bij het opslaan hebben herschreven.
-En `insert-blocks` weigert te schrijven als er door de invoeging een bestaand
-`uniqueID` zou verdwijnen of een dubbele zou ontstaan.
+Two checks you cannot skip. The built markup is parsed and
+re-serialized, and if it does not come out identical, you get an error instead
+of markup — otherwise WordPress would have rewritten it on save.
+And `insert-blocks` refuses to write if the insertion would make an existing
+`uniqueID` disappear or create a duplicate.
 
-### Past het ontwerp in geen sjabloon: `recipe: "custom"`
+### If the design fits no template: `recipe: "custom"`
 
-De vier sjablonen dekken vier vormen. Een echt ontwerp heeft er meer — een hero
-met een label boven de kop, een sectie met vijf gekleurde balken, drie kolommen
-waarvan er één een afwijkende achtergrond heeft. Dan geef je de structuur zelf
-op via `tree`.
+The four templates cover four shapes. A real design has more — a hero
+with a label above the heading, a section with five colored bars, three columns
+of which one has a different background. In that case you specify the structure yourself
+through `tree`.
 
-Bouw wat bij elkaar hoort in één keer. Sinds 1.7.0 kan er ook achteraf iets in
-een bestaande container: `insert-blocks` en `duplicate-blocks` kennen
-`position: "inside"` met de `uniqueID` van die container. Dat is de enige manier
-om bijvoorbeeld een gekopieerde accordeon in een kolom te krijgen, binnen de
-achtergrond en de contentbreedte van die rij — een blok op het hoogste niveau
-staat daarbuiten.
+Build what belongs together in one go. Since 1.7.0 you can also add something afterwards into
+an existing container: `insert-blocks` and `duplicate-blocks` support
+`position: "inside"` with the `uniqueID` of that container. That is the only way
+to get, for example, a copied accordion into a column, within the
+background and content width of that row — a block at the top level
+sits outside of them.
 
-Een zelfsluitend blok heeft geen binnenkant en wordt geweigerd: een Row Layout
-zonder eigen markup of een knop kan geen kindblokken dragen.
+A self-closing block has no inside and is rejected: a Row Layout
+without markup of its own, or a button, cannot hold child blocks.
 
-Elke knoop is `{block, attrs, tag, text}` of `{block, attrs, children}` — tekst
-en kinderen samen wordt geweigerd, want de tekst zou de kinderen overschrijven.
+Each node is `{block, attrs, tag, text}` or `{block, attrs, children}` — text
+and children together is rejected, because the text would overwrite the children.
 
 ```json
 [{"block": "kadence/rowlayout", "attrs": {"bgColor": "palette1"},
@@ -556,511 +556,510 @@ en kinderen samen wordt geweigerd, want de tekst zou de kinderen overschrijven.
   ]}]
 ```
 
-Wat vastligt verandert niet: de wrapper-markup komt uit dezelfde afgelezen
-tabel, de `uniqueID`s worden hier uitgedeeld (geef ze dus niet zelf mee), elk
-attribuut wordt getoetst zoals `validate-write` dat doet, en de parse- en
-serialiseerrondgang blijft de eindcontrole. Alleen blokken waarvan de vorm
-bekend is; voor de rest is `duplicate-blocks` de weg.
+What is fixed does not change: the wrapper markup comes from the same observed
+table, the `uniqueID`s are assigned here (so do not supply them yourself), every
+attribute is checked the way `validate-write` does it, and the parse-and-
+serialize round trip remains the final check. Only blocks whose shape is
+known; for the rest, `duplicate-blocks` is the way.
 
-`tag` en `level` worden automatisch op elkaar afgestemd. Dat is nodig omdat
-`advancedheading` zijn tag uit twee attributen bepaalt: `htmlTag` staat op
-`"heading"` en valt dan terug op `level`. Schrijf je een `h3` in de markup maar
-blijft `level` op 2, dan rendert Kadence een `h2` terwijl er een `h3` staat —
-precies de stille mismatch die Gutenberg later opmerkt.
+`tag` and `level` are automatically aligned with each other. That is necessary because
+`advancedheading` determines its tag from two attributes: `htmlTag` is set to
+`"heading"` and then falls back to `level`. If you write an `h3` in the markup but
+`level` stays at 2, Kadence renders an `h2` while the markup says `h3` —
+exactly the silent mismatch that Gutenberg notices later.
 
-**De sjablonen leveren structuur, geen opmaak.** Geen kleuren, geen marges, geen
-lettergroottes. Dat is opzet: die komen uit de globale stijlen, en een verzonnen
-waarde is ruis die iemand later moet opsporen. Wil je de sectie opmaken, doe dat
-erna met `set-attributes` op de `uniqueID`s die `generate-section` teruggaf.
+**The templates supply structure, not styling.** No colors, no margins, no
+font sizes. That is deliberate: those come from the global styles, and an invented
+value is noise that someone has to track down later. If you want to style the section, do it
+afterwards with `set-attributes` on the `uniqueID`s that `generate-section` returned.
 
-Staat er al iets op de pagina dat lijkt op wat je moet bouwen, gebruik dan
-`duplicate-blocks` in plaats van een sjabloon — dan erf je de opmaak die er al
-is, in plaats van hem opnieuw te moeten zetten.
+If the page already has something that resembles what you need to build, use
+`duplicate-blocks` instead of a template — then you inherit the styling that is already
+there, instead of having to set it again.
 
-## Kopiëren: de id_map moet mee
+## Copying: the id_map has to come along
 
-`duplicate-blocks` geeft in de droogloop drie dingen terug: de markup, een
-**`id_map`** van oude naar nieuwe `uniqueID`, en een token. Bij het schrijven
-(`dry_run: false`) moet je die `id_map` **letterlijk teruggeven**, net zoals je
-bij `insert-blocks` de markup teruggeeft.
+In the dry run, `duplicate-blocks` returns three things: the markup, an
+**`id_map`** from old to new `uniqueID`, and a token. When writing
+(`dry_run: false`) you must **return that `id_map` literally**, just as you
+return the markup with `insert-blocks`.
 
-Dat is geen formaliteit. Zonder die kaart zou de ability verse ID's genereren en
-dus iets anders schrijven dan je hebt goedgekeurd — en tot 1.3.0 deed hij dat
-ook, waardoor het token per definitie nooit klopte en schrijven onmogelijk was.
-Voor het schrijven wordt gecontroleerd dat de kaart precies de te kopiëren
-blokken dekt, geen dubbele waarden bevat, en niet botst met ID's die al in de
-doelpost staan.
+That is not a formality. Without that map the ability would generate fresh IDs and
+therefore write something other than what you approved — and until 1.3.0 it did exactly
+that, so the token by definition never matched and writing was impossible.
+Before writing, it is checked that the map covers exactly the blocks to be copied,
+contains no duplicate values, and does not collide with IDs already in the
+target post.
 
-Gebruik `duplicate-blocks` boven `generate-section` zodra er al iets op de
-pagina staat dat lijkt op wat je moet bouwen: je erft dan de opmaak die er al
-is, in plaats van hem opnieuw te moeten zetten.
+Prefer `duplicate-blocks` over `generate-section` as soon as the
+page already has something that resembles what you need to build: you then inherit the styling that is already
+there, instead of having to set it again.
 
-## Wat je niet moet genereren, en waarom
+## What you should not generate, and why
 
-`generate-section` kent vier sjablonen en die gebruiken vijf bloktypes. Voor de
-rest geldt: **kopiëren met `duplicate-blocks`, niet bouwen.**
+`generate-section` knows four templates, and they use five block types. For the
+rest the rule is: **copy with `duplicate-blocks`, do not build.**
 
-De accordeon laat zien waarom. Zijn wrapper draagt klassen die stuk voor stuk
-uit attributen worden afgeleid:
+The accordion shows why. Its wrapper carries classes that are each
+derived from attributes:
 
 ```
 kt-accordion-id{uniqueID}  kt-accordion-has-{paneCount}-panes  kt-active-pane-0
 kt-pane-header-alignment-left  kt-accodion-icon-style-basic  kt-accodion-icon-side-right
 ```
 
-plus `data-allow-multiple-open` en `data-start-open` op de binnenste laag, en
-per pane een `kt-accordion-pane-{volgnummer}` dat moet meelopen met het `id`-
-attribuut. Verander je één attribuut, dan moet de klasse mee — en gokt de
-generator verkeerd, dan verschijnt het blok gewoon, zonder zijn CSS.
+plus `data-allow-multiple-open` and `data-start-open` on the inner layer, and
+per pane a `kt-accordion-pane-{volgnummer}` that has to stay in step with the `id`
+attribute. If you change one attribute, the class has to change with it — and if the
+generator guesses wrong, the block simply appears, without its CSS.
 
-En dan de twee die niemand ooit zou verzinnen: in de pane staat
-`kt-acccordion-button-label-show` met **drie c's**, en in de wrapper
-`kt-accodion-icon-style-basic` met **"accodion" zonder r**. Dat zijn typefouten
-in Kadence zelf, en ze moeten letterlijk worden overgenomen.
+And then the two that nobody would ever make up: in the pane there is
+`kt-acccordion-button-label-show` with **three c's**, and in the wrapper
+`kt-accodion-icon-style-basic` with **"accodion" without an r**. Those are typos
+in Kadence itself, and they must be copied literally.
 
-Dat is de regel achter de hele `VORMEN`-tabel in de plug-in: die is afgelezen
-van markup die Kadence zelf heeft geschreven, niet uit documentatie. Waar geen
-waarneming is, wordt niet gegenereerd.
+That is the rule behind the entire `VORMEN` table in the plugin: it was read off
+markup that Kadence itself wrote, not taken from documentation. Where there is no
+observation, nothing is generated.
 
-Praktisch: staat er al een accordeon, tabs, een countdown of een videopopup op
-de site, kopieer die dan met `duplicate-blocks` en pas hem daarna aan met
-`set-attributes`. Staat er niets, bouw het dan in de editor (zie *Via de editor
-bouwen*) of voer editor-markup in met `prepare-import`.
+In practice: if the site already has an accordion, tabs, a countdown or a video popup,
+copy it with `duplicate-blocks` and then adjust it with
+`set-attributes`. If there is nothing, build it in the editor (see *Building through
+the editor*) or bring in editor markup with `prepare-import`.
 
-**Kennen is niet bouwen.** Een blokprofiel kan `bouwbaar: false` zijn: de
-plug-in kent dan de waardenlijsten, de afgeleide markup en de controles, maar de
-generator bouwt het niet. Tabs staan er zo in. `describe-block` en
-`validate-write` weten dus wel wat een geldige tabs-waarde is, en
-`prepare-import` toetst het aantal tabs, maar `generate-section` weigert.
+**Knowing is not building.** A block profile can be `bouwbaar: false`: the
+plugin then knows the value lists, the derived markup and the checks, but the
+generator does not build it. Tabs are listed that way. So `describe-block` and
+`validate-write` do know what a valid tabs value is, and
+`prepare-import` checks the number of tabs, but `generate-section` refuses.
 
-De Advanced Slider (`kadence/slider` met `kadence/slide`) is wél te bouwen: zijn
-`save()` is volledig afgelezen, en gegenereerde slides zijn in de editor geldig
-gemeten.
+The Advanced Slider (`kadence/slider` with `kadence/slide`) **can** be built: its
+`save()` has been fully read off, and generated slides have been measured as valid in the
+editor.
 
-## Markup van elders: `prepare-import`
+## Markup from elsewhere: `prepare-import`
 
-`insert-blocks` neemt alleen markup met een token. Dat token komt uit
-`generate-section` — of uit `prepare-import`, voor markup die de plug-in niet
-zelf bouwde: geserialiseerd in de editor, uitgelezen met `get-raw-markup` op een
-andere omgeving, of uit een patroon. `prepare-import` schrijft niets.
+`insert-blocks` only accepts markup with a token. That token comes from
+`generate-section` — or from `prepare-import`, for markup the plugin did not
+build itself: serialized in the editor, read out with `get-raw-markup` on another
+environment, or from a pattern. `prepare-import` writes nothing.
 
-Wat hij doet, in volgorde:
+What it does, in order:
 
-1. alleen blokken — losse HTML wordt in de editor een Klassiek blok
-2. elk bloktype moet op déze site bestaan
-3. de markup moet een parse-serialiseerronde overleven
-4. elke uniqueID krijgt het prefix van de doelpost, in attribuut én klassen
-5. klassen tegen attributen, voor elk blok met een profiel — zoals `verify-markup`
-6. schema en waardenlijsten, zoals `validate-write`
-7. tellers als `slideCount` en `tabCount` tegen het aantal kindblokken
-8. verwijzingen: links naar een ander domein, media, custom SVG-iconen
-   (`kb-custom-N`), termen, andere posts (navigatie, header, query, query card,
-   vector, formulier, menu-item naar een post), paletkleuren met hun waarde op
-   de doelsite, en eigen CSS-klassen
+1. blocks only — loose HTML becomes a Classic block in the editor
+2. every block type must exist on **this** site
+3. the markup must survive a parse-serialize round trip
+4. every uniqueID gets the target post's prefix, in the attribute **and** the classes
+5. classes against attributes, for every block with a profile — like `verify-markup`
+6. schema and value lists, like `validate-write`
+7. counters such as `slideCount` and `tabCount` against the number of child blocks
+8. references: links to another domain, media, custom SVG icons
+   (`kb-custom-N`), terms, other posts (navigation, header, query, query card,
+   vector, form, menu item pointing to a post), palette colors with their value on
+   the target site, and custom CSS classes
 
-Oordelen: **veilig** geeft een token; **blokkeer** niet; **riskant** — een
-verwijzing die op de doelsite niet bestaat — alleen met `accept_warnings`, en
-dat beslist een mens.
+Verdicts: **veilig** (safe) gives a token; **blokkeer** (block) does not; **riskant** (risky) — a
+reference that does not exist on the target site — only with `accept_warnings`, and
+a human decides that.
 
-Omzetten gaat alleen expliciet, er wordt niets geraden:
+Conversion happens only explicitly; nothing is guessed:
 
-| wat | hoe |
+| what | how |
 |---|---|
-| domein, icoon, klasse | `replace`: `[{"from":"https://oud","to":"https://nieuw"}]` |
-| media-ID | `media_map`: `{"111": 87}` — de url wordt die van het nieuwe bestand; geldt voor `{id, url/img}` én voor achtergrondparen als `bgImg` + `bgImgID` |
-| term-ID | `term_map`: `{"3": 12}` — het label wordt de naam van de nieuwe term |
-| post-ID | `post_map`: `{"183": 412}` — het `id` van `kadence/navigation`, `header`, `query`, `query-card`, `vector`, `advanced-form`, en van een `navigation-link` met `kind: post-type` (daar wordt de url de permalink van de nieuwe post; het label blijft) |
+| domain, icon, class | `replace`: `[{"from":"https://oud","to":"https://nieuw"}]` |
+| media ID | `media_map`: `{"111": 87}` — the url becomes that of the new file; applies to `{id, url/img}` **and** to background pairs such as `bgImg` + `bgImgID` |
+| term ID | `term_map`: `{"3": 12}` — the label becomes the name of the new term |
+| post ID | `post_map`: `{"183": 412}` — the `id` of `kadence/navigation`, `header`, `query`, `query-card`, `vector`, `advanced-form`, and of a `navigation-link` with `kind: post-type` (there the url becomes the permalink of the new post; the label stays) |
 
-Een post-ID dat op de doelsite wel bestaat maar een ander type is, is erger dan
-een ontbrekend: een navigatieblok met het ID van een pagina toont stil niets.
-Het rapport meldt beide (`missing`, `wrong_type`).
+A post ID that does exist on the target site but is a different type is worse than
+a missing one: a navigation block with the ID of a page silently shows nothing.
+The report flags both (`missing`, `wrong_type`).
 
-Media-, term- en post-ID's zijn getallen; `replace` werkt alleen op tekst en kan ze
-dus niet omzetten. En vervang nooit een los getal met `replace` — "112" komt
-ook in afmetingen voor.
+Media, term and post IDs are numbers; `replace` works only on text and therefore
+cannot convert them. And never replace a bare number with `replace` — "112" also
+appears in dimensions.
 
-Wat buiten de markup valt komt niet mee: de CSS van het thema, filters in
-`functions.php`, het palet, de contentbreedte. Het rapport noemt de eigen
-CSS-klassen en de paletwaarden juist daarom.
+Whatever falls outside the markup does not come along: the theme's CSS, filters in
+`functions.php`, the palette, the content width. That is exactly why the report names the custom
+CSS classes and the palette values.
 
-**Na het invoegen: open de post één keer in de editor.** Of Kadence de blokken
-geldig vindt kan alleen de JavaScript van het blok zeggen; de server kan dat
-niet toetsen.
+**After inserting: open the post once in the editor.** Whether Kadence considers the blocks
+valid can only be told by the block's JavaScript; the server cannot
+check that.
 
-Werkwijze van de ene omgeving naar de andere: `get-raw-markup` op de bron →
-`prepare-import` op het doel, met `replace`/`media_map`/`post_map` →
-`insert-blocks` met het token → editor openen en `isValid` nalopen.
+Workflow from one environment to another: `get-raw-markup` on the source →
+`prepare-import` on the target, with `replace`/`media_map`/`post_map` →
+`insert-blocks` with the token → open the editor and go through `isValid`.
 
-Hangt er iets aan elkaar via post-ID's — een header met navigaties, een mega
-menu met kleinere menu's erin, een footer met een vector — maak dan eerst de
-doelposts aan op de doelsite met **`create-entity`** (leeg, met de volledige set
-instellingen van Kadence), noteer hun ID's, en zet over van onder naar boven:
-eerst wat nergens naar verwijst. Daarna de instellingen met `set-entity-meta`,
-afgelezen met `get-post-meta` op de bron. Publiceer een element pas als de inhoud
-erin staat: een element op `replace_footer` vervangt de footer meteen.
+If things are linked to each other through post IDs — a header with navigations, a mega
+menu with smaller menus inside it, a footer with a vector — first create the
+target posts on the target site with **`create-entity`** (empty, with Kadence's full set of
+settings), note their IDs, and transfer from the bottom up:
+first whatever points to nothing. Then the settings with `set-entity-meta`,
+read off with `get-post-meta` on the source. Publish an element only once its content
+is in it: an element on `replace_footer` replaces the footer immediately.
 
-Gewone posts — diensten, markten, berichten — gaan niet als markup maar met
-**`create-post`**: titel, volgorde, uitgelichte afbeelding (een media-ID van de
-doelsite), termen op slug, en ACF-velden op veldnaam. Hij toetst alles tegen het
-posttype en weigert wat daar niet bij hoort. Relatievelden wijzen naar post-ID's
-van de doelsite: maak dus eerst de posts waar andere naar verwijzen. Verwijzen
-posts over en weer naar elkaar (diensten onderling), dan kan één kant pas later:
-maak ze eerst aan en vul de relatie daarna met **`update-post`**. De nieuwe ID's
-gaan vervolgens in `post_map` van `prepare-import`.
+Ordinary posts — services, markets, posts — do not go over as markup but with
+**`create-post`**: title, order, featured image (a media ID from the
+target site), terms by slug, and ACF fields by field name. It checks everything against the
+post type and refuses whatever does not belong to it. Relationship fields point to post IDs
+on the target site: so first create the posts that others refer to. If
+posts refer to each other in both directions (services among themselves), one side can only be done later:
+create them first and fill in the relationship afterwards with **`update-post`**. The new IDs
+then go into the `post_map` of `prepare-import`.
 
-`update-post` werkt als `set-text`: zonder token krijg je per onderdeel `before`
-en `after` plus een token, met dat token schrijft hij. Alleen wat je noemt
-verandert; `terms` vervangt de termen van de genoemde taxonomieën, en ACF-velden
-gaan op veldnaam of veldsleutel. Pagina's en Kadence-objecten weigert hij — die
-lopen via de blokken en `set-entity-meta`. Let op: alleen titel, slug en
-samenvatting krijgen een revisie. Termen, uitgelichte afbeelding en ACF-velden
-niet; de `before` in het antwoord is je weg terug.
+`update-post` works like `set-text`: without a token you get `before`
+and `after` per part plus a token; with that token it writes. Only what you name
+changes; `terms` replaces the terms of the named taxonomies, and ACF fields
+go by field name or field key. It refuses pages and Kadence objects — those
+go through the blocks and `set-entity-meta`. Note: only title, slug and
+excerpt get a revision. Terms, featured image and ACF fields
+do not; the `before` in the response is your way back.
 
-## Ruimte in een Sectie, en andere stille no-ops
+## Space in a Section, and other silent no-ops
 
-Kadence gebruikt `gutter` en `rowGap` op een Sectie alleen als
-`gutterVariable` en `rowGapVariable` op dezelfde plek `"custom"` staan; anders
-geldt een preset (1rem). `gutter` is bovendien de ruimte NAAST elkaar: in een
-verticale Sectie is de ruimte tussen de kinderen `rowGap`. `validate-write`
-blokkeert een getal zonder zijn *Variable, en `generate-section` zet het zelf
-goed (zie `notes` in het antwoord).
+Kadence uses `gutter` and `rowGap` on a Section only if
+`gutterVariable` and `rowGapVariable` at the same position are `"custom"`; otherwise
+a preset (1rem) applies. Moreover, `gutter` is the space SIDE BY SIDE: in a
+vertical Section the space between the children is `rowGap`. `validate-write`
+blocks a number without its *Variable, and `generate-section` sets it correctly
+itself (see `notes` in the response).
 
-Vier dingen die werken maar anders dan de naam belooft, gemeld door
-`validate-write` of `set-entity-meta`:
+Four things that work, but differently than the name promises, flagged by
+`validate-write` or `set-entity-meta`:
 
-| | wat er gebeurt | in plaats daarvan |
+| | what happens | instead |
 |---|---|---|
-| `flexBasis` op een Sectie | geldt voor alle kinderen van die Sectie | `maxWidth` op het kind (wordt `flex: 0 1 …`) |
-| `background: "transparent"` op een knop | voorkant doorzichtig, editor toont de themaknop | `rgba(0,0,0,0)` |
-| `borderWidth` op een Sectie | het oude randpad: breedte zonder de kleur uit `borderStyle` | alleen `borderStyle` met breedte, `borderWidth` leeg |
-| `_kad_navigation_spacing` | standaard in em (`spacingUnit`), dus 20 wordt 340 px | `spacingUnit` op `px` meezetten |
+| `flexBasis` on a Section | applies to all children of that Section | `maxWidth` on the child (becomes `flex: 0 1 …`) |
+| `background: "transparent"` on a button | transparent on the frontend, the editor shows the theme button | `rgba(0,0,0,0)` |
+| `borderWidth` on a Section | the old border path: width without the color from `borderStyle` | only `borderStyle` with width, `borderWidth` empty |
+| `_kad_navigation_spacing` | in em by default (`spacingUnit`), so 20 becomes 340 px | also set `spacingUnit` to `px` |
 
-Een navigatie heeft in een pagina of header de vorm van een verwijzing
-(`kadence/navigation` met `id`, zelfsluitend); in de navigatiepost zelf staan de
-`kadence/navigation-link`-blokken erin. Allebei kan `generate-section` bouwen,
-net als `kadence/vector`.
+In a page or header, a navigation takes the form of a reference
+(`kadence/navigation` with `id`, self-closing); the navigation post itself contains the
+`kadence/navigation-link` blocks. `generate-section` can build both,
+as well as `kadence/vector`.
 
-## Blokken verplaatsen: `move-blocks`
+## Moving blocks: `move-blocks`
 
-Een blok naar een andere plek halen door het te verwijderen en opnieuw in te
-voegen kost zijn `uniqueID`, en daarmee de CSS per blok en elke verwijzing
-ernaar. **`kadence/move-blocks`** verplaatst binnen dezelfde post met behoud van
-ID: `position` is `before` of `after` het doelblok, of `inside_start` /
-`inside_end` erin. Meerdere blokken gaan mee in de volgorde van de post. Zelfde
-twee stappen: zonder token een voorstel met de nieuwe ouder, met token schrijven.
+Moving a block to another place by deleting it and inserting it again
+costs its `uniqueID`, and with it the per-block CSS and every reference
+to it. **`kadence/move-blocks`** moves within the same post while keeping the
+ID: `position` is `before` or `after` the target block, or `inside_start` /
+`inside_end` inside it. Multiple blocks move along in the order of the post. The same
+two steps: without a token, a proposal with the new parent; with a token, it writes.
 
-Hij weigert wat Kadence stil zou breken: een Sectie uit of in een Row Layout (dat
-verandert het aantal kolommen, en `columns` staat vast in de rij), een slide of tab
-naar een andere ouder (slideCount en de tabtitels staan in de ouder), een blok
-waarvan de parent-regel het doel niet toelaat, en een doel dat in een van de
-verplaatste blokken ligt. Kolommen van een rij herschikken binnen die rij mag wel.
+It refuses whatever Kadence would silently break: a Section out of or into a Row Layout (that
+changes the number of columns, and `columns` is fixed in the row), a slide or tab
+to a different parent (slideCount and the tab titles live in the parent), a block
+whose parent rule does not allow the target, and a target that lies inside one of the
+blocks being moved. Rearranging a row's columns within that row is allowed.
 
-## Via de editor bouwen (`wp.data`)
+## Building through the editor (`wp.data`)
 
-Voor wat de generator niet mag bouwen, of voor een wijziging die de opgeslagen
-markup verandert, kun je de editor zelf laten werken: Playwright in de
-blokeditor, en daar `wp.data` — de gegevenslaag van de editor. `createBlock`,
-`replaceBlock` en `updateBlockAttributes` op `core/block-editor`; `editPost` en
-`savePost` op `core/editor`. De `save()` van elk blok draait dan mee, dus de
-markup is per definitie die van Kadence.
+For what the generator is not allowed to build, or for a change that alters the saved
+markup, you can let the editor itself do the work: Playwright in the
+block editor, and there `wp.data` — the editor's data layer. `createBlock`,
+`replaceBlock` and `updateBlockAttributes` on `core/block-editor`; `editPost` and
+`savePost` on `core/editor`. Each block's `save()` then runs as well, so the
+markup is by definition Kadence's.
 
-Het recept dat werkt:
+The recipe that works:
 
-1. blokken maken of wijzigen
-2. elk nieuw blok één keer `selectBlock()`-en en wachten tot het een
-   `uniqueID` heeft — Kadence zet die pas als het blok gerenderd is, en als
-   niet-persistente wijziging
-3. `editPost({ content: wp.blocks.serialize( getBlocks() ) })` — zonder deze stap
-   schrijft `savePost()` de oude inhoud weg, zonder de uniqueIDs (`…-idnotset`)
+1. create or change blocks
+2. `selectBlock()` each new block once and wait until it has a
+   `uniqueID` — Kadence only sets it once the block has rendered, and as a
+   non-persistent change
+3. `editPost({ content: wp.blocks.serialize( getBlocks() ) })` — without this step
+   `savePost()` writes away the old content, without the uniqueIDs (`…-idnotset`)
 4. `savePost()`
-5. nalezen met `inspect-post` vanuit de database, niet in de editor
+5. read back with `inspect-post` from the database, not in the editor
 
-Waarom dit niet de standaard is: er is **geen vangnet**. Geen toets op waarden,
-geen token, geen teruglees-vergelijking; en `savePost()` schrijft de héle post,
-inclusief wat de editor bij het openen zelf aanpaste en wat een ander intussen
-wijzigde. Het vraagt ook een ingelogde browser. Gebruik het dus alleen waar de
-MCP het niet kan, en lees daarna na met de MCP.
+Why this is not the default: there is **no safety net**. No check on values,
+no token, no read-back comparison; and `savePost()` writes the **entire** post,
+including whatever the editor adjusted on its own when opening and whatever someone else changed
+in the meantime. It also requires a logged-in browser. So use it only where the
+MCP cannot do it, and read back afterwards with the MCP.
 
 | | MCP | `wp.data` |
 |---|---|---|
-| lezen, meten, controleren | ✓ | |
-| attributen die alleen in het blokcommentaar staan | ✓ | |
-| blokken die de generator niet mag bouwen (tabs) | | ✓ — of `prepare-import` |
-| attributen waar markup uit volgt | `replace-block` als het profiel het kent | ✓ |
+| reading, measuring, checking | ✓ | |
+| attributes that exist only in the block comment | ✓ | |
+| blocks the generator is not allowed to build (tabs) | | ✓ — or `prepare-import` |
+| attributes that markup follows from | `replace-block` if the profile knows it | ✓ |
 
-Twee dingen die je tegenkomt:
+Two things you will run into:
 
-- **Een "pagina verlaten?"-melding** bij navigeren blokkeert een script dat nog
-  draait. Controleer daarna in de database of het opslaan gelukt is.
-- **Een post die net geopend is heet al "gewijzigd"** als er blokken in staan
-  die de editor nooit zelf heeft opgeslagen. Kadence migreert dan attributen bij
-  het laden — gemeten bij Geavanceerde tekst: `markBorder` → `markBorderStyles`.
-  Onschuldig; één keer opslaan in de editor en het is weg.
+- **A "leave page?" prompt** when navigating blocks a script that is still
+  running. Afterwards, check in the database whether the save succeeded.
+- **A post that has just been opened is already "modified"** if it contains blocks
+  the editor never saved itself. Kadence then migrates attributes on
+  load — measured on Advanced Text: `markBorder` → `markBorderStyles`.
+  Harmless; save once in the editor and it is gone.
 
-## Carrousel: Advanced Slider of Post Grid
+## Carousel: Advanced Slider or Post Grid
 
 | | Advanced Slider | Post Grid (layout carousel) |
 |---|---|---|
-| inhoud | vast, per slide | dynamisch uit een posttype |
-| niet rondlopen | `loopType: none`, native | loopt áltijd rond; alleen met een `render_block`-filter dat `data-slider-loop-type` zet |
-| per pagina schuiven | attribuut `slidesScroll` wordt door de render genegeerd — filter dat `data-slider-scroll` op een getal ≠ 1 zet | `slidesScroll: all`, native |
-| eigen kaartopbouw | ja, elke slide is een container | alleen via de hooks `kadence_blocks_post_loop_*` |
-| foto achter de kaart | `backgroundImg` + overlay op de slide | niet native |
+| content | fixed, per slide | dynamic from a post type |
+| no looping | `loopType: none`, native | **always** loops; only with a `render_block` filter that sets `data-slider-loop-type` |
+| scroll per page | the `slidesScroll` attribute is ignored by the render — a filter that sets `data-slider-scroll` to a number ≠ 1 | `slidesScroll: all`, native |
+| custom card structure | yes, every slide is a container | only through the `kadence_blocks_post_loop_*` hooks |
+| photo behind the card | `backgroundImg` + overlay on the slide | not native |
 
-Details bij de slider die tijd kosten:
+Slider details that cost time:
 
-- De padding van de slider zit op `.kb-advanced-slide-inner-wrap` (standaard
-  20/48). Een padding van 0 geldt op de voorkant; de editor negeert hem en toont
-  de standaard.
-- `arrowPosition: outside-top-right` zet de pijlen boven de slides;
-  `arrowMargin` is een object per breakpoint (`[{desk:[…],tablet:[…],mobile:[…]}]`).
-- De overlay is absoluut met `inset: 0`, maar de wrap is niet gepositioneerd —
-  hij rekent vanaf de `li` en valt over een rand op de wrap heen. Eén regel CSS:
-  `position: relative` op de wrap.
-- De overlay-div bestaat alleen als er een overlaykleur is, en `align` zet een
-  klasse op de wrap. Beide staan in de opgeslagen markup: wijzigen via
-  `replace-block` of de editor, niet alleen als attribuut.
-- Een slider in een tab start pas als de tab zichtbaar wordt, en logt eenmalig
-  `[splide] Already mounted!` — onschuldig.
-- Kadence vult het `aria-label` van slides niet in: er staat letterlijk
-  `%1$s of %2$s`. Geldt ook voor de Post Grid-carousel.
+- The slider's padding sits on `.kb-advanced-slide-inner-wrap` (default
+  20/48). A padding of 0 applies on the frontend; the editor ignores it and shows
+  the default.
+- `arrowPosition: outside-top-right` puts the arrows above the slides;
+  `arrowMargin` is an object per breakpoint (`[{desk:[…],tablet:[…],mobile:[…]}]`).
+- The overlay is absolute with `inset: 0`, but the wrap is not positioned —
+  it calculates from the `li` and spills over a border on the wrap. One line of CSS:
+  `position: relative` on the wrap.
+- The overlay div exists only if there is an overlay color, and `align` sets a
+  class on the wrap. Both are in the saved markup: change them through
+  `replace-block` or the editor, not just as an attribute.
+- A slider in a tab only starts when the tab becomes visible, and logs
+  `[splide] Already mounted!` once — harmless.
+- Kadence does not fill in the slides' `aria-label`: it literally says
+  `%1$s of %2$s`. This also applies to the Post Grid carousel.
 
-## Een knop die meer moet dan Kadence kan
+## A button that needs to do more than Kadence can
 
-Zet in het blok wat het blok kan — tekst, icoon, typografie, kleuren, padding,
-radius, marge — en in CSS alleen de rest, met een eigen klasse op de knop
-(`singlebtn` zet `className` wél op het element). Wat je daarbij tegenkomt:
+Put in the block what the block can do — text, icon, typography, colors, padding,
+radius, margin — and only the rest in CSS, with a custom class on the button
+(`singlebtn` **does** put `className` on the element). What you will run into:
 
-- Het icoon heeft **geen eigen achtergrond**. Een icoon in een eigen vlak naast
-  het label is CSS.
-- Kadence geeft de knop `overflow: hidden`. Iets buiten de knop tekenen vraagt
+- The icon has **no background of its own**. An icon in its own panel next to
+  the label is CSS.
+- Kadence gives the button `overflow: hidden`. Drawing something outside the button requires
   `overflow: visible`.
-- De knop heeft een `::before` (absoluut, z-index -1, opacity 0) die alleen bij
-  `backgroundHoverType: gradient` een kleur krijgt. **In de editor** krijgt hij
-  via `.kt-button.kb-btn-global-fill::before` de hoverkleur van de themaknop en
-  fadet hij in op hover. Gebruik je hem niet, zet hem dan uit
-  (`content: none`), anders zie je in de editor een vreemde kleur.
-- **Twee lagen van dezelfde afgeronde vorm** — een achtergrond met een bovenlaag,
-  ook een achtergrondkleur met een verloop erover in één element — geven op de
-  hoeken een randje van de onderste kleur. Eén verloop per vlak lost het op.
-- Kadence' knop-CSS is (0,3,0) en laadt na de stylesheet van het thema. Een
-  eigen regel moet (0,4,0) zijn.
-- Kadence wisselt de icoonkleur op `:hover` én `:focus`; laat een eigen
-  hovereffect op dezelfde twee reageren, anders loopt het na een klik uit de pas.
-- `inheritStyles: inherit` neemt de knopstijl van het thema over. Voor een eigen
-  knop: laten staan op `fill`.
+- The button has a `::before` (absolute, z-index -1, opacity 0) that only gets a color with
+  `backgroundHoverType: gradient`. **In the editor** it gets
+  the theme button's hover color through `.kt-button.kb-btn-global-fill::before` and
+  fades in on hover. If you do not use it, turn it off
+  (`content: none`), otherwise you will see a strange color in the editor.
+- **Two layers of the same rounded shape** — a background with an overlay layer,
+  or a background color with a gradient over it in one element — leave a thin edge of the bottom color at the
+  corners. One gradient per panel solves it.
+- Kadence's button CSS is (0,3,0) and loads after the theme's stylesheet. A
+  custom rule must be (0,4,0).
+- Kadence switches the icon color on `:hover` **and** `:focus`; make a custom
+  hover effect respond to the same two, otherwise it gets out of step after a click.
+- `inheritStyles: inherit` takes over the theme's button style. For a custom
+  button: leave it at `fill`.
 
-## Editor en voorkant zijn twee verschillende DOM's
+## The editor and the frontend are two different DOMs
 
-- **Andere klassen.** De knop is in de editor `.kt-button` in
-  `.kb-btns-outer-wrap`, met `.kt-btn-svg-icon` en `.kt-button-text`; op de
-  voorkant `.kb-button` in `.kb-buttons-wrap`, met `.kb-svg-icon-wrap` en
-  `.kt-btn-inner-text`. Schrijf CSS voor allebei met `:is()`; `:is()` neemt de
-  hoogste specificiteit van zijn lijst.
-- **Iconen worden anders uitgelijnd.** De editor zet een niet-vierkante SVG
-  links in een vierkant van 1em (`xMinYMin`), de voorkant centreert hem. Een
-  breedte naar verhouding (`width: calc(1em * 20 / 24)`) trekt ze gelijk;
-  `width: auto` werkt op een inline SVG niet.
-- **Een server-render in de editor draait geen voorkant-JavaScript.** Een blok
-  dat in de editor via `ServerSideRender` getoond wordt, krijgt zijn
-  `viewScript` niet. Alles wat dat script berekent — een clip-path, een schaal —
-  moet daarom al in de markup kloppen, anders ziet de editor iets anders (en een
-  bezoeker zonder JavaScript ook).
-- **Een CSS-regel in een Post Grid-footer** (`.kt-blocks-post-footer svg { top:
-  .125em }`) schuift elke SVG daarin omlaag. Meet een knop op de plek waar hij
-  echt staat.
+- **Different classes.** In the editor the button is `.kt-button` in
+  `.kb-btns-outer-wrap`, with `.kt-btn-svg-icon` and `.kt-button-text`; on the
+  frontend it is `.kb-button` in `.kb-buttons-wrap`, with `.kb-svg-icon-wrap` and
+  `.kt-btn-inner-text`. Write CSS for both with `:is()`; `:is()` takes the
+  highest specificity in its list.
+- **Icons are aligned differently.** The editor places a non-square SVG
+  on the left in a 1em square (`xMinYMin`); the frontend centers it. A
+  proportional width (`width: calc(1em * 20 / 24)`) makes them match;
+  `width: auto` does not work on an inline SVG.
+- **A server render in the editor does not run frontend JavaScript.** A block
+  that is shown in the editor through `ServerSideRender` does not get its
+  `viewScript`. Everything that script calculates — a clip-path, a scale —
+  must therefore already be right in the markup, otherwise the editor shows something different (and so does a
+  visitor without JavaScript).
+- **A CSS rule in a Post Grid footer** (`.kt-blocks-post-footer svg { top:
+  .125em }`) pushes every SVG in it down. Measure a button in the place where it
+  actually sits.
 
-## Kleur zit in een klasse, niet alleen in een attribuut
+## Color lives in a class, not only in an attribute
 
-Een Kadence-tekstblok haalt zijn kleur niet uit `color`, maar uit een klasse in
-de markup. `color: "palette9"` alleen levert zwarte tekst op. Je hebt er
-`colorClass: "theme-palette9"` bij nodig, en die moet als klasse in de HTML
-staan:
+A Kadence text block does not take its color from `color`, but from a class in
+the markup. `color: "palette9"` alone produces black text. You also need
+`colorClass: "theme-palette9"`, and it has to be present as a class in the HTML:
 
 ```html
 <h1 class="kt-adv-heading… wp-block-kadence-advancedheading has-theme-palette-9-color has-text-color">
 ```
 
-Let op het streepje dat er vóór het cijfer bij komt: `theme-palette9` wordt
-`has-theme-palette-9-color`. Hetzelfde geldt voor `backgroundColorClass` →
+Note the hyphen that gets added before the number: `theme-palette9` becomes
+`has-theme-palette-9-color`. The same applies to `backgroundColorClass` →
 `has-…-background-color has-background`.
 
-`generate-section` doet dit sinds 1.6.1 zelf: geef `color` én `colorClass` mee en
-de klassen komen vanzelf in de markup. Schrijf je met `set-attributes` op een
-bestaand blok, zet dan altijd allebei — één van de twee is een halve wijziging
-die er in de blokdata correct uitziet.
+Since 1.6.1, `generate-section` does this itself: pass both `color` **and** `colorClass` and
+the classes end up in the markup automatically. If you write with `set-attributes` on an
+existing block, always set both — just one of the two is half a change
+that looks correct in the block data.
 
-Dit is precies het soort fout dat alleen in de browser zichtbaar is. Meet het:
-Playwright kan `getComputedStyle` uitvoeren, en dan zie je `rgb(10,10,10)` waar
-je wit verwachtte.
+This is exactly the kind of error that is only visible in the browser. Measure it:
+Playwright can run `getComputedStyle`, and then you see `rgb(10,10,10)` where
+you expected white.
 
-## Een eigen klasse (`className`): op een Sectie ook de markup
+## A custom class (`className`): on a Section, the markup too
 
-Een eigen klasse zetten lijkt overal hetzelfde, maar is het niet. Waargenomen
-30-10-2026 (Sportraad Utrecht, pagina 18, één `style-blocks`-aanroep op twee Row
-Layouts en één Sectie):
+Setting a custom class looks the same everywhere, but it is not. Observed
+30-10-2026 (Sportraad Utrecht, page 18, one `style-blocks` call on two Row
+Layouts and one Section):
 
-| Blok | Waar `className` landt | Gevolg van `style-blocks` / `set-attributes` |
+| Block | Where `className` lands | Effect of `style-blocks` / `set-attributes` |
 |---|---|---|
-| `kadence/rowlayout` | alleen in het blokcommentaar; de rij slaat geen markup op en zet de klasse bij het renderen | klaar, geen nawerk |
-| `kadence/column` (Sectie) | óók in de opgeslagen `<div class="wp-block-kadence-column …">` | alleen het attribuut wijzigt; het antwoord meldt `class_drift` met `missing: [<klasse>]` |
+| `kadence/rowlayout` | only in the block comment; the row saves no markup and sets the class at render time | done, no follow-up work |
+| `kadence/column` (Section) | **also** in the saved `<div class="wp-block-kadence-column …">` | only the attribute changes; the response reports `class_drift` with `missing: [<klasse>]` |
 
-Bij die drift ziet de voorkant er goed uit (de render leest het attribuut), maar
-de editor noemt het blok bij de volgende keer openen **ongeldige inhoud**. Herstel
-het meteen met **`replace-block`** zonder `block` en zonder attributen: hij bouwt
-de markup opnieuw op uit de attributen, met hetzelfde uniqueID, de kinderen en de
-bloknaam (`metadata.name`). Eerst zonder token voor het voorstel (controleer in
-`markup` dat de klasse in de `<div>` staat en de kinderen er nog zijn), dan met
-het token.
+With that drift the frontend looks fine (the render reads the attribute), but
+the next time the block is opened, the editor calls it **invalid content**. Fix
+it right away with **`replace-block`** without `block` and without attributes: it rebuilds
+the markup from the attributes, with the same uniqueID, the children and the
+block name (`metadata.name`). First without a token for the proposal (check in
+`markup` that the class is in the `<div>` and the children are still there), then with
+the token.
 
-Lees dus na elke schrijfactie het veld `class_drift`, niet alleen `verdict` en
-`written`. Code die op de klasse reageert via `render_block` leest
-`$block['attrs']['className']` en werkt ook zonder de markup; dat is geen reden
-om de drift te laten staan.
+So after every write action, read the `class_drift` field, not only `verdict` and
+`written`. Code that reacts to the class through `render_block` reads
+`$block['attrs']['className']` and also works without the markup; that is no reason
+to leave the drift in place.
 
-## Een highlight vraagt om `mark.kt-highlight`
+## A highlight requires `mark.kt-highlight`
 
-`markBG`, `markColor` en `markPadding` maken een gekleurd kadertje om een stukje
-tekst — handig voor een label boven een kop, want een tekstblok neemt zelf de
-volle breedte en een highlight past om de tekst heen.
+`markBG`, `markColor` and `markPadding` create a small colored box around a piece of
+text — handy for a label above a heading, because a text block itself takes up the
+full width, while a highlight fits around the text.
 
-De CSS die Kadence genereert hangt aan `mark.kt-highlight`
-(`class-kadence-blocks-advanced-heading-block.php:310`). Een kale `<mark>` krijgt
-dus niets. Schrijf `<mark class="kt-highlight">Over ons</mark>`.
+The CSS that Kadence generates hangs on `mark.kt-highlight`
+(`class-kadence-blocks-advanced-heading-block.php:310`). So a bare `<mark>` gets
+nothing. Write `<mark class="kt-highlight">Over ons</mark>`.
 
-## Beelden staan op twee plekken, en dat is een echte keuze
+## Images live in two places, and that is a real choice
 
-Een afbeelding kan een eigen blok zijn (`kadence/image`) of de achtergrond van
-een Row Layout (`bgImg`, meestal met `overlayGradient` eroverheen zodat er tekst
-overheen kan). Kadence biedt allebei.
+An image can be a block of its own (`kadence/image`) or the background of
+a Row Layout (`bgImg`, usually with `overlayGradient` over it so that text can
+go on top). Kadence offers both.
 
-Welke van de twee een site gebruikt is geen detail: bouw je een image-blok waar
-de site achtergronden gebruikt, dan ziet het er goed uit en klopt het toch niet.
-Kijk dus eerst met `inspect-post` naar een bestaande pagina hoe het daar is
-gedaan, voordat je een ontwerp vertaalt.
+Which of the two a site uses is not a detail: if you build an image block where
+the site uses backgrounds, it looks fine and is still wrong.
+So first use `inspect-post` on an existing page to see how it was done there,
+before you translate a design.
 
-## Blokken weghalen
+## Removing blocks
 
-`remove-blocks` haalt blokken uit een post, op elke diepte — ook één knop uit
-een knoppenrij. Twee stappen, zoals `set-text`: zonder token krijg je te zien
-wat er zou verdwijnen, met token gebeurt het.
+`remove-blocks` removes blocks from a post, at any depth — even a single button from
+a button row. Two steps, like `set-text`: without a token you are shown
+what would disappear; with a token it happens.
 
-Lees dat voorstel echt. **Een container neemt alles mee wat eronder staat**: een
-rij weghalen verwijdert zijn kolommen en hun inhoud. Het antwoord geeft daarom
-`removing` (elk `uniqueID` dat verdwijnt, niet alleen het blok dat je noemde),
-`blocks` (hoeveel per type) en `text` (de tekst die weg zou gaan). Zou de pagina
-er leeg van worden, dan staat dat er expliciet bij.
+Really read that proposal. **A container takes everything below it with it**:
+removing a row deletes its columns and their content. That is why the response returns
+`removing` (every `uniqueID` that disappears, not only the block you named),
+`blocks` (how many per type) and `text` (the text that would go). If the page
+would end up empty, that is stated explicitly.
 
-Staat een van de opgegeven `uniqueID`s niet in de post, dan wordt er niets
-verwijderd — een verzoek dat half klopt wordt niet half uitgevoerd.
+If one of the given `uniqueID`s is not in the post, nothing is
+removed — a request that is half right is not half executed.
 
-## Een ontwerp uit Figma nabouwen
+## Recreating a design from Figma
 
-Dit is uitgevoerd op 11-09-2026: een frame van vier secties, nagebouwd en daarna
-op zeventien punten nagemeten. Dat leverde deze werkwijze op.
+This was carried out on 11-09-2026: a frame of four sections, recreated and then
+measured at seventeen points. That produced this workflow.
 
-**Lees eerst hoe de site bouwt, niet alleen hoe het ontwerp eruitziet.** Een
-beeld in een ontwerp kan op deze stack een `bgImg` op de rij zijn in plaats van
-een image-blok; een rij gekleurde balken kan een accordeon zijn. Kijk met
-`inspect-post` naar een bestaande pagina voordat je vertaalt.
+**First read how the site builds, not only what the design looks like.** On this stack, an
+image in a design can be a `bgImg` on the row instead of
+an image block; a row of colored bars can be an accordion. Use
+`inspect-post` to look at an existing page before you translate.
 
-**Leg de kleuren tegen het palet.** `get-global-styles` geeft de hexwaarden.
-Vallen ze samen, gebruik dan `palette1` en niet de hex — dan blijft de pagina
-meebewegen als het palet verandert.
+**Hold the colors up against the palette.** `get-global-styles` returns the hex values.
+If they coincide, use `palette1` and not the hex — then the page keeps
+following along when the palette changes.
 
-**Vertaaltabel die bleek te kloppen:**
+**Translation table that proved correct:**
 
 | Figma | Kadence |
 |---|---|
-| `px-[80px]` op een frame van 1440 | `inheritMaxWidth: true` |
+| `px-[80px]` on a 1440 frame | `inheritMaxWidth: true` |
 | `pt-[176px] pb-[72px]` | `padding: [176,"",72,""]` |
 | `text-[72px]` | `fontSize: [72,"",mobiel]` |
 | `leading-[0.95]` | `fontHeight: [0.95,"",""]` |
 | `w-[880px]` | `maxWidth: [880,"",""]` |
 | `tracking-[1px]` | `letterSpacing: 1` |
-| een strak kadertje om tekst | `markBG` + `<mark class="kt-highlight">` |
+| a tight box around text | `markBG` + `<mark class="kt-highlight">` |
 
-**Zet `columns` expliciet.** Laat je het weg bij één kolom, dan gaat de rij uit
-van twee en krijgt je kolom de halve breedte. Dat kost je een ronde.
+**Set `columns` explicitly.** If you leave it out for a single column, the row assumes
+two and your column gets half the width. That costs you a round.
 
-**Zet `margin` expliciet op 0 waar het ontwerp geen marge toont.** Het thema geeft
-een `h1` ruim honderd pixels bovenmarge, en die wint als je niets zegt.
+**Set `margin` explicitly to 0 where the design shows no margin.** The theme gives
+an `h1` well over a hundred pixels of top margin, and that wins if you say nothing.
 
-### Meet het resultaat, kijk er niet naar
+### Measure the result, don't eyeball it
 
-Playwright kan JavaScript in de pagina draaien. `getComputedStyle` en
-`getBoundingClientRect` geven precies wat DevTools laat zien, maar dan
-vergelijkbaar met de waarden uit `get_design_context`.
+Playwright can run JavaScript in the page. `getComputedStyle` and
+`getBoundingClientRect` return exactly what DevTools shows, but in a form
+comparable to the values from `get_design_context`.
 
-Dat is geen luxe. Twee fouten uit deze ronde waren met het oog niet te
-verklaren: tekst die zwart bleef terwijl het attribuut klopte (de kleurklasse
-ontbrak in de markup), en een kolom die de halve breedte kreeg. En twee keer
-sloeg het beeld vals alarm — een kop leek achter het menu te vallen terwijl de
-meting zei dat er negentien pixels ruimte was.
+That is not a luxury. Two errors from this round could not be explained
+by eye: text that stayed black while the attribute was correct (the color class
+was missing from the markup), and a column that got half the width. And twice
+the visual check raised a false alarm — a heading seemed to fall behind the menu while the
+measurement said there were nineteen pixels of space.
 
-**Twee valkuilen bij het meten zelf:**
+**Two pitfalls in the measuring itself:**
 
-1. **Meet op de juiste laag.** Kadence zet de rijpadding op
-   `.kt-row-column-wrap` en de kolomachtergrond op `.kt-inside-inner-col`, niet
-   op de buitenste div. Meet je die, dan lees je nul terwijl alles goed staat.
-   Loop desnoods met `parentElement` naar buiten en toon elke laag.
-2. **Een `fullPage`-screenshot liegt over een zwevende header.** Playwright
-   scrollt door de pagina en een `position: fixed` element schuift mee. Voor
-   alles rond de header: viewport-screenshot op scrollpositie 0, of meten.
+1. **Measure on the right layer.** Kadence puts the row padding on
+   `.kt-row-column-wrap` and the column background on `.kt-inside-inner-col`, not
+   on the outermost div. If you measure that one, you read zero while everything is correct.
+   If necessary, walk outward with `parentElement` and show each layer.
+2. **A `fullPage` screenshot lies about a floating header.** Playwright
+   scrolls through the page and a `position: fixed` element moves along. For
+   anything around the header: a viewport screenshot at scroll position 0, or measure.
 
-Nog vier, uit het meten van beweging en hover:
+Four more, from measuring motion and hover:
 
-3. **Een geforceerde stand is geen hover.** Zet je een eindstand direct (een
-   custom property, een klasse), dan draaien de `:hover`-regels van Kadence
-   niet mee — en juist daar zat de fout. Meet ook met een echte muis-hover.
-4. **Parkeer de muis.** Na een scroll staat de muis ineens boven een ander
-   element, dat dan in hoverstand staat. Hover eerst iets neutraals.
-5. **Meet beweging per frame.** Een `requestAnimationFrame`-lus die de
-   waarde en de stand per frame opslaat laat zien wat een screenshot mist: een
-   fade die op een bug lijkt, een kleurwissel die een frame te laat komt.
-6. **Een randje zie je alleen in pixels.** Vergelijk hoekpixels van twee
-   screenshots; een verschil in de tekst van minder dan een pixel is ruis van
-   een fractionele positie, geen fout. Let op dat Playwright zijn eigen
-   inspectie-overlay in een screenshot kan zetten.
+3. **A forced state is not a hover.** If you set an end state directly (a
+   custom property, a class), Kadence's `:hover` rules do not run along
+   — and that is exactly where the error was. Also measure with a real mouse hover.
+4. **Park the mouse.** After a scroll the mouse is suddenly over a different
+   element, which is then in its hover state. Hover over something neutral first.
+5. **Measure motion per frame.** A `requestAnimationFrame` loop that stores the
+   value and the state per frame shows what a screenshot misses: a
+   fade that looks like a bug, a color change that comes one frame too late.
+6. **A thin edge is only visible in pixels.** Compare corner pixels of two
+   screenshots; a difference in the text of less than a pixel is noise from
+   a fractional position, not an error. Note that Playwright can put its own
+   inspection overlay into a screenshot.
 
-De lus is dus: bouwen, meten tegen de Figma-waarden, corrigeren met
-`style-blocks`, opnieuw meten. Niet: bouwen, screenshot, turen.
+So the loop is: build, measure against the Figma values, correct with
+`style-blocks`, measure again. Not: build, screenshot, squint.
 
-## Een groene toets is geen bewijs dat de waarde bestaat
+## A green check is no proof that the value exists
 
-`validate-write` toetst drie dingen: bestaat het attribuut, past de waarde bij
-het gedeclareerde type, en zit hij vast in de markup. Wat hij **niet** kan
-toetsen is of een tekst een waarde is die Kadence kent — want dat staat voor veel
-attributen niet in `block.json`.
+`validate-write` checks three things: does the attribute exist, does the value match
+the declared type, and is it baked into the markup. What it **cannot**
+check is whether a text is a value that Kadence knows — because for many
+attributes that is not in `block.json`.
 
-Zo ging het mis met `colLayout` op een Row Layout. Het schema zegt alleen
-`type: string`, dus de verzonnen waarde `"thirds"` kwam er zonder bezwaar door.
-Op de voorkant viel het niet op, want daar bepaalt de klasse `kt-has-3-columns`
-de breedtes. In de **editor** wel: die kiest zijn weergave op `colLayout` en zet
-bij een onbekende naam alle kolommen onder elkaar.
+That is how it went wrong with `colLayout` on a Row Layout. The schema only says
+`type: string`, so the made-up value `"thirds"` got through without objection.
+On the frontend it went unnoticed, because there the `kt-has-3-columns` class determines
+the widths. In the **editor** it did not: the editor picks its display based on `colLayout` and, for
+an unknown name, stacks all columns on top of each other.
 
-De geldige namen, afgelezen uit `dist/blocks-rowlayout.js`:
+The valid names, read from `dist/blocks-rowlayout.js`:
 
-| kolommen | `colLayout` |
+| columns | `colLayout` |
 |---|---|
 | 1 | `equal` |
 | 2 | `equal`, `left-golden`, `right-golden` |
 | 3 | `equal`, `left-half`, `right-half`, `center-half`, `center-wide`, `center-exwide` |
 | 4 | `equal`, `left-forty`, `right-forty` |
-| 5 en 6 | `equal` |
+| 5 and 6 | `equal` |
 
-`validate-write` blokkeert sinds 1.7.2 een onbekende combinatie, en
-`describe-block` zet bij elk stringattribuut zonder enum
-`values_not_validated: true` met een notitie erbij.
+Since 1.7.2, `validate-write` blocks an unknown combination, and
+`describe-block` sets `values_not_validated: true` with a note on every
+string attribute without an enum.
 
-**De regel die hieronder ligt:** bij zo'n attribuut verzin je geen waarde. Lees
-hem af van een bestaand blok met `get-raw-markup`, of uit de broncode van
-Kadence. Zwijgen van de toets is geen goedkeuring — het betekent dat er niets te
-toetsen viel.
+**The rule underneath:** for such an attribute you do not invent a value. Read
+it off an existing block with `get-raw-markup`, or from Kadence's
+source code. Silence from the check is not approval — it means there was nothing to
+check.
 
-## Query Loops zitten in drie lagen
+## Query Loops come in three layers
 
-Een Query Loop is niet één blok maar een keten van verwijzingen:
+A Query Loop is not a single block but a chain of references:
 
 ```
 de pagina         kadence/query {id:1456}        zelfsluitend, verwijst alleen
@@ -1070,322 +1069,323 @@ de pagina         kadence/query {id:1456}        zelfsluitend, verwijst alleen
   + post meta op 1456   _kad_query_query         WAT er opgehaald wordt
 ```
 
-Daaruit volgen drie dingen.
+(Top to bottom: the page holds a self-closing `kadence/query` that only points onward; query post 1456 holds the whole loop layout with filters, sorting and pagination; its `kadence/query-card` points on again to card post 232, which holds the card layout; and post meta on 1456, `_kad_query_query`, holds WHAT is fetched.)
 
-**Een bestaande query hergebruiken is één blok.** `kadence/query` met het `id`
-van de query-post, zelfsluitend. Dat is waarom dezelfde loop op meerdere
-pagina's kan staan.
+Three things follow from that.
 
-**Alle query-onderdelen zijn zelfsluitend** — `query-card`, `query-filter`,
+**Reusing an existing query is one block.** `kadence/query` with the `id`
+of the query post, self-closing. That is why the same loop can appear on multiple
+pages.
+
+**All query parts are self-closing** — `query-card`, `query-filter`,
 `query-filter-search`, `query-filter-reset`, `query-result-count`, `query-sort`
-en `query-pagination`. Ze dragen geen eigen markup, dus `generate-section` kan
-ze bouwen.
+and `query-pagination`. They carry no markup of their own, so `generate-section` can
+build them.
 
-**Wat de query ophaalt staat NIET in blokattributen.** `postType`, `perPage`,
-`orderBy` en de facetten staan in post meta op de query-post, onder
-`_kad_query_query` en `_kad_query_facets`. Lees dat met `get-post-meta` en schrijf het met `set-query`; de facetten werk je
-bij met `sync-query-facets`. Let op: post meta heeft geen `block.json`, dus daar
-is niets om een waarde tegen te toetsen. Een typefout in `postType` levert een
-lege loop op zonder enige melding — `set-query` weigert daarom onbekende sleutels
-en draait de query proef voordat hij schrijft.
+**What the query fetches is NOT in block attributes.** `postType`, `perPage`,
+`orderBy` and the facets live in post meta on the query post, under
+`_kad_query_query` and `_kad_query_facets`. Read that with `get-post-meta` and write it with `set-query`; you update the facets
+with `sync-query-facets`. Note: post meta has no `block.json`, so there
+is nothing to check a value against. A typo in `postType` produces an
+empty loop without any message — that is why `set-query` refuses unknown keys
+and does a trial run of the query before it writes.
 
-Kolommen binnen een query dragen `inQueryBlock: true` en meestal
+Columns within a query carry `inQueryBlock: true` and usually
 `noCustomDefaults: true`.
 
-## Een blok zonder inhoud is zelfsluitend
+## A block without content is self-closing
 
-`kadence/query` laat zien dat dit geen eigenschap van een bloktype is maar van
-het geval: in een pagina verwijst hij alleen en is hij leeg, in zijn eigen
-query-post draagt hij de hele layout. Eén vorm, twee gedaanten.
+`kadence/query` shows that this is not a property of a block type but of
+the instance: in a page it only points onward and is empty; in its own
+query post it carries the whole layout. One form, two guises.
 
-`generate-section` volgt daarin WordPress zelf: staat er niets tussen de tags en
-heeft het blok geen eigen wrapper, dan wordt het `/-->`.
+`generate-section` follows WordPress itself here: if there is nothing between the tags and
+the block has no wrapper of its own, it becomes `/-->`.
 
-## De uitlijning van een Sectie: waar je het niet zoekt
+## Aligning a Section: not where you would look
 
-Een Sectie is een flex-container, en welk attribuut welke CSS stuurt hangt af
-van `direction`. Dat is contra-intuïtief en kostte op 12-09-2026 drie rondes.
+A Section is a flex container, and which attribute drives which CSS depends
+on `direction`. That is counterintuitive and cost three rounds on 12-09-2026.
 
-**Bij `direction: vertical`:**
+**With `direction: vertical`:**
 
-| je wilt | attribuut | wordt |
+| you want | attribute | becomes |
 |---|---|---|
-| de inhoud verticaal uitlijnen | `verticalAlignment` | `justify-content` |
-| de inhoud op volle breedte | `justifyContent: ["stretch","",""]` | `align-items` |
+| to align the content vertically | `verticalAlignment` | `justify-content` |
+| the content at full width | `justifyContent: ["stretch","",""]` | `align-items` |
 
-Ja: **`justifyContent` stuurt `align-items`.** Zo staat het in de render
-(`class-kadence-blocks-column-block.php:58, 320`). Bij een verticale kolom is de
-hoofdas verticaal, dus `verticalAlignment` gaat over de hoogte en blijft de
-breedte op `flex-start` staan — waardoor kinderen hun natuurlijke breedte
-krijgen in plaats van de volle.
+Yes: **`justifyContent` drives `align-items`.** That is how it is in the render
+(`class-kadence-blocks-column-block.php:58, 320`). In a vertical column the
+main axis is vertical, so `verticalAlignment` is about the height, and the
+width stays at `flex-start` — which is why children get their natural width
+instead of the full width.
 
-De toegestane waarden voor `verticalAlignment` zijn `top`, `middle`, `bottom`,
-`stretch`, `space-between`, `space-around` en `space-evenly`. De werkbalk biedt
-de eerste vier; het paneel *Vertical Alignment* bij een verticale Sectie ook de
-laatste drie. `space-between` is de nette manier om een knop onderaan een
-kaart te krijgen: tekst bovenaan, knop onderaan, zonder `flexGrow` (dat werkt
-hier niet, want de binnenste laag is bij een verticale Sectie zonder
-uitlijning geen flexcontainer). `describe-block` toont de lijst als
-`known_values`, en `validate-write` toetst erop.
+The allowed values for `verticalAlignment` are `top`, `middle`, `bottom`,
+`stretch`, `space-between`, `space-around` and `space-evenly`. The toolbar offers
+the first four; the *Vertical Alignment* panel on a vertical Section also offers the
+last three. `space-between` is the clean way to get a button at the bottom of a
+card: text at the top, button at the bottom, without `flexGrow` (that does not work
+here, because in a vertical Section without
+alignment the inner layer is not a flex container). `describe-block` shows the list as
+`known_values`, and `validate-write` checks against it.
 
-**En let op wat hier NIET waar is.** Een Sectie draagt klassen als
-`kb-section-dir-horizontal` in zijn markup, en het ligt voor de hand te denken
-dat je die moet meewijzigen. Dat hoeft niet: gemeten in beide richtingen stuurt
-het **attribuut** de weergave, en een achtergebleven klasse verandert daar
-niets aan. `set-attributes` en `style-blocks` kunnen `direction` dus gewoon
-wijzigen op een bestaand blok.
+**And note what is NOT true here.** A Section carries classes such as
+`kb-section-dir-horizontal` in its markup, and it is tempting to think
+that you have to change those along with it. You do not: measured in both directions, the
+**attribute** drives the display, and a leftover class changes nothing
+about that. So `set-attributes` and `style-blocks` can simply change `direction`
+on an existing block.
 
-## Blokken zonder uniqueID: het pad
+## Blocks without a uniqueID: the path
 
-Core-blokken (`core/post-time-to-read`, `core/paragraph`) en het formulierblok
-van Gravity Forms hebben geen uniqueID. `inspect-post` geeft ze een veld
-`path`, bijvoorbeeld `"pad:0.1.0.2"`: de kindindexen in `parse_blocks()`,
-witruimteblokken op het hoogste niveau meegeteld. Dat pad neem je in
-`validate-write`, `set-attributes`, `style-blocks`, `get-raw-markup` en
-`inspect-post` (`from_unique_id`) gewoon in plaats van een uniqueID.
+Core blocks (`core/post-time-to-read`, `core/paragraph`) and the Gravity Forms
+form block have no uniqueID. `inspect-post` gives them a
+`path` field, for example `"pad:0.1.0.2"`: the child indexes in `parse_blocks()`,
+with whitespace blocks at the top level included in the count. You simply use that path in
+`validate-write`, `set-attributes`, `style-blocks`, `get-raw-markup` and
+`inspect-post` (`from_unique_id`) instead of a uniqueID.
 
-Een pad verschuift zodra er ervóór een blok bijkomt of weggaat. Het token vangt
-dat af, want het hangt aan de wijzigingsdatum van de post; lees na een
-structuurwijziging het pad dus opnieuw uit.
+A path shifts as soon as a block is added or removed before it. The token catches
+that, because it is tied to the post's modification date; so after a
+structural change, read the path out again.
 
-## Een paletnaam werkt alleen in Kadence-blokken
+## A palette name only works in Kadence blocks
 
-`"palette5"` is een Kadence-verwijzing. Core kent hem niet: in
-`style.color.text` wordt het letterlijk `color: palette5` (ongeldig), in
-`textColor` de klasse `has-palette5-color` die niemand definieert. In beide
-gevallen erft het blok stil de kleur van zijn ouder. `validate-write` blokkeert
-dat nu en `verify-markup` meldt bestaande gevallen in `palette_names`.
+`"palette5"` is a Kadence reference. Core does not know it: in
+`style.color.text` it literally becomes `color: palette5` (invalid), in
+`textColor` the class `has-palette5-color` that nobody defines. In both
+cases the block silently inherits its parent's color. `validate-write` now blocks
+that, and `verify-markup` reports existing cases in `palette_names`.
 
-In een core-blok gebruik je in `style` een CSS-waarde (`var(--global-palette5)`
-of een eigen token) of de preset `var:preset|color|theme-palette5`, en in
-`textColor`/`backgroundColor` de slug `theme-palette5`. Gravity Forms neemt in
-zijn formulierblok alleen hex aan.
+In a core block, use a CSS value in `style` (`var(--global-palette5)`
+or a custom token) or the preset `var:preset|color|theme-palette5`, and in
+`textColor`/`backgroundColor` the slug `theme-palette5`. Gravity Forms accepts only
+hex in its form block.
 
-## Typografie en fonts: wat is echt ingesteld
+## Typography and fonts: what is actually set
 
-Het thema vult een typografiesleutel die niet in de theme mods staat aan met
-zijn standaardwaarde. Een waarde in `get-global-styles` bewijst dus niet dat hij
-is ingesteld: kijk naar `typography_sources` (`opgeslagen` of `standaard`).
-Lokaal en staging leken zo gelijk terwijl de een GeneralSans op 500 had en de
-ander de systeemletter op 700.
+The theme fills in a typography key that is not in the theme mods with
+its default value. So a value in `get-global-styles` does not prove that it
+has been set: look at `typography_sources` (`opgeslagen` (saved) or `standaard` (default)).
+That is how local and staging looked identical while one had GeneralSans at 500 and the
+other the system font at 700.
 
-`styles.fonts` somt de font-faces op die de site zelf levert (Kadence Custom
-Fonts) en waarschuwt als een family uit de typografie geen `@font-face` heeft
-(de browser valt stil terug op de fallback) of als een gewicht geen eigen bestand
-heeft (de browser bootst het na). `environment` noemt de versie van het child
-theme en of er een paginacache draait: leeg die na een release eerst, voordat je
-een verschil als fout ziet.
+`styles.fonts` lists the font faces the site itself supplies (Kadence Custom
+Fonts) and warns if a family from the typography has no `@font-face`
+(the browser silently falls back to the fallback) or if a weight has no file of its own
+(the browser synthesizes it). `environment` names the child
+theme's version and whether a page cache is running: clear it first after a release, before you
+treat a difference as an error.
 
-## Overzetten naar een andere site
+## Transferring to another site
 
-1. **`check-access` eerst.** Zonder `edit_theme_options` zijn headers,
-   elementen, navigaties en vectoren niet te bewerken en concepten niet te
-   lezen; zonder `unfiltered_html` haalt WordPress SVG weg en wordt `&` in een
-   titel `&amp;`. `list-entities` meldt posts die er zijn maar niet leesbaar
-   (`unreadable`) — maak die niet opnieuw aan.
-2. **Kadence-objecten met `export-entity` → `import-entity`**, niet met de
-   export/import van Kadence zelf: die haalt backslashes uit de inhoud (`\u002d`
-   wordt `u002d`) en breekt zo `var(--…)` en klassen, zonder foutmelding.
-   `export-entity` draagt inhoud én `_kad`-meta (schaduwen, kleuren, plaatsing)
-   en noemt de posts en media waarnaar verwezen wordt; geef hun ID op de
-   doelsite mee als `post_map` en `media_map`, en het domein als `replace`.
-   ID's ín de meta worden niet omgezet: `meta_ids_to_check` noemt ze per sleutel
-   (`{key, ids}`), ook de pagina's in de weergavevoorwaarden van een element.
-   Alleen `_kad_`-sleutels gaan mee. Bestaat er op de doelsite al een object met
-   die titel, dan is het voorstel `riskant`: geef dan `target_id` om dat object
-   te overschrijven.
-3. **Het tegenstuk vinden:** de uniqueID's blijven bij een overzetting gelijk,
-   de post-ID's niet. `find-post` met `unique_id` vindt de post op de andere site
-   zonder ID-kaart.
-4. **Posts:** `create-post` met `date` (anders de datum van nu) en
-   `terms: {"category": []}` (anders zet WordPress een bericht in
-   *Uncategorized*); het voorstel meldt in `plan.wordpress_adds` wat WordPress er
-   zelf bij zou zetten.
-5. **Vergelijken:** `site-fingerprint` op beide sites en de hashes naast elkaar;
-   verschilt er een, vraag dat deel op met `detail: true`. Termen met hun
-   beschrijving, de typografie, fonts, Kadence-objecten (op titel, zonder ID's en
-   domein) en pluginversies zitten erin — precies wat een pixelvergelijking pas
-   laat ziet.
-6. **Opruimen:** dubbel aangemaakte objecten met `trash-post`. Die zoekt eerst
-   waar het object nog gebruikt wordt (op id, en bij een custom SVG op
-   `kb-custom-{ID}`) en geeft dan geen token; een verwijzing naar een post in de
-   prullenbak laat het blok stil verdwijnen. Altijd `riskant`, ook met
-   `ignore_usages`: een actief element op een hook (de footer!), de voor-,
-   berichten- en privacypagina, en een scan die faalde of begrensd was — zie
-   `objections`. Dat hoort in het beheer, met een mens erbij.
+1. **`check-access` first.** Without `edit_theme_options`, headers,
+   elements, navigations and vectors cannot be edited and drafts cannot be
+   read; without `unfiltered_html`, WordPress strips SVG and `&` in a
+   title becomes `&amp;`. `list-entities` reports posts that exist but are not readable
+   (`unreadable`) — do not create those again.
+2. **Kadence objects with `export-entity` → `import-entity`**, not with
+   Kadence's own export/import: that strips backslashes from the content (`\u002d`
+   becomes `u002d`) and so breaks `var(--…)` and classes, without an error message.
+   `export-entity` carries the content **and** the `_kad` meta (shadows, colors, placement)
+   and names the posts and media that are referenced; pass their IDs on the
+   target site as `post_map` and `media_map`, and the domain as `replace`.
+   IDs **inside** the meta are not converted: `meta_ids_to_check` names them per key
+   (`{key, ids}`), including the pages in an element's display conditions.
+   Only `_kad_` keys come along. If an object with that title already exists on the target site,
+   the proposal is `riskant`: then pass `target_id` to overwrite that object.
+3. **Finding the counterpart:** the uniqueIDs stay the same in a transfer,
+   the post IDs do not. `find-post` with `unique_id` finds the post on the other site
+   without an ID map.
+4. **Posts:** `create-post` with `date` (otherwise the current date) and
+   `terms: {"category": []}` (otherwise WordPress puts a post in
+   *Uncategorized*); the proposal reports in `plan.wordpress_adds` what WordPress would
+   add on its own.
+5. **Comparing:** `site-fingerprint` on both sites and the hashes side by side;
+   if one differs, request that part with `detail: true`. Terms with their
+   description, the typography, fonts, Kadence objects (by title, without IDs and
+   domain) and plugin versions are included — exactly what a pixel comparison only
+   reveals late.
+6. **Cleaning up:** objects created twice, with `trash-post`. It first looks for
+   where the object is still used (by id, and for a custom SVG by
+   `kb-custom-{ID}`) and then gives no token; a reference to a post in the
+   trash makes the block silently disappear. Always `riskant`, even with
+   `ignore_usages`: an active element on a hook (the footer!), the front page,
+   posts page and privacy page, and a scan that failed or was capped — see
+   `objections`. That belongs in the admin, with a human involved.
 
-Een aanmaaktoken werkt één keer. Dezelfde aanroep nog eens geeft
-`kadence_mcp_token_used` met het ID dat al bestaat, in plaats van een tweede
-object — tenzij dat eerste in de prullenbak staat.
+A creation token works once. The same call again returns
+`kadence_mcp_token_used` with the ID that already exists, instead of a second
+object — unless that first one is in the trash.
 
-## Kleuren over de hele site
+## Colors across the whole site
 
-`audit-colors` groepeert per kleurwaarde waar hij staat: blokattributen, de
-`_kad`-meta van navigaties, headers en queries, en de typografie. Een hex die
-gelijk is aan een paletkleur krijgt `same_as`: hij ziet er goed uit maar beweegt
-niet mee als het palet verandert. Kleuren in CSS-bestanden zie je hier niet.
+`audit-colors` groups, per color value, where it is used: block attributes, the
+`_kad` meta of navigations, headers and queries, and the typography. A hex that
+equals a palette color gets `same_as`: it looks right but does not move
+along when the palette changes. You do not see colors in CSS files here.
 
-`replace-colors` zet ze om met een kaart `{"#04201a": "palette3"}`. Het slaat
-bewust over, met reden in `skipped`:
-- een `var(--…)` waar een opacity bij hoort — een schaduw `{color, opacity}`,
-  een schaduw als lijst `[aan, kleur, opacity, …]`, of een broer `…Opacity`:
-  Kadence rekent de kleur dan om naar rgba, en dat breekt een variabele;
-- een paletnaam in een niet-Kadence-blok;
-- een niet-hex waarde in een Gravity Forms-blok.
+`replace-colors` converts them with a map `{"#04201a": "palette3"}`. It deliberately
+skips, with the reason in `skipped`:
+- a `var(--…)` that has an opacity attached — a shadow `{color, opacity}`,
+  a shadow as a list `[aan, kleur, opacity, …]` (on, color, opacity, …), or a sibling `…Opacity`:
+  Kadence then converts the color to rgba, and that breaks a variable;
+- a palette name in a non-Kadence block;
+- a non-hex value in a Gravity Forms block.
 
-## Vectoren en custom SVG's
+## Vectors and custom SVGs
 
-`create-entity` voor een vector rekent vooraf uit wat er na de sanitizer van
-Kadence en (zonder `unfiltered_html`) kses van WordPress van de SVG overblijft,
-en weigert als er elementen wegvallen (`accept_loss` om toch door te gaan). Na
-het aanmaken wordt op elementen teruggelezen.
+For a vector, `create-entity` calculates in advance what will remain of the SVG after Kadence's
+sanitizer and (without `unfiltered_html`) WordPress's kses,
+and refuses if elements would be lost (`accept_loss` to go ahead anyway). After
+creation, it reads back element by element.
 
-Een bestaande vector of custom SVG wijzig je met `update-entity-content`: een
-lijst `{from, to, count}`, waarbij `count` het aantal keer is dat `from` er nu
-staat — klopt dat niet, dan gebeurt er niets. Bij een custom SVG moet de JSON
-geldig blijven.
+You change an existing vector or custom SVG with `update-entity-content`: a
+list of `{from, to, count}`, where `count` is the number of times `from` currently
+appears — if that does not match, nothing happens. For a custom SVG, the JSON must
+remain valid.
 
-## Vormen die in geen schema staan
+## Shapes that are in no schema
 
-Afgelezen van werkende blokken; `describe-block` kent ze niet.
+Read off working blocks; `describe-block` does not know them.
 
-- **Voorwaardelijk tonen op een veld:** `kadenceConditional.postData` met
+- **Conditional display based on a field:** `kadenceConditional.postData` with
   `conditions: [{field: "post|post_custom_field", para: "kb_custom_input",
-  custom: "<veld>", compare: "not_empty"}]`. Voor een ACF-repeater staat in de
-  meta het aantal rijen, dus leeg is weg. Op een term:
+  custom: "<veld>", compare: "not_empty"}]`. For an ACF repeater, the
+  meta stores the number of rows, so empty means hidden. On a term:
   `field: "post|has_taxonomy"`, `para: "<taxonomie>|<term>"`,
-  `compare: "is_true"`. Op posttype: `post|post_type` equals `service`.
-- **Repeater over ACF:** `source` `current|acf_repeater|<veld>` op
-  `kadence/repeater`; in de template een inline dynamische span met
+  `compare: "is_true"`. On post type: `post|post_type` equals `service`.
+- **Repeater over ACF:** `source` `current|acf_repeater|<veld>` on
+  `kadence/repeater`; in the template an inline dynamic span with
   `data-field="repeater|repeater_custom_field"`, `data-custom="<subveld>"`,
-  `data-source` gelijk aan de bron en `data-userepeatercontext="true"`. Een
-  `[kb-dynamic]`-shortcode werkt daar niet: die draait pas na de rijen, zonder
-  rijcontext. Een dynamische link in zo'n rij: `kadenceDynamic.link` met
-  `useRepeaterContext: true`, plus dezelfde shortcode in `link` met
+  `data-source` equal to the source, and `data-userepeatercontext="true"`. A
+  `[kb-dynamic]` shortcode does not work there: it only runs after the rows, without
+  row context. A dynamic link in such a row: `kadenceDynamic.link` with
+  `useRepeaterContext: true`, plus the same shortcode in `link` with
   `userepeatercontext='true'`.
-- **Inline dynamische tekst in elk blok** (ook de knoptekst van `singlebtn`):
+- **Inline dynamic text in any block** (including the button text of `singlebtn`):
   `<span data-field="post|post_custom_field" data-para="kb_custom_input"
-  data-custom="<veld>" class="kb-inline-dynamic">standaard</span>`; de tekst in
-  de span is de standaard als het veld leeg is.
-- **Dynamic HTML met een eigen veld:** `metaField: "kb_custom_input"` én
-  `customMeta`; alleen `customMeta` geeft niets.
-- **Dynamische achtergrond:** op een rij `kadenceDynamic.bgImg`, op een Sectie
-  `backgroundImg:0:bgImg`. In een lus (query card, element als kaart) hoort er
-  `inQueryBlock: true` bij, anders delen alle kaarten één foto — en de editor
-  haalt die vlag weg bij los opslaan. `check-bindings` waarschuwt hiervoor.
-- **Filters:** `allOption` werkt op de dropdown en de checkboxen ook, al staat
-  hij alleen in de `block.json` van de filterknoppen.
+  data-custom="<veld>" class="kb-inline-dynamic">standaard</span>`; the text in
+  the span is the default if the field is empty.
+- **Dynamic HTML with a custom field:** `metaField: "kb_custom_input"` **and**
+  `customMeta`; `customMeta` alone returns nothing.
+- **Dynamic background:** on a row `kadenceDynamic.bgImg`, on a Section
+  `backgroundImg:0:bgImg`. In a loop (query card, element as a card)
+  `inQueryBlock: true` is needed as well, otherwise all cards share one photo — and the editor
+  removes that flag when saved on its own. `check-bindings` warns about this.
+- **Filters:** `allOption` also works on the dropdown and the checkboxes, even though
+  it is only in the `block.json` of the filter buttons.
 
-## Recept: mega menu
+## Recipe: mega menu
 
-Een `kadence/navigation-link` met `isMegaMenu: true` en een breedte
-(`megaMenuWidth: "custom"`, `megaMenuCustomWidth: 802`), met als kind één
-`kadence/rowlayout` (bijvoorbeeld `columns: 3`, `columnGutter: "none"`,
-`padding: [0,0,0,0]`) en daarin Secties met een kop en een eigen
-`kadence/navigation` (`id` van een losse navigatie). Twee valkuilen:
-- blokken in een dicht mega menu worden in de editor niet gemount en krijgen
-  geen uniqueID. `verify-markup` meldt ze in `missing_unique_id`, met een
-  voorstel in Kadence-vorm; zet dat met `set-attributes` op het pad;
-- `paddingDropdown` van de navigatie geldt ook voor het paneel, en telt op bij de
-  padding van de rij. De schaduw van het paneel is
-  `_kad_navigation_dropdownShadow` op de navigatie (post meta).
+A `kadence/navigation-link` with `isMegaMenu: true` and a width
+(`megaMenuWidth: "custom"`, `megaMenuCustomWidth: 802`), with as its child one
+`kadence/rowlayout` (for example `columns: 3`, `columnGutter: "none"`,
+`padding: [0,0,0,0]`), and inside it Sections with a heading and their own
+`kadence/navigation` (`id` of a separate navigation). Two pitfalls:
+- blocks in a closed mega menu are not mounted in the editor and get
+  no uniqueID. `verify-markup` reports them in `missing_unique_id`, with a
+  proposal in Kadence form; set that with `set-attributes` on the path;
+- the navigation's `paddingDropdown` also applies to the panel, and adds up with the
+  row's padding. The panel's shadow is
+  `_kad_navigation_dropdownShadow` on the navigation (post meta).
 
-## Tokens: per post na elkaar
+## Tokens: one after another per post
 
-Elk token hangt aan de wijzigingsdatum van de post. Elke opslag, ook een van
-jezelf, laat alle andere tokens op die post vervallen. Toets en schrijf per post
-dus na elkaar, niet parallel, of bundel de blokken in één `style-blocks` (één
-token, één opslag). Meerdere Kadence-objecten met dezelfde meta-wijziging doe je
-in één keer met `set-entity-meta` en `items`.
+Every token is tied to the post's modification date. Every save, including one of
+your own, expires all other tokens on that post. So check and write per post
+one after another, not in parallel, or bundle the blocks into one `style-blocks` (one
+token, one save). Multiple Kadence objects with the same meta change you do
+in one go with `set-entity-meta` and `items`.
 
-## Nog meer, kort
+## More, briefly
 
-- `create-query` kan nu ook vanaf een preset van Kadence (`preset: "no-filters"`
-  of `"simple"`, met `card_id`), met dezelfde templates als het keuzescherm.
-- `kadence/search` is bewust niet te genereren (vergrendelde template met de
-  verzendknop); kopieer er een met `duplicate-blocks` of `prepare-import`.
-- `replace-block` schrijft nu de link van een Sectie mee (`kb-section-has-link`
-  en de `<a class="kb-section-link-overlay">`, ook met een dynamische link).
-- `validate-write` zegt bij `maxWidth` op een Sectie per breekpunt wat het wordt:
-  in een verticale ouder de hoogte, en ook bij `vertical-reverse`.
-- `describe-block` markeert block-support-attributen met een naam die op een
-  eigen instelling lijkt (`style` tegenover `listStyle`), en kent de waarden van
-  `widthType` (knop) en `slideFrom` (off-canvas).
-- `find-usages` telt `id` op `kadence/tab`, `kadence/slide` en `kadence/pane`
-  niet meer mee: daar is het een volgnummer, geen verwijzing.
-- `get-raw-markup` leest lange posts in stukken: `truncated`, `offset` en
-  `next_offset`. Die tellen bytes, niet tekens, en vallen altijd op een
-  tekengrens.
+- `create-query` can now also start from a Kadence preset (`preset: "no-filters"`
+  or `"simple"`, with `card_id`), with the same templates as the selection screen.
+- `kadence/search` deliberately cannot be generated (a locked template with the
+  submit button); copy one with `duplicate-blocks` or `prepare-import`.
+- `replace-block` now also writes a Section's link (`kb-section-has-link`
+  and the `<a class="kb-section-link-overlay">`, including with a dynamic link).
+- For `maxWidth` on a Section, `validate-write` says per breakpoint what it becomes:
+  in a vertical parent, the height, and also with `vertical-reverse`.
+- `describe-block` flags block-support attributes whose name looks like
+  a setting of its own (`style` versus `listStyle`), and knows the values of
+  `widthType` (button) and `slideFrom` (off-canvas).
+- `find-usages` no longer counts `id` on `kadence/tab`, `kadence/slide` and `kadence/pane`:
+  there it is a sequence number, not a reference.
+- `get-raw-markup` reads long posts in chunks: `truncated`, `offset` and
+  `next_offset`. These count bytes, not characters, and always fall on a
+  character boundary.
 
-## Grenzen
+## Limits
 
-- Vijfentwintig abilities schrijven, alle met een token. Alleen `style-blocks` en
-  `set-text` accepteren in plaats daarvan `expect_modified` (de `post_modified_gmt`
-  die je al kent): één aanroep in plaats van twee, dus gebruik het zodra je de
-  post net gelezen hebt. De
-  overige drieëntwintig zijn alleen-lezen. Ga niet af op de naam: `generate-section`,
-  `prepare-import` en `preview-write` klinken als schrijvers maar slaan niets
-  op, terwijl
-  `sync-query-facets` en `set-card-layout` dat wél doen.
-- `inspect-post` kapt af op `max_blocks` (standaard 200, maximaal 400) en meldt
-  dat in `truncated` en `status`.
-- Grote attribuutwaarden worden samengevat als "array met N elementen". Wil je
-  de inhoud, noem het attribuut in `full_attributes`.
-- Elk antwoord heeft een `status`-regel. Is een resultaat leeg, lees die regel
-  vóór je concludeert dat er niets is — hij zegt of er niets ís of dat je niet
-  kon kijken.
-- Concepten en niet-gepubliceerde Kadence-objecten vereisen extra rechten op de
-  rol. Krijg je `kadence_mcp_post_forbidden`, meld dat aan de gebruiker in
-  plaats van een omweg te zoeken.
-- `find-post` gaat door WP_Query en respecteert dus plugins die inhoud
-  afschermen; `inspect-post` gaat via `get_post` en doet dat niet. Een post die
-  `find-post` niet vindt kan `inspect-post` soms wél lezen — de statusregel van
-  `inspect-post` meldt dat. Verzwijg dat verschil niet tegen de gebruiker.
-- `get-post-meta` geeft alleen sleutels op `_kad_`, `_kt_` en `kadence_` terug.
-  Het aantal weggelaten sleutels staat in `withheld`; vraag daar niet omheen.
-- `find-usages` scant een begrensd aantal posts. Staat er in de statusregel dat
-  de scan begrensd was, meld dat dan mee in plaats van "nergens gebruikt" te
-  zeggen.
+- Twenty-five abilities write, all with a token. Only `style-blocks` and
+  `set-text` accept `expect_modified` instead (the `post_modified_gmt`
+  you already know): one call instead of two, so use it as soon as you have
+  just read the post. The
+  other twenty-three are read-only. Do not go by the name: `generate-section`,
+  `prepare-import` and `preview-write` sound like writers but save
+  nothing, while
+  `sync-query-facets` and `set-card-layout` **do**.
+- `inspect-post` truncates at `max_blocks` (default 200, maximum 400) and reports
+  that in `truncated` and `status`.
+- Large attribute values are summarized as "array with N elements." If you want
+  the content, name the attribute in `full_attributes`.
+- Every response has a `status` line. If a result is empty, read that line
+  before you conclude that there is nothing — it tells you whether there **is** nothing or whether you
+  could not look.
+- Drafts and unpublished Kadence objects require extra capabilities on the
+  role. If you get `kadence_mcp_post_forbidden`, report that to the user instead of
+  looking for a workaround.
+- `find-post` goes through WP_Query and therefore respects plugins that restrict
+  content; `inspect-post` goes through `get_post` and does not. A post that
+  `find-post` does not find can sometimes **be** read by `inspect-post` — the status line of
+  `inspect-post` reports that. Do not hide that difference from the user.
+- `get-post-meta` only returns keys starting with `_kad_`, `_kt_` and `kadence_`.
+  The number of omitted keys is in `withheld`; do not try to get around that.
+- `find-usages` scans a capped number of posts. If the status line says
+  the scan was capped, report that too instead of saying "not used
+  anywhere."
 
-## Vertalingen koppelen (WPML): `connect-translation`
+## Linking translations (WPML): `connect-translation`
 
-De MCP kent geen talen: een Nederlandse pagina is voor `inspect-post` en de
-schrijftools een gewone post. Een vertaling die buiten de vertaaleditor om is
-gemaakt (WordPress-importer, `create-post`, met de hand) krijgt hooguit een taal,
-maar hangt aan niets. De taalwisselaar wijst dan nergens heen, en in de
-paginalijst staat bij het origineel een plus in plaats van een potlood.
+The MCP knows no languages: to `inspect-post` and the write tools, a Dutch page is
+an ordinary post. A translation that was created outside the translation editor
+(WordPress importer, `create-post`, by hand) gets at most a language,
+but is linked to nothing. The language switcher then points nowhere, and in the
+page list the original shows a plus instead of a pencil.
 
-WPML Export and Import lost dat niet op voor content die al op de site staat: het
-koppelt via drie importvelden (`_wpml_import_translation_group`, `…_language_code`,
-`…_source_language_code`), en die zet de export alleen in het **bestand**, niet op
-het origineel in de database. De vertaling krijgt dan wel `nl`, maar vindt geen
-partner (waargenomen bij Ouwerkerk Logistics, 12-10-2026).
+WPML Export and Import does not solve this for content that is already on the site: it
+links through three import fields (`_wpml_import_translation_group`, `…_language_code`,
+`…_source_language_code`), and the export only puts those in the **file**, not on
+the original in the database. The translation does get `nl`, but finds no
+partner (observed at Ouwerkerk Logistics, 12-10-2026).
 
-`connect-translation` legt de koppeling met de officiële hook
-`wpml_set_element_language_details` en leest terug via WPML zelf (trid, taal, en
-`wpml_object_id` van origineel naar vertaling). Meerdere koppelingen in één keer met
-`items`. Geef `language` mee als de vertaling nog in de taal van het origineel staat
-(direct na een import). Geweigerd wordt een origineel dat in die taal al een andere
-vertaling heeft, en een post die zelf al vertalingen heeft: die zouden los komen te
-hangen of meeverhuizen.
+`connect-translation` creates the link with the official hook
+`wpml_set_element_language_details` and reads back through WPML itself (trid, language, and
+`wpml_object_id` from original to translation). Multiple links in one go with
+`items`. Pass `language` if the translation is still in the original's language
+(right after an import). It refuses an original that already has another
+translation in that language, and a post that itself already has translations: those would end up
+unlinked or move along with it.
 
-Schrijf eerst het origineel, dan de vertaling: een schrijfactie op het origineel zet
-de vertaling in WPML op *moet bijgewerkt*.
+Write the original first, then the translation: a write action on the original sets
+the translation in WPML to *needs update*.
 
-**De beproefde route voor vertalingen die al klaarliggen** (Ouwerkerk Logistics, 12-10-2026):
+**The proven route for translations that are already prepared** (Ouwerkerk Logistics, 12-10-2026):
 
-1. Een WXR met per item de vertaalde post: dezelfde blokken met de vertaalde tekst,
-   `_wpml_import_translation_group` (ID van het origineel), `_wpml_import_language_code`,
-   `_wpml_import_source_language_code`, en `_wpml_import_after_process_post_status` `publish`.
-2. **Post-ID's vanaf de huidige teller.** De WordPress-importer neemt een vrij ID uit het
-   bestand over; een hoog getal laat `AUTO_INCREMENT` springen. Terugzetten kan pas als alles
-   erboven weg is, en `ALTER TABLE wp_posts AUTO_INCREMENT` faalt op WordPress-tabellen met
-   *1067 Invalid default value for 'post_date'* tot je `SET SESSION sql_mode = ''` draait.
-3. Importeren (taal op de standaardtaal laten), dan *Run WPML Import*: de posts krijgen hun taal
-   en de status uit het veld, maar staan los.
-4. `connect-translation` met `items` voor alles tegelijk, daarna de voorkant controleren.
-5. **Verwijzingen omzetten.** WPML zet post-ID's in blokken alleen om in zijn vertaaleditor. Na een
-   import wijzen `core/block` (`ref`), `kadence/query`, `kadence/query-card`, `kadence/navigation` en
-   `kadence/navigation-link` in de vertalingen nog naar de originelen, net als ACF-velden met een
-   post-ID (page_link, relatie). Zet ze om met de kaart origineel → vertaling, en lees terug. Termen
-   gaan niet mee in een WXR: eerst de termen vertalen in WPML, dan de NL-term op de NL-post zetten.
+1. A WXR with the translated post per item: the same blocks with the translated text,
+   `_wpml_import_translation_group` (ID of the original), `_wpml_import_language_code`,
+   `_wpml_import_source_language_code`, and `_wpml_import_after_process_post_status` `publish`.
+2. **Post IDs starting from the current counter.** The WordPress importer takes over a free ID from the
+   file; a high number makes `AUTO_INCREMENT` jump. Resetting it is only possible once everything
+   above it is gone, and `ALTER TABLE wp_posts AUTO_INCREMENT` fails on WordPress tables with
+   *1067 Invalid default value for 'post_date'* until you run `SET SESSION sql_mode = ''`.
+3. Import (leave the language at the default language), then *Run WPML Import*: the posts get their language
+   and the status from the field, but are unlinked.
+4. `connect-translation` with `items` for everything at once, then check the frontend.
+5. **Converting references.** WPML converts post IDs in blocks only in its translation editor. After an
+   import, `core/block` (`ref`), `kadence/query`, `kadence/query-card`, `kadence/navigation` and
+   `kadence/navigation-link` in the translations still point to the originals, as do ACF fields with a
+   post ID (page_link, relationship). Convert them with the original → translation map, and read back. Terms
+   do not come along in a WXR: first translate the terms in WPML, then put the NL term on the NL post.

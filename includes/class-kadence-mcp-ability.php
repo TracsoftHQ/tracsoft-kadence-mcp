@@ -85,7 +85,7 @@ class Kadence_MCP_Ability extends WP_Ability {
 			return parent::do_execute( $input );
 		} catch ( \Throwable $e ) {
 			error_log( sprintf(
-				'Kadence MCP: ability "%s" gaf een exception — %s in %s:%d',
+				'Kadence MCP: ability "%s" threw an exception — %s in %s:%d',
 				$this->get_name(),
 				$e->getMessage(),
 				$e->getFile(),

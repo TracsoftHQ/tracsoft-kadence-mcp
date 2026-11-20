@@ -248,7 +248,7 @@ class Kadence_MCP_Profielen {
 					'verticalAlignment' => array( 'top', 'middle', 'bottom', 'stretch', 'space-between', 'space-around', 'space-evenly' ),
 					'direction'         => array( 'vertical', 'horizontal', 'vertical-reverse', 'horizontal-reverse' ),
 				),
-				'let_op' => 'Bij direction vertical stuurt verticalAlignment de HOOGTE (justify-content) en justifyContent de BREEDTE (align-items). Zie class-kadence-blocks-column-block.php:58 en 320.',
+				'let_op' => 'With direction vertical, verticalAlignment controls the HEIGHT (justify-content) and justifyContent the WIDTH (align-items). See class-kadence-blocks-column-block.php:58 and 320.',
 			),
 
 			// Zet de uniqueID twee keer neer: in de klasse en in data-kb-block.
@@ -259,9 +259,9 @@ class Kadence_MCP_Profielen {
 				'klassen' => array( '{KLEUR}' ),
 				'markup_attrs' => array( 'colorClass', 'backgroundColorClass' ),
 				'genegeerd'    => array(
-					'className' => 'Geavanceerde tekst zet zijn className niet in de HTML: het attribuut staat in het commentaar, maar de klasse komt niet op de h- of p-tag. Een CSS-regel die erop leunt pakt dus niet. Zet de opmaak in de blokattributen, of hang de klasse aan een omhullende Sectie.',
+					'className' => 'Advanced Text does not put its className in the HTML: the attribute is in the block comment, but the class does not land on the h or p tag. A CSS rule that relies on it therefore does not apply. Put the styling in the block attributes, or put the class on a wrapping Section.',
 				),
-				'let_op' => 'De tekst staat in de innerHTML, niet in een attribuut: het attribuut content heeft source html. Gebruik set-text.',
+				'let_op' => 'The text lives in the innerHTML, not in an attribute: the content attribute has source html. Use set-text.',
 			),
 
 			'kadence/advancedbtn' => array(
@@ -292,7 +292,7 @@ class Kadence_MCP_Profielen {
 					// (width + widthUnit) of de volle breedte.
 					'widthType'     => array( 'auto', 'fixed', 'full' ),
 				),
-				'let_op' => 'Het icoon heeft geen eigen achtergrond: iconColor en iconColorHover kleuren alleen het pictogram. Kadence geeft de knop overflow: hidden en een ::before-laag die bij backgroundHoverType gradient de hoverkleur draagt; in de editor krijgt die laag bij kb-btn-global-fill de hoverkleur van de themaknop. De editor bouwt de knop met andere klassen (.kt-button, .kt-btn-svg-icon, .kt-button-text) dan de voorkant (.kb-button, .kb-svg-icon-wrap, .kt-btn-inner-text).',
+				'let_op' => 'The icon has no background of its own: iconColor and iconColorHover only color the glyph. Kadence gives the button overflow: hidden and a ::before layer that carries the hover color when backgroundHoverType is gradient; in the editor, with kb-btn-global-fill, that layer gets the theme button\'s hover color. The editor builds the button with different classes (.kt-button, .kt-btn-svg-icon, .kt-button-text) than the front end (.kb-button, .kb-svg-icon-wrap, .kt-btn-inner-text).',
 			),
 
 			// Het pictogram. Afgelezen van kaart 251, 14-09-2026, nadat bleek
@@ -312,12 +312,12 @@ class Kadence_MCP_Profielen {
 			'kadence/icon' => array(
 				'open'  => '<div class="wp-block-kadence-icon kt-svg-icons kt-svg-icons{ID} alignnone">',
 				'sluit' => '</div>',
-				'let_op' => 'Een omhulling om een of meer kadence/single-icon. Zet de eigenlijke instellingen (icon, size, color) op het kindblok, niet hier.',
+				'let_op' => 'A wrapper around one or more kadence/single-icon. Put the actual settings (icon, size, color) on the child block, not here.',
 			),
 			'kadence/single-icon' => array(
 				'open'  => '<div class="wp-block-kadence-single-icon kt-svg-style-default kt-svg-icon-wrap kt-svg-item-{ID}"><span data-name="{ATTR:icon}" data-stroke="{ATTR:width}" class="kadence-dynamic-icon">',
 				'sluit' => '</span></div>',
-				'let_op' => 'Hoort altijd in een kadence/icon. Het attribuut icon is een naam als fe_tag of fas_euro-sign; die namen verzin je niet maar lees je af van een bestaand blok. De span blijft leeg — Kadence zet daar bij het tonen de SVG in — maar de data-attributen erop moeten kloppen, want daar leest hij de naam en de lijndikte uit. Een icoon met link (attribuut link) kan hier niet gebouwd of herbouwd worden: dan staat er een <a class="kt-svg-icon-link"> om de span, met target, rel, aria-label en data-title die van andere attributen afhangen. Kopieer zo een icoon met duplicate-blocks of prepare-import, of wijzig het in de editor.',
+				'let_op' => 'Always belongs inside a kadence/icon. The icon attribute is a name like fe_tag or fas_euro-sign; don\'t invent these names, read them from an existing block. The span stays empty — Kadence inserts the SVG there on render — but the data attributes on it must be right, because that is where it reads the name and stroke width. An icon with a link (attribute link) cannot be built or rebuilt here: there is then an <a class="kt-svg-icon-link"> around the span, with target, rel, aria-label and data-title that depend on other attributes. Copy such an icon with duplicate-blocks or prepare-import, or change it in the editor.',
 			),
 
 			// Het zoekblok. Niet te genereren: de editor legt er een vergrendelde
@@ -330,7 +330,7 @@ class Kadence_MCP_Profielen {
 			// uniqueID's.
 			'kadence/search' => array(
 				'bouwbaar' => false,
-				'let_op'   => 'Het zoekblok heeft een vergrendelde template: een kadence/advancedbtn met een kadence/singlebtn (isSubmit, hideLink, noCustomDefaults) als verzendknop, en bij displayStyle "modal" als knop die het venster opent. Dat is niet te genereren. Kopieer een bestaand zoekblok (bijvoorbeeld uit de header) met duplicate-blocks, of zet het via prepare-import over; pas daarna de attributen aan met style-blocks.',
+				'let_op'   => 'The search block has a locked template: a kadence/advancedbtn with a kadence/singlebtn (isSubmit, hideLink, noCustomDefaults) as the submit button, and with displayStyle "modal" as the button that opens the modal. That cannot be generated. Copy an existing search block (for example from the header) with duplicate-blocks, or bring it over with prepare-import; then adjust the attributes with style-blocks.',
 			),
 
 			// Het off-canvaspaneel van de header. Alleen waardenlijsten: niet
@@ -357,7 +357,7 @@ class Kadence_MCP_Profielen {
 					// alleen nog in de render voor, voor oude inhoud.
 					'layout' => array( 'grid', 'masonry', 'carousel', 'fluidcarousel' ),
 				),
-				'let_op' => 'Een carousel loopt altijd rond: het script valt terug op loop als data-slider-loop-type ontbreekt, en de Post Grid zet dat nooit. Wil je dat niet, gebruik dan een Advanced Slider met loopType none. De kaart is niet vrij op te bouwen; afwijkende kaarten lopen via de hooks kadence_blocks_post_loop_*.',
+				'let_op' => 'A carousel always loops: the script falls back to loop when data-slider-loop-type is missing, and the Post Grid never sets it. If you don\'t want that, use an Advanced Slider with loopType none. The card cannot be built freely; custom cards go through the kadence_blocks_post_loop_* hooks.',
 			),
 
 			// Advanced Slider (Blocks Pro). Draagt geen eigen markup: de slides
@@ -380,9 +380,9 @@ class Kadence_MCP_Profielen {
 					'heightType'    => array( 'ratio', 'fixed', 'inherit', '' ),
 				),
 				'genegeerd'       => array(
-					'slidesScroll' => 'Het attribuut staat in het schema, maar de render schrijft altijd data-slider-scroll="1" (Blocks Pro 2.8.19) en de editor heeft er geen keuzeveld voor. Het script schuift wél per pagina bij elk getal behalve 1 — per pagina schuiven vraagt dus een render_block-filter op kadence/slider dat dat data-attribuut zet.',
+					'slidesScroll' => 'The attribute is in the schema, but the render always writes data-slider-scroll="1" (Blocks Pro 2.8.19) and the editor has no control for it. The script does scroll per page for any number except 1 — so scrolling per page needs a render_block filter on kadence/slider that sets that data attribute.',
 				),
-				'let_op'          => 'loopType none = niet rondlopen, met een uitgeschakelde vorige-pijl op de eerste pagina. De padding van de slider staat op .kb-advanced-slide-inner-wrap (standaard 20/48); een padding van 0 geldt op de voorkant, maar de editor toont dan toch de standaard. slideCount moet gelijk zijn aan het aantal slides. In een Kadence-tab start Kadence de slider pas als de tab zichtbaar is, en logt dan eenmalig "[splide] Already mounted!" — onschuldig.',
+				'let_op'          => 'loopType none = no looping, with a disabled previous arrow on the first page. The slider padding is on .kb-advanced-slide-inner-wrap (default 20/48); a padding of 0 applies on the front end, but the editor still shows the default. slideCount must equal the number of slides. Inside a Kadence tab, Kadence only starts the slider once the tab is visible, and then logs "[splide] Already mounted!" once — harmless.',
 			),
 
 			// Eén slide. Afgelezen uit de save() van kadence/slide (Blocks Pro
@@ -394,7 +394,7 @@ class Kadence_MCP_Profielen {
 				'sluit'        => '</div></div></div></li>',
 				'klassen'      => array( '{KLASSE}', '{SLIDE_UITLIJNING}', '{SLIDE_OVERLAY}' ),
 				'markup_attrs' => array( 'align', 'vAlign', 'backgroundOverlay', 'overlayGradient', 'className', 'ariaLabel' ),
-				'let_op'       => 'Hoort in een kadence/slider. De achtergrond (backgroundImg) staat op .kb-advanced-slide-inner-wrap; de overlay is absoluut met inset 0, maar de wrap is niet gepositioneerd, dus de overlay rekent vanaf de li en valt over een rand op de wrap heen. align en de overlay zitten in de opgeslagen markup: wijzig ze via replace-block of de editor, niet alleen als attribuut.',
+				'let_op'       => 'Belongs inside a kadence/slider. The background (backgroundImg) is on .kb-advanced-slide-inner-wrap; the overlay is absolute with inset 0, but the wrap is not positioned, so the overlay measures from the li and covers any border on the wrap. align and the overlay are in the saved markup: change them with replace-block or in the editor, not only as an attribute.',
 			),
 
 			// Tabs worden bewust NIET gebouwd. De wrapper draagt een reeks
@@ -408,7 +408,7 @@ class Kadence_MCP_Profielen {
 				'bouwbaar'        => false,
 				'aantal_kinderen' => 'tabCount',
 				'kinderen'        => array( 'kadence/tab' ),
-				'let_op'          => 'Niet te bouwen met generate-section: de wrapper en de titellijst worden uit attributen afgeleid. Kopieer tabs met duplicate-blocks, bouw ze in de editor, of voer editor-markup in met prepare-import. gutter zet geen ruimte tussen de titels; innerPadding is de ruimte tussen de titelbalk en de inhoud.',
+				'let_op'          => 'Cannot be built with generate-section: the wrapper and the title list are derived from attributes. Copy tabs with duplicate-blocks, build them in the editor, or bring in editor markup with prepare-import. gutter does not add space between the titles; innerPadding is the space between the title bar and the content.',
 			),
 
 			// De Query-blokken. Afgelezen van query 1456, 11-09-2026.
@@ -433,11 +433,11 @@ class Kadence_MCP_Profielen {
 			// bij het tonen door PHP gerenderd.
 			'kadence/dynamichtml'         => array(
 				'zelfsluitend' => true,
-				'let_op'       => 'Toont één veld. Met field post|post_custom_field haal je een eigen veld op; zet dan para op kb_custom_input en custom op de meta-sleutel. Welke sleutels er zijn zie je met describe-post-type. Een verkeerde sleutel geeft een leeg blok zonder foutmelding. Typografie per kopniveau (h1Typography t/m h6Typography) rendert alleen met de bijbehorende schakelaar enableH1 t/m enableH6 op true; zonder die schakelaar negeert de render het attribuut stil. textTypography en textColor gelden voor het blok én elke <p> erin, ook in een genest citaat of component (selector .kb-dynamic-html-id-… p): een component met een eigen tekstmaat verliest die dan.',
+				'let_op'       => 'Shows one field. With field post|post_custom_field you fetch a custom field; then set para to kb_custom_input and custom to the meta key. describe-post-type shows which keys exist. A wrong key gives an empty block with no error. Typography per heading level (h1Typography through h6Typography) only renders with the matching toggle enableH1 through enableH6 set to true; without it the render silently ignores the attribute. textTypography and textColor apply to the block and every <p> inside it, including in a nested quote or component (selector .kb-dynamic-html-id-… p): a component with its own text size then loses it.',
 			),
 			'kadence/dynamiclist'         => array(
 				'zelfsluitend' => true,
-				'let_op'       => 'Toont de termen van een taxonomie, bijvoorbeeld als pill. Het attribuut tax moet de naam van een taxonomie zijn die aan het posttype van de query hangt; describe-post-type laat zien welke dat zijn.',
+				'let_op'       => 'Shows the terms of a taxonomy, for example as pills. The tax attribute must be the name of a taxonomy attached to the query\'s post type; describe-post-type shows which those are.',
 			),
 			'kadence/query-filter'        => array( 'zelfsluitend' => true ),
 			'kadence/query-filter-buttons' => array( 'zelfsluitend' => true ),
@@ -455,7 +455,7 @@ class Kadence_MCP_Profielen {
 			// neer.
 			'kadence/vector' => array(
 				'zelfsluitend' => true,
-				'let_op'       => 'De SVG staat in een kadence_vector-post (id). Aanmaken via de REST-route kb-vector/v1/vectors of de editor; de inhoud gaat door de sanitizer van Kadence. Anders dan een custom icoon (kb-custom-N) blijven fill en stroke staan, dus lijniconen blijven lijnen. Zonder align wordt hij gecentreerd.',
+				'let_op'       => 'The SVG lives in a kadence_vector post (id). Create it via the REST route kb-vector/v1/vectors or in the editor; the content goes through Kadence\'s sanitizer. Unlike a custom icon (kb-custom-N), fill and stroke are kept, so line icons stay line icons. Without align it is centered.',
 			),
 
 			// Navigatie. Twee gedaanten, net als kadence/query: in een pagina of
@@ -467,7 +467,7 @@ class Kadence_MCP_Profielen {
 			'kadence/navigation' => array(
 				'open'   => '',
 				'sluit'  => '',
-				'let_op' => 'Het uiterlijk staat in post meta van de kadence_navigation-post (_kad_navigation_*), te zetten met set-entity-meta. spacing is [rij-gap, kolom-gap, …] en staat standaard in em (_kad_navigation_spacingUnit). Een nieuwe navigatie maak je met create-entity.',
+				'let_op' => 'The appearance is in post meta of the kadence_navigation post (_kad_navigation_*), set with set-entity-meta. spacing is [row gap, column gap, …] and defaults to em (_kad_navigation_spacingUnit). Create a new navigation with create-entity.',
 			),
 			// Een menu-item. Geen eigen HTML: de render bouwt het li-element. Met
 			// kinderen (een submenu, of een rowlayout als mega menu) staan die er
@@ -475,7 +475,7 @@ class Kadence_MCP_Profielen {
 			'kadence/navigation-link' => array(
 				'open'   => '',
 				'sluit'  => '',
-				'let_op' => 'kind post-type met type en id koppelt het item aan een post, zodat de url meeloopt met de slug; kind custom met url is een vrije link. isMegaMenu met een kadence/rowlayout als kind maakt een mega menu; megaMenuWidth custom met megaMenuCustomWidth zet de breedte. Hoort in een kadence/navigation.',
+				'let_op' => 'kind post-type with type and id links the item to a post, so the url follows the slug; kind custom with url is a free link. isMegaMenu with a kadence/rowlayout as a child makes a mega menu; megaMenuWidth custom with megaMenuCustomWidth sets the width. Belongs inside a kadence/navigation.',
 			),
 		);
 	}

@@ -1352,7 +1352,7 @@ class Kadence_MCP_Abilities_Site {
 
 			if ( false !== strpos( $html, 'kb-inline-dynamic' ) && preg_match_all( '/data-field="([^"]+)"/', $html, $mm ) ) {
 				foreach ( $mm[1] as $veld ) {
-					$bindingen[] = self::toets_field( $naam, $uid, 'inline span in de markup', $veld );
+					$bindingen[] = self::toets_field( $naam, $uid, 'inline span in the markup', $veld );
 				}
 			}
 

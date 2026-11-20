@@ -4,41 +4,46 @@ Tags: mcp, kadence, abilities, ai
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.27.1.1
+Stable tag: 1.27.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Kadence Blocks, Kadence Blocks Pro, Kadence Pro en het Kadence-thema uitlezen en gericht wijzigen via MCP.
+Read and make targeted changes to Kadence Blocks, Kadence Blocks Pro, Kadence Pro and the Kadence theme via MCP.
 
 == Description ==
 
-Negenenveertig abilities voor de WordPress Abilities API, waarmee een MCP-assistent
-de Kadence-opbouw van een site kan uitlezen en gericht kan wijzigen: welke
-blokken er zijn, welke attributen die hebben, hoe een pagina is opgebouwd,
-welke headers en elementen er staan, en welk kleurenpalet er geldt.
+Forty-nine abilities for the WordPress Abilities API, with which an MCP assistant
+can read a site's Kadence structure and make targeted changes to it: which
+blocks exist, which attributes they have, how a page is built,
+which headers and elements exist, and which color palette applies.
 
-Drieëntwintig daarvan zijn alleen-lezen. Zesentwintig schrijven: set-attributes,
+Twenty-three of them are read-only. Twenty-six write: set-attributes,
 style-blocks, set-text, insert-blocks, remove-blocks, move-blocks, duplicate-blocks,
 replace-block, create-page, create-entity, create-post, update-post, set-page-status, connect-translation, create-query, create-query-card,
 set-query, sync-query-facets, set-card-layout, set-entity-meta,
 set-global-typography, set-site-css, replace-colors, update-entity-content,
-trash-post en import-entity. Ze vragen alle zesentwintig een eigen capability (kadence_mcp_write, die na installatie aan
-niemand is toegekend), bewerkrecht op de post volgens WordPress, en een token
-uit een voorafgaande controlestap. Na elke schrijfactie wordt de post
-teruggelezen en vergeleken met wat er bedoeld was.
+trash-post and import-entity. All twenty-six require a capability of their own (kadence_mcp_write, which after installation is granted to
+no one), edit rights on the post according to WordPress, and a token
+from a preceding check step. After every write action the post is
+read back and compared with what was intended.
 
-Alles staat na installatie uit; je zet per tool aan wat je wil aanbieden, onder
+Everything is off after installation; you turn on, per tool, what you want to offer, under
 Kadence Blocks > MCP.
 
 == Installation ==
 
-1. Upload de map naar `/wp-content/plugins/`
-2. Activeer de plugin
-3. Ga naar Kadence Blocks > MCP en zet aan wat je wil aanbieden
+1. Upload the folder to `/wp-content/plugins/`
+2. Activate the plugin
+3. Go to Kadence Blocks > MCP and turn on what you want to offer
 
-Vereist de WordPress Abilities API en de MCP Adapter.
+Requires the WordPress Abilities API and the MCP Adapter.
 
 == Changelog ==
+
+= 1.27.1.2 (Tracsoft) =
+* English: every message, setting, tool description and error is now in English, through an English translation (languages/mcp-abilities-kadence-en_US.mo) of all 948 upstream strings, loaded on every site whose language is not Dutch. Values the plugin returns or accepts as data (such as the verdicts veilig, riskant and blokkeer, and the pad: path prefix) stay as they are, with an English gloss in the descriptions.
+* English: the Claude skill (skill/kadence-blocks/SKILL.md), README, readme and developer notes are translated; 33 Dutch texts written directly in the code (block notes, field labels, log messages) are now English.
+* New: bin/build-translations.py to update the translation after an upstream merge.
 
 = 1.27.1.1 (Tracsoft) =
 * Fork: renamed to Tracsoft Kadence MCP (slug tracsoft-kadence-mcp); updates now come only from published releases of TracsoftHQ/tracsoft-kadence-mcp, and only as the built release zip. Refuses to run next to the original plugin.
@@ -52,271 +57,271 @@ Vereist de WordPress Abilities API en de MCP Adapter.
 * CI: GitHub Actions pinned to commit SHAs.
 
 = 1.27.1 =
-* Fix: create-post en update-post zien nu ACF-veldgroepen die aan een term hangen (locatieregel op een tag, categorie of eigen taxonomie). De velden werden opgezocht met alleen het posttype, en ACF geeft een termregel zonder post_id altijd false; zo'n veld werd geweigerd met "hoort bij geen veldgroep". Het scherm voor ACF draagt nu het post-ID en de termen zoals ze na de aanroep staan (wat de invoer per taxonomie opgeeft vervangt de huidige termen). Waargenomen op Ondernemersfonds Utrecht: "Hero afbeelding Nieuws" (post_tag:nieuws) was niet te schrijven.
+* Fix: create-post and update-post now see ACF field groups attached to a term (a location rule on a tag, category or custom taxonomy). The fields were looked up with only the post type, and ACF always returns false for a term rule without a post_id; such a field was rejected with "belongs to no field group". The screen for ACF now carries the post ID and the terms as they will be after the call (what the input specifies per taxonomy replaces the current terms). Observed on Ondernemersfonds Utrecht: "Hero afbeelding Nieuws" (post_tag:nieuws) could not be written.
 
 = 1.27.0 =
-* Nieuw: kadence/connect-translation. Koppelt een bestaande post in WPML als vertaling aan zijn origineel, via de officiële hook wpml_set_element_language_details; los of als lijst (items, één token). Nodig omdat een vertaling die buiten de vertaaleditor om is gemaakt (WordPress-importer, create-post) los blijft staan: WPML Export and Import koppelt alleen als het origineel de importvelden in de database draagt, en die staan alleen in het exportbestand. Weigert een origineel dat in die taal al een andere vertaling heeft, een post die zelf al vertalingen heeft, een niet-vertaalbaar posttype en een inactieve taal. Leest terug via WPML (trid, taal en wpml_object_id). Raakt geen inhoud, meta of status.
+* New: kadence/connect-translation. Links an existing post in WPML as a translation of its original, via the official hook wpml_set_element_language_details; singly or as a list (items, one token). Needed because a translation created outside the translation editor (WordPress importer, create-post) stays unlinked: WPML Export and Import only links if the original carries the import fields in the database, and those exist only in the export file. Refuses an original that already has a different translation in that language, a post that itself already has translations, a non-translatable post type and an inactive language. Reads back via WPML (trid, language and wpml_object_id). Touches no content, meta or status.
 
 = 1.26.1 =
-Fixes uit de review van 2026-09-28. Pas met deze versie de vier nieuwe schrijf-abilities aanzetten.
-* trash-post: riskant, zonder token en ook niet weg te zetten met ignore_usages, voor een actief element op een hook (zoals de footer op replace_footer), de voorpagina, de berichtenpagina, de privacypagina en een scan die faalde of begrensd was (objections). Tot nu toe kreeg de actieve footer "veilig". find-usages meldt truncated.
-* Post meta wordt overal geslasht geschreven (Kadence_MCP_Inventory::schrijf_meta). Op dertien plekken ging dat zonder wp_slash, waardoor backslashes stil verdwenen, ook bij het kopiëren van een query of card.
-* import-entity: alleen meta-sleutels met het prefix _kad_; status en slug zitten in het token; publiceren toetst publish_posts; een bestaand object met dezelfde titel geeft riskant (gebruik target_id). meta_ids_to_check noemt per sleutel de ID's, ook uit "ids":[…] (de paginavoorwaarden van een element).
-* Aanmaaktokens (create-page, create-post, create-entity, create-query, create-query-card) werken één keer: dezelfde aanroep twee keer gaf twee objecten. Een token dat al een object opleverde geeft kadence_mcp_token_used, tenzij dat object in de prullenbak staat.
-* get-raw-markup knipt op een tekengrens (mb_strcut); offset en next_offset tellen bytes.
-* site-fingerprint vergelijkt lokaal en staging nu echt: de hele site-URL (schema en poort) en de uniqueID's in klassenamen worden genormaliseerd, meta wordt uitgepakt voor de hash. De pluginlijst alleen met activate_plugins.
-* Skill en serverinstructie: alleen style-blocks en set-text accepteren expect_modified.
-* tests/smoke.php (wp eval-file) roept elke lees-ability aan; CI lint op PHP 7.4 en 8.3; de release controleert naast de header ook KADENCE_MCP_VERSION en Stable tag.
+Fixes from the 2026-09-28 review. Only turn on the four new write abilities with this version.
+* trash-post: riskant, without a token and also not overridable with ignore_usages, for an active element on a hook (such as the footer on replace_footer), the front page, the posts page, the privacy page and a scan that failed or was limited (objections). Until now the active footer got "veilig". find-usages reports truncated.
+* Post meta is written slashed everywhere (Kadence_MCP_Inventory::schrijf_meta). In thirteen places that happened without wp_slash, causing backslashes to silently disappear, including when copying a query or card.
+* import-entity: only meta keys with the prefix _kad_; status and slug are in the token; publishing checks publish_posts; an existing object with the same title gives riskant (use target_id). meta_ids_to_check lists the IDs per key, including from "ids":[…] (an element's page conditions).
+* Creation tokens (create-page, create-post, create-entity, create-query, create-query-card) work once: the same call made twice produced two objects. A token that already produced an object returns kadence_mcp_token_used, unless that object is in the trash.
+* get-raw-markup cuts on a character boundary (mb_strcut); offset and next_offset count bytes.
+* site-fingerprint now really compares local and staging: the whole site URL (scheme and port) and the uniqueIDs in class names are normalized, meta is unpacked for the hash. The plugin list only with activate_plugins.
+* Skill and server instructions: only style-blocks and set-text accept expect_modified.
+* tests/smoke.php (wp eval-file) calls every read ability; CI lints on PHP 7.4 and 8.3; the release checks KADENCE_MCP_VERSION and Stable tag in addition to the header.
 
 = 1.26.0 =
-* Nieuw: kadence/check-access. Wat dit account per posttype mag lezen, bewerken, aanmaken en publiceren, en of edit_theme_options en unfiltered_html ontbreken — vooraf, in plaats van achteraf aan een stille fout te merken. list-entities telt nu ook posts die er wel zijn maar niet leesbaar (unreadable).
-* Nieuw: kadence/audit-colors en kadence/replace-colors. Per kleurwaarde waar hij staat (blokattributen, Kadence-meta, typografie), met hex die gelijk is aan een paletkleur apart gemeld; en omzetten met een kaart {oud: nieuw}, één revisie per post. Bewust overgeslagen, met reden: een var() waar een opacity bij hoort (ook schaduwen als object en als lijst), een paletnaam in een niet-Kadence-blok, een niet-hex waarde in een Gravity Forms-blok.
-* Nieuw: kadence/site-fingerprint. Hashes van palet, typografie (opgeslagen of standaard), fonts, taxonomieën, termen met beschrijving, Kadence-objecten (op titel, zonder ID's en domein), plugins en leesinstellingen, om twee sites structureel te vergelijken; met detail de waarden zelf.
-* Nieuw: kadence/export-entity en kadence/import-entity. Een Kadence-object met inhoud én _kad-meta als pakket, met de verwijzingen die een kaart nodig hebben; neerzetten als nieuw object of over een bestaand, met replace, post_map, media_map en term_map, en byte voor byte teruggelezen. De export/import van Kadence zelf haalt backslashes uit de inhoud.
-* Nieuw: kadence/update-entity-content (tekst vervangen in de SVG van een vector of de JSON van een custom SVG, met verwacht aantal en verliescontrole) en kadence/trash-post (prullenbak na een controle op gebruik; nooit definitief).
-* validate-write, set-attributes, style-blocks, get-raw-markup en inspect-post nemen een pad ("pad:0.1.0.2") aan in plaats van een uniqueID, voor core-blokken en het formulierblok van Gravity Forms. inspect-post geeft blokken zonder uniqueID een veld path.
-* validate-write blokkeert een Kadence-paletnaam (palette5) in een kleurattribuut van een niet-Kadence-blok; verify-markup meldt bestaande gevallen (palette_names) en Kadence-blokken zonder uniqueID (missing_unique_id, met een voorstel in Kadence-vorm).
-* get-global-styles: typography_sources (opgeslagen of Kadence-standaard), fonts (de font-faces van Kadence Custom Fonts, met een waarschuwing voor een family of gewicht zonder bestand), en in environment de versie van het child theme en een actieve paginacache.
-* create-entity voor een vector voorspelt vooraf wat er na de sanitizer van Kadence en kses van de SVG overblijft en weigert bij verlies (accept_loss); na het aanmaken wordt op elementen teruggelezen.
-* set-entity-meta: items voor dezelfde wijziging op meerdere entiteiten, met één token.
-* find-post: unique_id, om het tegenstuk van een blok op een andere site te vinden.
-* create-post: date en een expliciet lege lijst termen ({"category": []}); het voorstel meldt wat WordPress er zelf bij zet, het antwoord wat het er heeft bijgezet.
-* create-query: preset no-filters of simple, met card_id, volgens de templates van Kadence.
-* check-bindings waarschuwt voor een dynamische achtergrond in een lus zonder inQueryBlock (alle kaarten één foto).
-* replace-block schrijft de link van een Sectie (kb-section-has-link en de link-overlay, ook dynamisch); kadence/search is als niet te bouwen gemarkeerd, met uitleg.
-* validate-write zegt bij maxWidth op een Sectie per breekpunt wat het wordt (in een verticale ouder de hoogte, ook bij vertical-reverse).
-* describe-block markeert block-support-attributen met een naam die op een eigen instelling lijkt (style tegenover listStyle), kent allOption op de dropdown en de checkboxen, en de waarden van widthType (knop) en slideFrom/widthType (off-canvas).
-* get-raw-markup: lezen in stukken met offset, en truncated, next_offset en total_chars als eigen velden.
-* Gecorrigeerd: find-usages vond "id":2 ook in "id":24 en telde het volgnummer van tabs en slides als verwijzing.
-* De foutmelding bij een verlopen token noemt de gewone oorzaak (een andere schrijfactie op dezelfde post) en hoe je dat voorkomt.
+* New: kadence/check-access. What this account may read, edit, create and publish per post type, and whether edit_theme_options and unfiltered_html are missing — up front, instead of finding out afterwards from a silent failure. list-entities now also counts posts that exist but are not readable (unreadable).
+* New: kadence/audit-colors and kadence/replace-colors. For each color value, where it is used (block attributes, Kadence meta, typography), with hex values that equal a palette color reported separately; and converting with a map {old: new}, one revision per post. Deliberately skipped, with a reason: a var() that has an opacity attached (including shadows as an object and as a list), a palette name in a non-Kadence block, a non-hex value in a Gravity Forms block.
+* New: kadence/site-fingerprint. Hashes of palette, typography (saved or default), fonts, taxonomies, terms with description, Kadence objects (by title, without IDs and domain), plugins and reading settings, to compare two sites structurally; with detail, the values themselves.
+* New: kadence/export-entity and kadence/import-entity. A Kadence object with content and _kad meta as a package, with the references that need a map; placed as a new object or over an existing one, with replace, post_map, media_map and term_map, and read back byte for byte. Kadence's own export/import strips backslashes from the content.
+* New: kadence/update-entity-content (replace text in the SVG of a vector or the JSON of a custom SVG, with an expected count and a loss check) and kadence/trash-post (trash after a usage check; never permanent).
+* validate-write, set-attributes, style-blocks, get-raw-markup and inspect-post accept a path ("pad:0.1.0.2") instead of a uniqueID, for core blocks and the Gravity Forms form block. inspect-post gives blocks without a uniqueID a path field.
+* validate-write blocks a Kadence palette name (palette5) in a color attribute of a non-Kadence block; verify-markup reports existing cases (palette_names) and Kadence blocks without a uniqueID (missing_unique_id, with a suggestion in Kadence form).
+* get-global-styles: typography_sources (saved or Kadence default), fonts (the font faces of Kadence Custom Fonts, with a warning for a family or weight without a file), and in environment the child theme's version and an active page cache.
+* create-entity for a vector predicts in advance what will remain of the SVG after Kadence's sanitizer and kses, and refuses on loss (accept_loss); after creation, elements are read back.
+* set-entity-meta: items for the same change on multiple entities, with one token.
+* find-post: unique_id, to find a block's counterpart on another site.
+* create-post: date and an explicitly empty list of terms ({"category": []}); the proposal reports what WordPress adds on its own, the response what it actually added.
+* create-query: preset no-filters or simple, with card_id, following Kadence's templates.
+* check-bindings warns about a dynamic background in a loop without inQueryBlock (every card the same photo).
+* replace-block writes the link of a Section (kb-section-has-link and the link overlay, including dynamic); kadence/search is marked as not buildable, with an explanation.
+* For maxWidth on a Section, validate-write says per breakpoint what it becomes (the height in a vertical parent, including with vertical-reverse).
+* describe-block flags block-support attributes whose name resembles a setting of the block's own (style versus listStyle), knows allOption on the dropdown and the checkboxes, and the values of widthType (button) and slideFrom/widthType (off-canvas).
+* get-raw-markup: reading in chunks with offset, and truncated, next_offset and total_chars as separate fields.
+* Corrected: find-usages also found "id":2 in "id":24 and counted the sequence number of tabs and slides as a reference.
+* The error message for an expired token names the usual cause (another write action on the same post) and how to avoid it.
 
 = 1.25.0 =
-* Nieuw: kadence/update-post. De tegenhanger van create-post voor een bestaande post: titel, slug, samenvatting, volgorde, uitgelichte afbeelding, termen (per genoemde taxonomie vervangen) en ACF-velden (op veldsleutel), met dezelfde toetsen tegen het posttype. Het voorstel geeft before en after per onderdeel; ACF-velden, termen en de afbeelding kennen geen revisies. Nodig om de inhoud van diensten en markten naar een andere omgeving te zetten: create-post kon alleen aanmaken.
-* Nieuw: kadence/move-blocks. Verplaatst blokken binnen een post (voor, na, of als eerste of laatste kind) met behoud van hun uniqueID, zodat de CSS per blok en verwijzingen blijven werken. Weigert als het doel in een verplaatst blok ligt, als een Sectie uit, in of tussen Row Layouts gaat (kolomaantal; binnen de eigen rij van plek wisselen mag), als een slide of tab naar een andere ouder gaat (slideCount, tabtitels), en als de parent-regel van het blok het niet toelaat (ook voor kadence/slide, pane en repeatertemplate, die dat niet in hun registratie zeggen). Controleert voor het schrijven dat er geen blok verdwijnt.
-* Gecorrigeerd: set-text op een kadence/listitem verving de hele inhoud van de <li>, waardoor link en icoon verdwenen. Nu wordt alleen de tekst in .kt-svg-icon-list-text vervangen; ontbreekt die span (al platgeslagen markup), dan weigert hij met een verwijzing naar replace-block.
-* Gecorrigeerd: set-entity-meta, set-card-layout en set-query meldden een afwijking bij het teruglezen als een getal als tekst terugkwam (240 tegenover "240", true tegenover "1"): zo slaat WordPress scalaire post meta op. De vergelijking behandelt die nu als gelijk.
-* replace-block weigert niet meer op een Sectie met een achtergrondkleur: background zet geen klasse in de markup (afgelezen over 88 Secties). Wel geweigerd: een kadence/single-icon met link, want het profiel kent de <a> om de span niet en herbouwen zou de link stil weghalen.
-* Profiel Dynamic HTML: h1Typography t/m h6Typography renderen alleen met enableH1 t/m enableH6; textTypography en textColor gelden ook voor elke <p> in het blok.
+* New: kadence/update-post. The counterpart of create-post for an existing post: title, slug, excerpt, order, featured image, terms (replaced per named taxonomy) and ACF fields (by field key), with the same checks against the post type. The proposal gives before and after per part; ACF fields, terms and the image have no revisions. Needed to move the content of services and markets to another environment: create-post could only create.
+* New: kadence/move-blocks. Moves blocks within a post (before, after, or as the first or last child) while preserving their uniqueID, so that per-block CSS and references keep working. Refuses if the target is inside a moved block, if a Section moves out of, into or between Row Layouts (column count; swapping places within its own row is allowed), if a slide or tab moves to another parent (slideCount, tab titles), and if the block's parent rule does not allow it (also for kadence/slide, pane and repeatertemplate, which don't state this in their registration). Checks before writing that no block disappears.
+* Corrected: set-text on a kadence/listitem replaced the entire content of the <li>, making the link and icon disappear. Now only the text in .kt-svg-icon-list-text is replaced; if that span is missing (already flattened markup), it refuses with a pointer to replace-block.
+* Corrected: set-entity-meta, set-card-layout and set-query reported a mismatch on read-back when a number came back as text (240 versus "240", true versus "1"): that is how WordPress stores scalar post meta. The comparison now treats those as equal.
+* replace-block no longer refuses on a Section with a background color: background sets no class in the markup (read across 88 Sections). Still refused: a kadence/single-icon with a link, because the profile does not know the <a> around the span and rebuilding would silently remove the link.
+* Dynamic HTML profile: h1Typography through h6Typography only render with enableH1 through enableH6; textTypography and textColor also apply to every <p> in the block.
 
 = 1.24.0 =
-* Nieuw: kadence/create-post. Maakt een post van elk publiek posttype dat in de REST-API staat — een bericht of een eigen posttype zoals een dienst of markt — met titel, slug, samenvatting, volgorde, uitgelichte afbeelding, termen, ACF-velden en optioneel blokmarkup. Eén ability voor alle posttypes: wat per type verschilt wordt per aanroep uit WordPress gelezen en getoetst. Een samenvatting of afbeelding op een type dat die niet ondersteunt, een taxonomie die niet aan het type hangt, een term die niet bestaat, een ACF-veld buiten de veldgroepen van het type, een onbekend subveld in een repeater of een relatie naar een post van een niet-toegestaan type wordt geweigerd, met de namen die wél kunnen. ACF-velden worden op veldsleutel opgeslagen, zodat ACF ze op een nieuwe post herkent. Pagina's, bijlagen en de posttypes van Kadence blijven bij hun eigen ability. Standaard een concept; twee stappen met token; na afloop teruggelezen.
+* New: kadence/create-post. Creates a post of any public post type that is in the REST API — a post or a custom post type such as a service or market — with title, slug, excerpt, order, featured image, terms, ACF fields and optionally block markup. One ability for all post types: whatever differs per type is read from WordPress and checked on each call. An excerpt or image on a type that does not support it, a taxonomy not attached to the type, a term that does not exist, an ACF field outside the type's field groups, an unknown subfield in a repeater or a relationship to a post of a disallowed type is rejected, with the names that are allowed. ACF fields are saved by field key, so that ACF recognizes them on a new post. Pages, attachments and Kadence's post types stay with their own ability. A draft by default; two steps with a token; read back afterwards.
 
 = 1.23.1 =
-* Gecorrigeerd: describe-post-type gaf een fout ("output[sample] is not of type object") bij een posttype zonder gepubliceerde posts. sample is dan null, en het uitvoerschema stond dat niet toe. Juist bij een nieuwe omgeving, waar de posttypes er wel zijn maar nog leeg, was de tool daardoor onbruikbaar.
+* Corrected: describe-post-type returned an error ("output[sample] is not of type object") for a post type without published posts. sample is null in that case, and the output schema did not allow that. Precisely in a new environment, where the post types exist but are still empty, the tool was therefore unusable.
 
 = 1.23.0 =
-* Nieuw: kadence/create-entity. Maakt een lege kadence_navigation, kadence_header of kadence_element aan met ALLE instellingen die Kadence voor dat posttype registreert, op hun standaard — anders weigert set-entity-meta ze daarna, omdat een ontbrekende sleutel een typefout kan zijn. Afwijkende instellingen gaan meteen mee in meta, alleen geregistreerde sleutels. Een kadence_vector maakt hij uit een SVG, via de eigen route van Kadence en dus door de sanitizer van Kadence. Standaard een concept: een gepubliceerd element op replace_footer vervangt meteen de footer van de hele site. Samen met post_map in prepare-import is een header met navigaties, of een footer-element, nu van de ene omgeving naar de andere over te zetten zonder wizards.
-* validate-write blokkeert gutter en rowGap op een Sectie als de bijbehorende gutterVariable of rowGapVariable daar niet "custom" is: Kadence gebruikt dan een preset (1rem) en negeert het getal. Gemeten: twintig Secties met gutter kregen allemaal 1rem. Bij gutter in een verticale Sectie komt erbij dat rowGap de ruimte tussen de kinderen is.
-* validate-write waarschuwt bij flexBasis (geldt voor alle kinderen, op de ouder), bij background "transparent" op een knop (de editor toont dan de themaknop; rgba(0,0,0,0) werkt overal), en bij het oude borderWidth op een Sectie (de rand komt dan zonder kleur).
-* set-entity-meta waarschuwt bij spacing op een navigatie zolang spacingUnit op em staat, de standaard van Kadence: 20 werd 340 px.
-* generate-section zet de ruimte in een Sectie zelf goed: gutterVariable of rowGapVariable op "custom" waar een getal staat, en gutter in een verticale Sectie wordt rowGap. Elke correctie staat in het nieuwe veld notes.
-* generate-section kan kadence/vector, kadence/navigation en kadence/navigation-link bouwen, afgelezen van markup die Kadence schreef. De lijst bij het recept custom komt nu uit de profielen en noemt alle bouwbare blokken; hij noemde er vijf, terwijl er ook postgrid, dynamichtml, slider en de queryblokken waren.
+* New: kadence/create-entity. Creates an empty kadence_navigation, kadence_header or kadence_element with ALL the settings Kadence registers for that post type, at their defaults — otherwise set-entity-meta rejects them afterwards, because a missing key may be a typo. Non-default settings go straight into meta, registered keys only. It creates a kadence_vector from an SVG, via Kadence's own route and therefore through Kadence's sanitizer. A draft by default: a published element on replace_footer immediately replaces the footer of the whole site. Together with post_map in prepare-import, a header with navigations, or a footer element, can now be moved from one environment to another without wizards.
+* validate-write blocks gutter and rowGap on a Section if the corresponding gutterVariable or rowGapVariable is not "custom" there: Kadence then uses a preset (1rem) and ignores the number. Measured: twenty Sections with gutter all got 1rem. For gutter in a vertical Section it adds that rowGap is the space between the children.
+* validate-write warns about flexBasis (applies to all children, on the parent), about background "transparent" on a button (the editor then shows the theme button; rgba(0,0,0,0) works everywhere), and about the old borderWidth on a Section (the border then comes without a color).
+* set-entity-meta warns about spacing on a navigation as long as spacingUnit is set to em, Kadence's default: 20 became 340 px.
+* generate-section fixes the spacing in a Section itself: gutterVariable or rowGapVariable to "custom" where a number is set, and gutter in a vertical Section becomes rowGap. Each correction is listed in the new notes field.
+* generate-section can build kadence/vector, kadence/navigation and kadence/navigation-link, read from markup that Kadence wrote. The list for the custom recipe now comes from the profiles and names all buildable blocks; it named five, while there were also postgrid, dynamichtml, slider and the query blocks.
 
 = 1.22.0 =
-* Nieuw in prepare-import: post_map. Blokken die met hun id naar een andere post verwijzen — kadence/navigation, kadence/header, kadence/query, kadence/query-card, kadence/vector, kadence/advanced-form, en een kadence/navigation-link met kind post-type — krijgen het nieuwe ID uit de kaart; bij het menu-item wordt de url de permalink van de nieuwe post. Zonder deze kaart kon een header met navigaties, of een mega menu met kleinere menu's erin, niet naar een andere omgeving: post-ID's verschillen per site en replace kan geen getallen omzetten.
-* prepare-import meldt nu ook verwijzingen naar posts: ontbreekt het ID op deze site, of is het een ander posttype (een navigatieblok met het ID van een pagina), dan is dat een onopgeloste waarschuwing.
-* media_map kent nu ook de achtergrondparen van Kadence: bgImg met bgImgID (Row Layout, Sectie) en overlayBgImg met overlayBgImgID. Die werden niet herkend, dus een achtergrondfoto kwam met het ID van de bronsite mee.
-* Gecorrigeerd: de media-herkenning zag de id en url van een menu-item aan voor een bijlage, en media_map zou zo'n menu-item omzetten als foto.
+* New in prepare-import: post_map. Blocks that refer to another post with their id — kadence/navigation, kadence/header, kadence/query, kadence/query-card, kadence/vector, kadence/advanced-form, and a kadence/navigation-link with kind post-type — get the new ID from the map; for the menu item, the url becomes the permalink of the new post. Without this map, a header with navigations, or a mega menu with smaller menus inside it, could not be moved to another environment: post IDs differ per site and replace cannot convert numbers.
+* prepare-import now also reports references to posts: if the ID is missing on this site, or it is a different post type (a navigation block with the ID of a page), that is an unresolved warning.
+* media_map now also knows Kadence's background pairs: bgImg with bgImgID (Row Layout, Section) and overlayBgImg with overlayBgImgID. These were not recognized, so a background photo came along with the source site's ID.
+* Corrected: media detection mistook a menu item's id and url for an attachment, and media_map would convert such a menu item as a photo.
 
 = 1.21.0 =
-* Nieuw: kadence/prepare-import. insert-blocks nam alleen markup uit generate-section, dus markup die de editor zelf schreef — tabs, een slider, alles wat de generator niet kent — of markup van een andere omgeving kon er niet in, terwijl juist die het meest te vertrouwen is. prepare-import schrijft niets: hij controleert (alleen blokken, bestaande bloktypes, rondgang, klassen tegen attributen, schema en waardenlijsten, tellers als slideCount tegen het aantal kindblokken), geeft elke uniqueID het prefix van de doelpost, en meldt wat per site verschilt: links naar een ander domein, media, custom SVG-iconen, termen, paletkleuren met hun waarde op de doelsite, en eigen CSS-klassen. Omzetten alleen expliciet, met replace, media_map en term_map; er wordt niets geraden. Veilig geeft een token voor insert-blocks; een verwijzing die niet bestaat geeft geen token zonder accept_warnings.
-* Kennen en bouwen zijn gescheiden. Een blokprofiel kan nu bouwbaar false zijn: de plug-in kent dan de waarden en de afgeleide markup, maar de generator bouwt het niet. kadence/tabs staat er zo in — de wrapper en de titellijst volgen uit attributen op een manier die niet genoeg is waargenomen om te genereren.
-* Nieuwe profielen: kadence/slider en kadence/slide (Advanced Slider) zijn te bouwen en te toetsen, afgelezen uit de save() van Blocks Pro 2.8.19 en nagemeten in de editor: alle gegenereerde slides zijn daar geldig. kadence/postgrid is zelfsluitend en kent zijn layoutwaarden.
-* Afgeleide markup die niet op het buitenste element zit, wordt nu ook getoetst: de uitlijning van een slide staat op de tweede div, en de overlay is een eigen element dat alleen bestaat als er een overlaykleur is. Wie via een attribuut alleen backgroundOverlay zet, krijgt de kleur maar niet de div.
-* Waardenlijsten aangevuld: verticalAlignment op een Sectie kent ook space-between, space-around en space-evenly (die werden ten onrechte geblokkeerd), hAlign en vAlign op een knoppenrij, inheritStyles op een knop, en de slider-opties sliderType, loopType, arrowPosition, arrowStyle, dotStyle en heightType. describe-block toont zulke lijsten nu als known_values in plaats van "verzin hier geen waarde".
-* Attributen die de render negeert worden gemeld, in validate-write en describe-block: slidesScroll op de slider (de render schrijft altijd 1) en className op Geavanceerde tekst.
-* De generator vult tellers als slideCount zelf in, en neemt kbVersion over uit het profiel waar de editor iets anders dan 2 schrijft (de slider krijgt 3).
+* New: kadence/prepare-import. insert-blocks only accepted markup from generate-section, so markup the editor wrote itself — tabs, a slider, anything the generator doesn't know — or markup from another environment could not go in, while that is precisely the markup most worth trusting. prepare-import writes nothing: it checks (only blocks, existing block types, round trip, classes against attributes, schema and value lists, counters such as slideCount against the number of child blocks), gives every uniqueID the target post's prefix, and reports what differs per site: links to another domain, media, custom SVG icons, terms, palette colors with their value on the target site, and custom CSS classes. Converting only explicitly, with replace, media_map and term_map; nothing is guessed. veilig yields a token for insert-blocks; a reference that does not exist yields no token without accept_warnings.
+* Knowing and building are separated. A block profile can now have bouwbaar false: the plugin then knows the values and the derived markup, but the generator does not build it. kadence/tabs is listed that way — the wrapper and the title list follow from attributes in a way that has not been observed enough to generate.
+* New profiles: kadence/slider and kadence/slide (Advanced Slider) can be built and checked, read from the save() of Blocks Pro 2.8.19 and re-measured in the editor: all generated slides are valid there. kadence/postgrid is self-closing and knows its layout values.
+* Derived markup that is not on the outermost element is now also checked: a slide's alignment is on the second div, and the overlay is its own element that only exists if there is an overlay color. Anyone who sets only backgroundOverlay via an attribute gets the color but not the div.
+* Value lists extended: verticalAlignment on a Section also knows space-between, space-around and space-evenly (these were wrongly blocked), hAlign and vAlign on a button row, inheritStyles on a button, and the slider options sliderType, loopType, arrowPosition, arrowStyle, dotStyle and heightType. describe-block now shows such lists as known_values instead of "don't invent a value here".
+* Attributes that the render ignores are reported, in validate-write and describe-block: slidesScroll on the slider (the render always writes 1) and className on Advanced Text.
+* The generator fills in counters such as slideCount itself, and takes kbVersion from the profile where the editor writes something other than 2 (the slider gets 3).
 
 = 1.20.2 =
-* Het instellingenscherm zegt nu waar de MCP Adapter vandaan komt. "Ontbreekt" was een doodlopend spoor: de adapter staat niet in de plugin-directory, dus zoeken onder Plugins > Nieuwe plugin levert niets op, en van de twee downloads op GitHub werkt alleen het bestand onder Assets — de broncode mist vendor/ en daarmee de autoloader. Ontbreekt de Abilities API, dan noemt het scherm de WordPress-versie van deze site erbij, want vanaf 6.9 zit die in core.
+* The settings screen now says where the MCP Adapter comes from. "Missing" was a dead end: the adapter is not in the plugin directory, so searching under Plugins > Add New Plugin returns nothing, and of the two downloads on GitHub only the file under Assets works — the source code lacks vendor/ and with it the autoloader. If the Abilities API is missing, the screen also names this site's WordPress version, because as of 6.9 it is in core.
 
 = 1.20.1 =
-* De ondergrens gaat van WordPress 6.8 naar 6.9. Vanaf 6.9 zit de Abilities API in core, en daarmee valt er een vereiste weg die je anders als losse plugin erbij moet zetten. Op 6.8 werkte de plugin alleen met die extra plugin; dat uitleggen in documentatie kost meer dan het oplevert.
-* De documentatie zei niet waar je de plugin ophaalt. Wie de repo opende kwam uit bij de groene Code-knop, en die geeft de staat van main in een map met -main erachter — geen uitgebrachte versie, en een mapnaam die WordPress niet verwacht. De README wijst nu naar de ZIP onder Releases, die de workflow per versietag bouwt.
-* Diezelfde workflow laat CONTEXT.md voortaan buiten de ZIP. Dat zijn ontwerpbesluiten voor wie de plugin aanpast en die horen in de repo, niet op een productiesite. De skillmap gaat wél mee: de plugin serveert die zelf als download onder Kadence Blocks > MCP, en zonder die bestanden meldt dat scherm dat de skill ontbreekt.
-* Over de MCP Adapter stond er te weinig. Hij staat niet in de plugin-directory, dus zoeken onder Plugins > Nieuwe plugin levert niets op; het moet de ZIP van zijn eigen Releases-pagina zijn. Een gevendorde kopie binnen een andere plugin telt mee voor de klassecontrole, maar de adapter raadt die vorm zelf af en verwijdert hem in een latere versie — daar bouw je dus niet op.
+* The minimum goes from WordPress 6.8 to 6.9. As of 6.9 the Abilities API is in core, which drops a requirement you would otherwise have to add as a separate plugin. On 6.8 the plugin only worked with that extra plugin; explaining that in documentation costs more than it's worth.
+* The documentation did not say where to get the plugin. Anyone who opened the repo ended up at the green Code button, which gives the state of main in a folder with -main appended — not a released version, and a folder name WordPress does not expect. The README now points to the ZIP under Releases, which the workflow builds per version tag.
+* That same workflow now leaves CONTEXT.md out of the ZIP. Those are design decisions for whoever modifies the plugin, and they belong in the repo, not on a production site. The skill folder does go along: the plugin itself serves it as a download under Kadence Blocks > MCP, and without those files that screen reports that the skill is missing.
+* Too little was said about the MCP Adapter. It is not in the plugin directory, so searching under Plugins > Add New Plugin returns nothing; it has to be the ZIP from its own Releases page. A vendored copy inside another plugin counts for the class check, but the adapter itself advises against that form and will remove it in a later version — so that is not something to build on.
 
 = 1.20.0 =
-* Per groep een "Alle N aanvinken" op het instellingenscherm. Vijfendertig vakjes met de hand aanvinken is werk dat niemand hoort te doen, en het nodigt uit tot half afmaken. Bewust per groep en niet één knop voor het hele scherm: lezen en schrijven zijn verschillende beslissingen, en één vinkje dat ze allebei aanzet is precies de klik die je niet wil. Het groepsvakje staat op indeterminate zodra een groep half aanstaat — een leeg vakje boven een half aangevinkte lijst leest als "er staat niets aan", en dan klik je hem aan om te zien wat er gebeurt.
-* Dit verkleint alleen het oppervlak; de grendel blijft de capability. Alle schrijftools aanzetten doet nog steeds niets voor een account zonder kadence_mcp_write.
+* A "Select all N" per group on the settings screen. Checking thirty-five boxes by hand is work nobody should have to do, and it invites leaving things half done. Deliberately per group and not one button for the whole screen: reading and writing are different decisions, and one checkbox that turns both on is exactly the click you don't want. The group checkbox goes to indeterminate as soon as a group is partly on — an empty checkbox above a partly checked list reads as "nothing is on", and then you click it to see what happens.
+* This only reduces the surface; the lock remains the capability. Turning on all write tools still does nothing for an account without kadence_mcp_write.
 
 = 1.19.0 =
-* De plugin werkt zichzelf bij vanaf GitHub, via plugin-update-checker. De repo is publiek, dus er is geen token nodig; de release-workflow bouwt een ZIP zodat de automatisch gegenereerde zipball van de tag — die ook .github/ bevat — nooit op een site belandt.
-* De documentatie klopte niet meer met de code. Vier plekken beschreven nog zes schrijvers terwijl het er zeventien zijn, waaronder de serverbeschrijving die elke MCP-client bij elke sessie inlaadt: een agent begon dus met de overtuiging dat schrijven een uitzondering was. Dat is precies de fout die in 1.8.0 al eens is rechtgezet voor de plugin-header en README, en hij was teruggeslopen op de plek waar hij het meest kost.
-* CONTEXT.md beweerde dat schrijvers alleen post_content aanraken en dat opties nergens geraakt worden. Sinds set-global-typography en set-site-css is dat onjuist. Er staat nu een onderscheid naar wat er terug te draaien valt: post content krijgt een revisie, post meta niet, en site-brede instellingen raken elke pagina.
-* Verwijzingen naar een specifieke klantsite zijn uit de codecommentaren gehaald. De herkomstnotities blijven — afgelezen van echte markup is de reden dat de blokprofielen kloppen — maar zonder wie het was.
+* The plugin updates itself from GitHub, via plugin-update-checker. The repo is public, so no token is needed; the release workflow builds a ZIP so that the tag's automatically generated zipball — which also contains .github/ — never ends up on a site.
+* The documentation no longer matched the code. Four places still described six writers while there are seventeen, including the server description that every MCP client loads in every session: an agent therefore started out convinced that writing was an exception. That is exactly the error that was already corrected once in 1.8.0 for the plugin header and README, and it had crept back in at the place where it costs the most.
+* CONTEXT.md claimed that writers only touch post_content and that options are never touched. Since set-global-typography and set-site-css that is incorrect. There is now a distinction by what can be rolled back: post content gets a revision, post meta does not, and site-wide settings affect every page.
+* References to a specific client site have been removed from the code comments. The origin notes remain — having been read from real markup is the reason the block profiles are correct — but without saying whose it was.
 
 = 1.18.0 =
-* style-blocks en set-text kennen nu expect_modified als alternatief voor het token. Het token deed twee dingen: een mens de wijziging laten zien, en voorkomen dat je schrijft op een versie die er niet meer is. Bij deze twee schrijvers is dat eerste zwak — er is een schema, elke waarde is al getoetst — terwijl de kosten hoog zijn: op 14-09-2026 kostte het gelijktrekken van 31 hero-koppen 62 aanroepen in plaats van 31. expect_modified houdt de bescherming tegen verouderd schrijven volledig overeind en doet het in één aanroep. Bewust NIET bij remove-blocks, replace-block, insert-blocks en create-page: die veranderen de structuur, en daar valt uit geen schema af te lezen of het de bedoeling was.
-* Nieuw: set-global-typography. De enige plek waar je iets kunt doen aan koppen zonder eigen maat. De globale typografie van deze site had alleen desktopwaarden, en zonder mobiele waarde schaalt Kadence niet mee — een telefoon krijgt dan de desktopmaat. Vaste sleutellijst en geen prefixcontrole, want theme mods bevatten ook de header, de kleuren en de layout. Wat je meegeeft wordt samengevoegd, twee niveaus diep: alleen size.mobile opgeven laat family, weight én size.desktop staan.
-* Nieuw: set-site-css, voor Weergave > Customizer > Extra CSS. Het veld Custom CSS op een Kadence-header bestaat wél maar wordt op de voorkant niet uitgeserveerd; dat is gemeten en leverde CSS op die nergens terechtkwam. Dit is de enige plek in WordPress zelf die op elke pagina laadt.
-* generate-section kent kadence/icon en kadence/single-icon. Aanleiding: een weggehaald pictogram bleek nergens meer vandaan te halen — er stond op de hele site geen tweede om te kopiëren, en zonder profiel kon de generator hem niet bouwen. Een blok dat je wel kunt verwijderen maar niet kunt terugzetten is een gat in het gereedschap.
-* De profielen kennen {ATTR:naam}, zodat een blok dat een attribuutwaarde letterlijk in zijn markup zet uitdrukbaar wordt. kadence/single-icon draagt de icoonnaam als data-name op een lege span; zonder die span rendert Kadence niets. De waarde gaat door esc_attr en valt terug op de standaardwaarde uit block.json.
-* validate-write waarschuwt bij maxWidth op een Sectie. Kadence schrijft daar margin-left/right: auto bij, en auto-marges op een grid-item zetten dat item op fit-content — het blok krimpt dan naar de breedte van zijn tekst. Gemeten: rastersleuf 88,78px, maxWidth 88px, resultaat 24px. Bewust een notitie en geen blokkade: buiten een rij doet maxWidth precies wat je verwacht.
+* style-blocks and set-text now accept expect_modified as an alternative to the token. The token did two things: let a human see the change, and prevent writing to a version that no longer exists. For these two writers the first is weak — there is a schema, every value has already been checked — while the cost is high: on 2026-09-14, aligning 31 hero headings took 62 calls instead of 31. expect_modified keeps the protection against stale writes fully intact and does it in one call. Deliberately NOT for remove-blocks, replace-block, insert-blocks and create-page: those change the structure, and no schema can tell you whether that was the intent.
+* New: set-global-typography. The only place where you can do something about headings without a size of their own. This site's global typography had only desktop values, and without a mobile value Kadence does not scale along — a phone then gets the desktop size. Fixed list of keys and no prefix check, because theme mods also contain the header, the colors and the layout. What you pass in is merged, two levels deep: specifying only size.mobile leaves family, weight and size.desktop in place.
+* New: set-site-css, for Appearance > Customize > Additional CSS. The Custom CSS field on a Kadence header does exist but is not served on the front end; that was measured and produced CSS that ended up nowhere. This is the only place in WordPress itself that loads on every page.
+* generate-section knows kadence/icon and kadence/single-icon. Reason: a removed icon turned out to be impossible to get back from anywhere — there was not a second one on the whole site to copy, and without a profile the generator could not build it. A block you can delete but not restore is a gap in the toolset.
+* The profiles know {ATTR:naam}, so that a block that puts an attribute value literally in its markup becomes expressible. kadence/single-icon carries the icon name as data-name on an empty span; without that span Kadence renders nothing. The value goes through esc_attr and falls back to the default value from block.json.
+* validate-write warns about maxWidth on a Section. Kadence adds margin-left/right: auto there, and auto margins on a grid item set that item to fit-content — the block then shrinks to the width of its text. Measured: grid track 88.78px, maxWidth 88px, result 24px. Deliberately a note and not a block: outside a row, maxWidth does exactly what you expect.
 
 = 1.17.0 =
-* Nieuw: set-entity-meta. De opmaak van een navigatie en de plaatsing van een element staan in post meta met de prefix _kad_, niet in de blokmarkup, en daar kwam geen enkele ability bij. Een menu dat op een zwarte achtergrond terechtkwam bleef daardoor zwart op zwart tot iemand het in de editor repareerde. Twee poorten: alleen posttypes van Kadence, en alleen sleutels die al op die post staan — Kadence schrijft bij elke opslag zijn hele set weg, dus een ontbrekende sleutel is een typefout die anders stil zou worden opgeslagen en genegeerd. Post meta kent geen revisies, dus de oude waarde staat in het antwoord en de status zegt dat erbij.
-* set-text kan nu ook blokken zonder uniqueID adresseren, via match_text met de huidige tekst. Kadence deelt uniqueIDs uit, WordPress niet: een core/list-item in een accordeon droeg er geen en was daarmee met geen enkele schrijf-ability te bereiken. Er wordt op de volledige tekst gematcht, niet op een deel: bij nul of meer dan een treffer wordt er niets geschreven en hoor je hoeveel het er waren.
-* Het token van generate-section dekt niet langer de letterlijke tekenreeks maar de geserialiseerde blokkenboom. Een agent die de markup overneemt uit een JSON-antwoord levert `\u002d\u002d` terug waar er `--` stond; de blokken zijn dan identiek, de tekenreeks niet, en insert-blocks wees dat af met "je voorstel is anders" zonder te kunnen zeggen waar. Dat hield niets gevaarlijks tegen, alleen iets onschuldigs. Wijzigt er een attribuut of een tekst, dan verandert de boom wel en vervalt het token nog steeds.
+* New: set-entity-meta. The styling of a navigation and the placement of an element are in post meta with the prefix _kad_, not in the block markup, and no ability could reach it. A menu that ended up on a black background therefore stayed black on black until someone fixed it in the editor. Two gates: only Kadence post types, and only keys that already exist on that post — Kadence writes its whole set on every save, so a missing key is a typo that would otherwise be silently saved and ignored. Post meta has no revisions, so the old value is in the response and the status says so.
+* set-text can now also address blocks without a uniqueID, via match_text with the current text. Kadence hands out uniqueIDs, WordPress does not: a core/list-item in an accordion had none and was therefore unreachable by any write ability. Matching is on the full text, not on a part: with zero or more than one match nothing is written and you are told how many there were.
+* The generate-section token no longer covers the literal string but the serialized block tree. An agent that copies the markup from a JSON response returns `\u002d\u002d` where there was `--`; the blocks are then identical, the string is not, and insert-blocks rejected it with "your proposal is different" without being able to say where. That stopped nothing dangerous, only something harmless. If an attribute or a text changes, the tree does change and the token still expires.
 
 = 1.16.1 =
-* Reparatie: set-page-status riep mag_schrijven() aan, en die helper bestaat niet in de build-klasse maar in de query-klasse. Elke aanroep gaf een fatale fout. De twee controles staan nu uitgeschreven op de plek zelf.
+* Repair: set-page-status called mag_schrijven(), and that helper does not exist in the build class but in the query class. Every call produced a fatal error. The two checks are now written out in place.
 
 = 1.16.0 =
-* Nieuw: set-page-status. create-page kon alleen bij het AANMAKEN een status meegeven, dus een pagina die als concept was opgebouwd was daarna niet meer te publiceren zonder de editor — en dus ook niet op de voorkant te controleren.
+* New: set-page-status. create-page could only set a status at CREATION, so a page that had been built as a draft could no longer be published afterwards without the editor — and therefore also could not be checked on the front end.
 
 = 1.15.1 =
-* Reparatie: create-page faalde voor elke pagina op het hoogste niveau. Het output-schema eiste een object voor parent, en dat is null zonder ouder.
+* Repair: create-page failed for every top-level page. The output schema required an object for parent, and that is null without a parent.
 
 = 1.15.0 =
-* Nieuw: create-page, replace-block en set-card-layout.
-* insert-blocks met before en after werkt nu op elke diepte in plaats van alleen op het hoogste niveau, inclusief de plaatshouders in innerContent.
-* replace-block bouwde de tekst op met de samenvattende tekst_uit_blok() en gooide daarmee inline HTML weg en kapte af op 300 tekens. Er is nu binnenhtml_uit_blok(), die de inhoud binnen de buitenste tag letterlijk teruggeeft.
-* style-blocks meldt klassen-drift: bij een attribuut waar klassen uit volgen (zoals direction) wordt gemeld welke klasse ontbreekt, met de verwijzing naar replace-block.
+* New: create-page, replace-block and set-card-layout.
+* insert-blocks with before and after now works at any depth instead of only at the top level, including the placeholders in innerContent.
+* replace-block built up the text with the summarizing tekst_uit_blok(), thereby throwing away inline HTML and cutting off at 300 characters. There is now binnenhtml_uit_blok(), which returns the content inside the outermost tag verbatim.
+* style-blocks reports class drift: for an attribute that classes are derived from (such as direction), it reports which class is missing, with the pointer to replace-block.
 
 = 1.9.1 =
-* Reparatie van een regressie uit 1.8.0: style-blocks meldde een attribuut als mismatch wanneer het wegviel omdat het gelijk was aan de standaardwaarde. maxWidth op ["","",""] zetten leverde "er is geschreven, maar bij het teruglezen wijkt er iets af", terwijl het weglaten juist de bedoeling was. Zulke attributen komen nu in defaults te staan, niet in mismatch. Dat onderscheid is belangrijk: een melding die vals alarm slaat leert je hem negeren.
-* De skill legt uit welk attribuut de uitlijning van een Sectie stuurt. Dat is contra-intuïtief: bij direction vertical gaat verticalAlignment over de hoogte (justify-content) en stuurt justifyContent de breedte (align-items). Toegestane waarden voor verticalAlignment zijn top, middle, bottom en stretch; geen van beide heeft een enum, dus validate-write laat elke tekst door.
-* Correctie in de skill en het foutenlogboek: de bewering dat de klasse kb-section-dir-horizontal de weergave stuurt is onjuist. Gemeten in beide richtingen wint het attribuut, en style-blocks kan direction gewoon wijzigen op een bestaand blok. Die bewering kwam uit de review en is overgenomen zonder toetsing.
+* Repair of a regression from 1.8.0: style-blocks reported an attribute as a mismatch when it dropped out because it equaled the default value. Setting maxWidth to ["","",""] produced "it was written, but something differs on read-back", while omitting it was exactly the intent. Such attributes now go into defaults, not into mismatch. That distinction matters: a notice that raises false alarms teaches you to ignore it.
+* The skill explains which attribute controls a Section's alignment. That is counterintuitive: with direction vertical, verticalAlignment is about the height (justify-content) and justifyContent controls the width (align-items). Allowed values for verticalAlignment are top, middle, bottom and stretch; neither has an enum, so validate-write lets any text through.
+* Correction in the skill and the error log: the claim that the class kb-section-dir-horizontal controls the display is incorrect. Measured in both directions, the attribute wins, and style-blocks can simply change direction on an existing block. That claim came from the review and was adopted without testing.
 
 = 1.9.0 =
-* generate-section kent de Query-blokken: kadence/query, query-card, query-filter, query-filter-search, query-filter-reset, query-result-count, query-sort en query-pagination. Afgelezen van een bestaande query; ze zijn allemaal zelfsluitend. Een bestaande Query Loop ergens anders neerzetten is daarmee één blok met het id van de query-post.
-* Reparatie van hetzelfde patroon als bij de kleurklassen: het attribuut direction op een Sectie leidt drie klassen af (kb-section-dir-, kb-section-md-dir-, kb-section-sm-dir-) die de generator niet meeschreef. Een Sectie met direction horizontal kreeg het attribuut netjes opgeslagen en bleef verticaal staan, want de CSS hangt aan de klasse. Dit was bevinding 3 uit de review, nu bevestigd op echte markup.
-* Een blok zonder inhoud en zonder eigen wrapper wordt zelfsluitend geschreven, zoals WordPress dat zelf doet. Dat is nodig omdat kadence/query twee gedaanten heeft: in een pagina verwijst hij alleen naar een query-post en is hij leeg, in die query-post draagt hij de hele layout.
+* generate-section knows the Query blocks: kadence/query, query-card, query-filter, query-filter-search, query-filter-reset, query-result-count, query-sort and query-pagination. Read from an existing query; they are all self-closing. Placing an existing Query Loop somewhere else is thereby one block with the id of the query post.
+* Repair of the same pattern as with the color classes: the direction attribute on a Section derives three classes (kb-section-dir-, kb-section-md-dir-, kb-section-sm-dir-) that the generator did not write along. A Section with direction horizontal got the attribute neatly saved and stayed vertical, because the CSS hangs on the class. This was finding 3 from the review, now confirmed on real markup.
+* A block without content and without a wrapper of its own is written self-closing, as WordPress itself does. That is necessary because kadence/query has two forms: in a page it only refers to a query post and is empty, in that query post it carries the whole layout.
 
 = 1.8.0 =
-Naar aanleiding van een volledige review. De rode draad: een controle die groen geeft omdat hij het verkeerde toetst.
+Following a full review. The common thread: a check that comes back green because it tests the wrong thing.
 
-* KRITIEK: insert-blocks en duplicate-blocks met position inside zetten een blok BUITEN een lege container. De plaatshouder in innerContent kwam op index 0 in plaats van tussen de open- en sluittag, waardoor het blok vóór de openingstag werd geschreven. Bij een container die al kinderen had ging het goed, en juist daardoor viel het niet op.
-* KRITIEK: beide terugleescontroles meldden daarbij "geschreven en teruggelezen", want ze keken alleen of het uniqueID érgens in de post stond — niet onder welke ouder. Er is nu een ouder-toets: staat het blok niet onder de opgegeven container, dan volgt een fout met de werkelijke ouder erbij.
-* KRITIEK: de recepten tekst, cta en de koprij van kolommen schreven een rij van één kolom zonder het attribuut columns. Kadence gaat dan uit van twee kolommen en zet de inhoud op halve breedte, met een lege sleuf ernaast. columns wordt nu op elke gegenereerde rij afgeleid uit het aantal kinderen.
-* Vier van de zes schrijvers gebruikten serialize_blocks() in plaats van de eigen serialiseer(), waardoor bij elke schrijfactie de lege regels tussen álle secties van de pagina verdwenen. Alle zes doen nu hetzelfde.
-* De terugleescontrole van style-blocks sloeg precies het geval over dat ertoe doet: een attribuut dat na het opslaan helemaal weg is. Dat is de bug "metadata werd weggegooid" in zijn zuiverste vorm, en de melding luidde "geschreven en teruggelezen".
-* COL_LAYOUTS blokkeerde vijf geldige waarden, waaronder "row" bij elk kolomaantal en "first-row" — dat laatste gebruikt de homepage van deze site.
-* Een afgewezen token zegt nu WAT er niet klopt. De melding dekte twee heel verschillende situaties ("de post is gewijzigd of je voorstel is anders"), en die dubbelzinnigheid liet duplicate-blocks zes versies lang stuk staan: elke aanroep gaf die melding en hij klonk als normaal gedrag. Het token bestaat nu uit twee helften — zes tekens voor post en wijzigingsdatum, de rest voor het voorstel — zodat de server kan zien welke helft afwijkt.
-* remove-blocks, set-attributes, style-blocks en set-text publiceren destructive: true. MCP-clients gebruiken die annotatie om te bepalen of ze om bevestiging vragen; alle zes stonden op false.
-* Plugin-header, README.md en CONTEXT.md zeiden dat deze plugin niets schrijft. Dat klopt sinds 1.0.0 niet meer, en het is precies de tekst waarop iemand besluit of kadence_mcp_write uitgedeeld mag worden.
-* set-attributes noemde zichzelf "DE ENIGE SCHRIJFACTIE" en generate-section beweerde dat insert-blocks alleen op het hoogste niveau invoegt — achterhaald sinds 1.5.0 respectievelijk 1.7.0.
+* CRITICAL: insert-blocks and duplicate-blocks with position inside put a block OUTSIDE an empty container. The placeholder in innerContent ended up at index 0 instead of between the opening and closing tags, causing the block to be written before the opening tag. With a container that already had children it went fine, and precisely because of that it went unnoticed.
+* CRITICAL: both read-back checks reported "written and read back" in that case, because they only checked whether the uniqueID appeared anywhere in the post — not under which parent. There is now a parent check: if the block is not under the specified container, an error follows with the actual parent included.
+* CRITICAL: the recipes tekst, cta and the heading row of kolommen wrote a one-column row without the columns attribute. Kadence then assumes two columns and puts the content at half width, with an empty slot next to it. columns is now derived on every generated row from the number of children.
+* Four of the six writers used serialize_blocks() instead of the plugin's own serialiseer(), causing the blank lines between all sections of the page to disappear on every write action. All six now do the same.
+* The style-blocks read-back check skipped precisely the case that matters: an attribute that is entirely gone after saving. That is the "metadata was thrown away" bug in its purest form, and the notice read "written and read back".
+* COL_LAYOUTS blocked five valid values, including "row" at every column count and "first-row" — the latter is used by this site's homepage.
+* A rejected token now says WHAT is wrong. The message covered two very different situations ("the post has changed or your proposal is different"), and that ambiguity left duplicate-blocks broken for six versions: every call produced that message and it sounded like normal behavior. The token now consists of two halves — six characters for the post and modification date, the rest for the proposal — so the server can see which half differs.
+* remove-blocks, set-attributes, style-blocks and set-text publish destructive: true. MCP clients use that annotation to decide whether to ask for confirmation; all six were set to false.
+* The plugin header, README.md and CONTEXT.md said this plugin writes nothing. That has not been true since 1.0.0, and it is exactly the text on which someone decides whether kadence_mcp_write may be handed out.
+* set-attributes called itself "THE ONLY WRITE ACTION" and generate-section claimed that insert-blocks only inserts at the top level — outdated since 1.5.0 and 1.7.0 respectively.
 
 = 1.7.2 =
-* Reparatie: het sjabloon kolommen zette colLayout op "thirds" en "fourths". Die namen bestaan niet. Op de voorkant viel dat niet op omdat de klasse kt-has-N-columns daar de breedtes bepaalt, maar de editor kiest zijn weergave op colLayout en zette alle kolommen onder elkaar. Nu "equal", zoals Kadence het zelf doet.
-* validate-write blokkeert een colLayout die niet bij het aantal kolommen past. De geldige namen staan in Kadence alleen in JavaScript, niet in block.json, dus de gewone typetoets liet elke tekst door.
-* describe-block zet values_not_validated: true bij elk stringattribuut zonder enum, met een notitie. Zwijgen over de toegestane waarden las als goedkeuring; nu staat er dat er niets te toetsen viel en dat de waarde afgelezen hoort te worden in plaats van verzonnen.
+* Repair: the kolommen template set colLayout to "thirds" and "fourths". Those names do not exist. On the front end that went unnoticed because the kt-has-N-columns class determines the widths there, but the editor chooses its display based on colLayout and stacked all columns. Now "equal", as Kadence itself does it.
+* validate-write blocks a colLayout that does not match the number of columns. In Kadence the valid names are only in JavaScript, not in block.json, so the ordinary type check let any text through.
+* describe-block sets values_not_validated: true on every string attribute without an enum, with a note. Silence about the allowed values read as approval; now it says that there was nothing to check and that the value should be read off rather than invented.
 
 = 1.7.1 =
-* Alleen de skill: de werkwijze voor het nabouwen van een Figma-ontwerp is vastgelegd, met de vertaaltabel die in de praktijk bleek te kloppen en de twee valkuilen bij het narekenen — meet op de juiste laag (Kadence zet padding op .kt-row-column-wrap en de kolomachtergrond op .kt-inside-inner-col), en een fullPage-screenshot liegt over een zwevende header.
+* Skill only: the method for rebuilding a Figma design has been recorded, with the translation table that proved correct in practice and the two pitfalls when checking the numbers — measure on the right layer (Kadence puts padding on .kt-row-column-wrap and the column background on .kt-inside-inner-col), and a fullPage screenshot lies about a floating header.
 
 = 1.7.0 =
-* insert-blocks en duplicate-blocks kennen position "inside": blokken worden dan als KIND van een bestaande container geplaatst in plaats van op het hoogste niveau. Daarmee kan een gekopieerde accordeon eindelijk in een kolom landen, binnen de achtergrond en de contentbreedte van die rij; op het hoogste niveau staat hij daarbuiten.
-* Het venijn zat in innerContent: die array draagt op de plaats van elk kindblok een null, en een kind toevoegen zonder ook een null toe te voegen laat serialize_block() het laatste kind overslaan. De null wordt nu ingevoegd vlak vóór de afsluitende HTML van de container. Een zelfsluitend blok heeft geen binnenkant en wordt geweigerd.
+* insert-blocks and duplicate-blocks know position "inside": blocks are then placed as a CHILD of an existing container instead of at the top level. With that, a copied accordion can finally land in a column, inside the background and the content width of that row; at the top level it sits outside them.
+* The sting was in innerContent: that array carries a null in the place of every child block, and adding a child without also adding a null makes serialize_block() skip the last child. The null is now inserted just before the container's closing HTML. A self-closing block has no inside and is rejected.
 
 = 1.6.1 =
-* Reparatie: gegenereerde tekstblokken bleven zwart, ook met color palette9 en colorClass theme-palette9. De kleur van een Kadence-tekstblok komt niet uit het attribuut maar uit een klasse in de markup (has-theme-palette-9-color has-text-color), en die schreef de generator niet mee. De blokdata was in orde en het stond er toch verkeerd — alleen zichtbaar door in de browser getComputedStyle op te vragen. Nu worden de klassen afgeleid uit colorClass en backgroundColorClass.
+* Repair: generated text blocks stayed black, even with color palette9 and colorClass theme-palette9. The color of a Kadence text block does not come from the attribute but from a class in the markup (has-theme-palette-9-color has-text-color), and the generator did not write that along. The block data was fine and it still displayed wrong — visible only by querying getComputedStyle in the browser. Now the classes are derived from colorClass and backgroundColorClass.
 
 = 1.6.0 =
-* generate-section kent nu recipe "custom": de structuur wordt dan meegegeven via tree, als een geneste lijst van knopen. Nodig omdat vier vaste sjablonen geen echt ontwerp dekken, en omdat achteraf samenstellen niet kan — insert-blocks voegt alleen op het hoogste niveau toe, dus een blok in een bestaande kolom krijgen gaat niet. Wat in één sectie hoort wordt in één keer gebouwd.
-* De manier van genereren blijft vast: dezelfde afgelezen wrapper-markup, dezelfde uitgifte van uniqueIDs (een eigen ID meegeven wordt geweigerd), dezelfde attribuuttoets als validate-write, en dezelfde parse- en serialiseerrondgang als eindcontrole. Alleen de combinatie is vrij.
-* tag en level worden op elkaar afgestemd. advancedheading bepaalt zijn tag uit htmlTag (standaard "heading", valt terug op level): een h3 in de markup met level 2 zou als h2 renderen terwijl er h3 staat.
+* generate-section now knows recipe "custom": the structure is then passed in via tree, as a nested list of nodes. Needed because four fixed templates don't cover a real design, and because assembling afterwards is not possible — insert-blocks only inserts at the top level, so getting a block into an existing column doesn't work. Whatever belongs in one section is built in one go.
+* The way of generating stays fixed: the same wrapper markup read from real blocks, the same issuing of uniqueIDs (passing in your own ID is rejected), the same attribute check as validate-write, and the same parse and serialize round trip as the final check. Only the combination is free.
+* tag and level are aligned with each other. advancedheading determines its tag from htmlTag (default "heading", falls back to level): an h3 in the markup with level 2 would render as h2 while it says h3.
 
 = 1.5.0 =
-* Nieuw: kadence/style-blocks schrijft attributen naar meerdere blokken in één opslag. set-attributes doet één blok per aanroep, en een sectie opmaken raakt al snel zes blokken — dat is veertien aanroepen, waarbij elk token vervalt zodra de vorige stap post_modified heeft veranderd. Nu is het er twee, en één revisie voor de hele set.
-* De toetsing is niet gedupliceerd: style-blocks roept per blok validate_write() aan, zodat er maar één plek met toetslogica bestaat. Alles of niets — is één blok blokkeer of riskant, dan komt er geen token en wordt er niets geschreven. Een blok dat twee keer in de lijst staat wordt geweigerd.
+* New: kadence/style-blocks writes attributes to multiple blocks in one save. set-attributes does one block per call, and styling a section quickly touches six blocks — that's fourteen calls, with each token expiring as soon as the previous step has changed post_modified. Now it's two, and one revision for the whole set.
+* The checking is not duplicated: style-blocks calls validate_write() per block, so there is only one place with checking logic. All or nothing — if one block is blokkeer or riskant, no token is issued and nothing is written. A block that appears twice in the list is rejected.
 
 = 1.4.1 =
-* Reparatie: het voorstel van remove-blocks liet het veld text leeg zodra je een container opgaf. tekst_uit_blok() leest alleen de innerHTML van het blok zelf, en een Row Layout heeft die niet — de tekst zit in de kleinkinderen. Het voorstel meldde dus dat er niets verdween terwijl er een hele sectie met koppen aan hing, en dat is precies de informatie waar het voorstel om draait. De hele subboom wordt nu doorlopen.
+* Repair: the remove-blocks proposal left the text field empty as soon as you specified a container. tekst_uit_blok() only reads the block's own innerHTML, and a Row Layout has none — the text is in the grandchildren. The proposal therefore reported that nothing would disappear while a whole section of headings hung from it, and that is exactly the information the proposal is about. The whole subtree is now traversed.
 
 = 1.4.0 =
-* REPARATIE, belangrijk: kadence/duplicate-blocks kon sinds 1.1.0 helemaal niet schrijven. De kaart van oude naar nieuwe uniqueID werd bij elke aanroep opnieuw met willekeurige waarden gevuld, terwijl het token juist over die kaart ging — bij de schrijfaanroep ontstond er dus altijd een ander token dan de droogloop had gegeven, en geen enkele aanroep kon slagen. De id_map is nu invoer bij dry_run false, net zoals de markup dat bij insert-blocks is, en wordt voor het schrijven gecontroleerd op dekking, dubbele waarden en botsingen met de doelpost.
-* Reparatie: metadata en lock kregen van validate-write het oordeel riskant, en riskant levert geen token op — waardoor een bloknaam die door een eerdere versie was weggevallen niet te herstellen was. Ze krijgen nu ok met een notitie: er valt niets te toetsen, maar er hangt ook geen render van af.
-* Reparatie: de statusregel bij het oordeel riskant noemde altijd dezelfde reden ("minstens één waarde zit vast in de opgeslagen HTML"), ook naast een antwoord dat zelf self_closing: true meldde. Hij noemt nu de betrokken attributen en verwijst naar hun notitie.
-* Reparatie: script- en style-tags werden door wp_kses verwijderd terwijl hun inhoud als leesbare tekst bleef staan. Die twee worden nu mét inhoud verwijderd, ook wanneer de tag nooit gesloten wordt.
-* Reparatie: set-text weigerde een Kadence-kolom met de melding dat er meerdere elementen "op hetzelfde niveau" stonden, terwijl die divs genest zijn. De twee gevallen worden nu onderscheiden en krijgen elk hun eigen uitleg.
-* Nieuw: kadence/remove-blocks haalt blokken uit een post, op elke diepte, ook een enkele knop uit een knoppenrij. Twee stappen: eerst zien wat er zou verdwijnen inclusief alles eronder en welke tekst daarin staat, dan pas doen. Staat een van de opgegeven uniqueIDs niet in de post, dan wordt er niets verwijderd.
+* REPAIR, important: kadence/duplicate-blocks had been unable to write at all since 1.1.0. The map from old to new uniqueID was filled with random values again on every call, while the token was precisely about that map — so the write call always produced a different token than the dry run had given, and no call could succeed. The id_map is now input with dry_run false, just as the markup is for insert-blocks, and is checked before writing for coverage, duplicate values and collisions with the target post.
+* Repair: metadata and lock got the verdict riskant from validate-write, and riskant yields no token — which made a block name that had been dropped by an earlier version impossible to restore. They now get ok with a note: there is nothing to check, but no render depends on them either.
+* Repair: the status line for the verdict riskant always named the same reason ("at least one value is fixed in the saved HTML"), even next to a response that itself reported self_closing: true. It now names the attributes involved and points to their note.
+* Repair: script and style tags were removed by wp_kses while their content remained as readable text. Those two are now removed together with their content, even when the tag is never closed.
+* Repair: set-text rejected a Kadence column with the message that there were multiple elements "at the same level", while those divs are nested. The two cases are now distinguished and each gets its own explanation.
+* New: kadence/remove-blocks removes blocks from a post, at any depth, including a single button from a button row. Two steps: first see what would disappear, including everything below it and what text it contains, and only then do it. If one of the specified uniqueIDs is not in the post, nothing is removed.
 
 = 1.3.0 =
-* Nieuw: kadence/list-recipes, kadence/generate-section en kadence/insert-blocks bouwen een complete sectie — een Row Layout met Secties en tekstblokken erin — uit een sjabloon, in plaats van markup te laten verzinnen. Dat is nodig omdat Kadence elk uniqueID in de klassenamen van het blok bakt (bij advancedheading twee keer, in de klasse en in data-kb-block) en de JSON in het blokcommentaar met eigen vlaggen codeert. Met de hand geschreven markup wijkt daar gegarandeerd van af, en dat is aan het resultaat niet te zien: het blok verschijnt, maar zonder zijn CSS.
-* De gebouwde markup wordt geparsed en opnieuw geserialiseerd voordat hij wordt teruggegeven. Komt daar niet exact hetzelfde uit, dan volgt een fout in plaats van markup — dan zou WordPress hem bij het opslaan hebben herschreven.
-* insert-blocks weigert te schrijven wanneer door de invoeging een bestaand uniqueID zou verdwijnen of een dubbele zou ontstaan. Aan een uniqueID hangt de CSS van een blok, dus een ID dat weg is betekent een blok dat weg is.
-* De sjablonen leveren bewust alleen structuur, geen opmaak. Kleuren, marges en lettergroottes komen uit de globale stijlen; een verzonnen waarde is ruis die iemand later moet opsporen.
+* New: kadence/list-recipes, kadence/generate-section and kadence/insert-blocks build a complete section — a Row Layout with Sections and text blocks inside — from a template, instead of having markup invented. That is necessary because Kadence bakes every uniqueID into the block's class names (twice for advancedheading, in the class and in data-kb-block) and encodes the JSON in the block comment with its own flags. Hand-written markup is guaranteed to deviate from that, and you can't tell from the result: the block appears, but without its CSS.
+* The built markup is parsed and re-serialized before it is returned. If that does not produce exactly the same thing, an error follows instead of markup — WordPress would otherwise have rewritten it on save.
+* insert-blocks refuses to write when the insertion would make an existing uniqueID disappear or create a duplicate. A block's CSS hangs on its uniqueID, so an ID that is gone means a block that is gone.
+* The templates deliberately provide only structure, no styling. Colors, margins and font sizes come from the global styles; an invented value is noise that someone has to track down later.
 
 = 1.2.0 =
-* Reparatie van stil dataverlies: metadata en lock zijn attributen van WordPress zelf en staan in geen enkele block.json, waardoor de normalisatie ze bij elke schrijfactie als "onbekend" wegfilterde. Dat kostte op 11-09-2026 de bloknaam van een rij: de schrijfactie slaagde, de terugleescontrole meldde het, en de naam was weg. Ze worden nu ongemoeid doorgegeven en achteraan in het commentaar gezet, waar de editor ze ook neerzet.
-* Nieuw: kadence/set-text schrijft de tekst van een blok. Nodig omdat de tekst van een kop of alinea niet in de attributen staat maar in de innerHTML — set-attributes weigert die terecht, want daar worden ook de klassen en data-attributen uit opgebouwd. set-text vervangt alleen het deel tussen de buitenste tag en laat die tag letterlijk staan, zodat de blokvalidatie van Gutenberg blijft kloppen. Weigert bij een blok met kindblokken, bij een innerHTML die niet precies één omhullend element is, en bij een lege tekst.
-* validate-write blokkeert metadata en lock niet langer als "bestaat niet"; ze krijgen het oordeel riskant, omdat er geen schema is om hun inhoud tegen te toetsen.
+* Repair of silent data loss: metadata and lock are WordPress's own attributes and are in no block.json, so normalization filtered them out as "unknown" on every write action. On 2026-09-11 that cost a row its block name: the write action succeeded, the read-back check reported it, and the name was gone. They are now passed through untouched and placed at the end of the comment, where the editor puts them too.
+* New: kadence/set-text writes the text of a block. Needed because the text of a heading or paragraph is not in the attributes but in the innerHTML — set-attributes rightly refuses that, because the classes and data attributes are also built from it. set-text replaces only the part inside the outermost tag and leaves that tag verbatim, so that Gutenberg's block validation keeps passing. Refuses for a block with child blocks, for an innerHTML that is not exactly one wrapping element, and for an empty text.
+* validate-write no longer blocks metadata and lock as "does not exist"; they get the verdict riskant, because there is no schema to check their content against.
 
 = 1.1.0 =
-* Nieuw: kadence/duplicate-blocks kopieert een bestaand blok met alles eronder naar een andere post, en geeft elke kopie een verse uniqueID geprefixt met de doelpost. De ID wordt op beide plekken tegelijk vervangen — in het attribuut en in de klassen in de markup — zodat er geen mismatch kan ontstaan en er geen klassepatroon gekend hoeft te worden. Standaard een droogloop met token; schrijven vraagt dry_run false en dat token.
+* New: kadence/duplicate-blocks copies an existing block with everything below it to another post, and gives each copy a fresh uniqueID prefixed with the target post. The ID is replaced in both places at once — in the attribute and in the classes in the markup — so that no mismatch can arise and no class pattern needs to be known. A dry run with a token by default; writing requires dry_run false and that token.
 
 = 1.0.1 =
-* Reparatie: kadence_mcp_write was in Members onvindbaar omdat die plugin zijn lijst afleidt uit capabilities die ergens in gebruik zijn — en deze wordt bewust aan niemand toegekend. De capabilities worden nu met een leesbaar label geregistreerd via members_register_caps, met members_get_capabilities als vangnet.
+* Repair: kadence_mcp_write could not be found in Members because that plugin derives its list from capabilities that are in use somewhere — and this one is deliberately granted to no one. The capabilities are now registered with a readable label via members_register_caps, with members_get_capabilities as a fallback.
 
 = 1.0.0 =
-* EERSTE SCHRIJFACTIE: kadence/set-attributes wijzigt attributen op één bestaand blok. Drie grendels ervoor — een eigen capability kadence_mcp_write die niemand automatisch krijgt, bewerkrecht op de post volgens WordPress, en een geldig token uit validate-write. Eén erna: de post wordt teruggelezen en vergeleken met wat er bedoeld was, want Kadence herschrijft post_content bij het opslaan.
-* Attributen worden genormaliseerd zoals de editor het doet: wat gelijk is aan de standaardwaarde valt weg, de rest komt in de volgorde van het blokschema. Gemeten op een echte pagina: van 170 attributen stonden er 23 opgeslagen, geen enkele gelijk aan zijn default, in exact block.json-volgorde.
-* De groep Schrijven op het instellingenscherm is niet langer leeg.
+* FIRST WRITE ACTION: kadence/set-attributes changes attributes on one existing block. Three locks before it — a capability of its own, kadence_mcp_write, that nobody gets automatically, edit rights on the post according to WordPress, and a valid token from validate-write. One after it: the post is read back and compared with what was intended, because Kadence rewrites post_content on save.
+* Attributes are normalized the way the editor does it: whatever equals the default value drops out, the rest goes in the order of the block schema. Measured on a real page: of 170 attributes, 23 were stored, none equal to its default, in exact block.json order.
+* The Write group on the settings screen is no longer empty.
 
 = 0.9.3 =
-* Correctie in de serverbeschrijving, de skill en de documentatie: blockVisibility werd toegeschreven aan Kadence, maar het is de native verbergoptie van WordPress zelf en geldt voor elk blok.
+* Correction in the server description, the skill and the documentation: blockVisibility was attributed to Kadence, but it is WordPress's own native hide option and applies to every block.
 
 = 0.9.2 =
-* Reparatie: de inkorting van preview-write zat in 0.9.1 wel in het invoerschema maar niet in de code, waardoor full_markup werd geadverteerd maar genegeerd.
+* Repair: in 0.9.1 the truncation of preview-write was in the input schema but not in the code, so full_markup was advertised but ignored.
 
 = 0.9.1 =
-* check-bindings toetst een taxonomie nu ook tegen het posttype dat de query opvraagt. Bestaan alleen is niet genoeg: een facet op een taxonomie die niet aan het opgevraagde posttype hangt levert een filter dat nooit iets toont. Gevonden op een echte site.
-* preview-write geeft standaard alleen de openingscomment van het gewijzigde blok in plaats van de volledige boom. De volledige markup is op te vragen met full_markup.
+* check-bindings now also checks a taxonomy against the post type that the query requests. Existing alone is not enough: a facet on a taxonomy that is not attached to the requested post type produces a filter that never shows anything. Found on a real site.
+* preview-write by default returns only the opening comment of the changed block instead of the full tree. The full markup can be requested with full_markup.
 
 = 0.9.0 =
-* Nieuw: kadence/preview-write — toont de blokmarkup voor en na een voorgenomen wijziging, zonder iets op te slaan. Bedoeld als droogloop tussen validate-write en de uiteindelijke schrijfactie, zodat er een keer gekeken wordt in plaats van achteraf gerepareerd. Waarschuwt expliciet als de innerHTML zou veranderen, wat bij een attribuutwijziging niet hoort te gebeuren.
+* New: kadence/preview-write — shows the block markup before and after an intended change, without saving anything. Intended as a dry run between validate-write and the final write action, so that someone looks once instead of repairing afterwards. Warns explicitly if the innerHTML would change, which should not happen with an attribute change.
 
 = 0.8.0 =
-* validate-write geeft bij het oordeel veilig een token terug, gebonden aan post, blok, exacte attributen en de wijzigingsdatum van de post. Een toekomstige schrijfactie kan dat token eisen, waarmee toetsen niet langer over te slaan is. Bij riskant komt er bewust geen token.
-* validate-write gebruikt nu rest_validate_value_from_schema(), dezelfde functie die WordPress bij het renderen draait. Een waarde die daar niet doorheen komt wordt stil weggegooid en vervangen door de standaardwaarde; de toets is daarmee gelijk aan de werkelijkheid.
+* validate-write returns a token with the verdict veilig, bound to the post, the block, the exact attributes and the post's modification date. A future write action can require that token, which makes checking impossible to skip. With riskant, deliberately no token is issued.
+* validate-write now uses rest_validate_value_from_schema(), the same function WordPress runs when rendering. A value that does not get through it is silently discarded and replaced by the default value; the check thereby matches reality.
 
 = 0.7.0 =
-* Nieuw: kadence/get-raw-markup — de opgeslagen blokmarkup van een post of een enkel blok. De andere tools tonen alleen geparste attributen, terwijl juist de markup bepaalt of iets veilig te wijzigen is.
-* Nieuw: kadence/validate-write — toetst een voorgenomen attribuutwijziging zonder iets te schrijven. Kern is een waarneming: staat de huidige waarde letterlijk in de innerHTML van dat blok, dan is wijzigen een stille breuk. Plus type- en enumtoets, source-attributen als no-op, en de drie eigen faalpaden uniqueID, kbVersion en columns inclusief botsingscontrole.
-* Nieuw: kadence/check-bindings — controleert alle verwijzingen in een post op vijf opslagplaatsen, inclusief de shortcodekopie en inline spans.
-* describe-block en list-blocks vermelden bij is_dynamic nu expliciet dat het geen veiligheidssignaal is: alle Kadence-blokken hebben een render_callback.
+* New: kadence/get-raw-markup — the stored block markup of a post or a single block. The other tools show only parsed attributes, while it is precisely the markup that determines whether something is safe to change.
+* New: kadence/validate-write — checks an intended attribute change without writing anything. At its core is an observation: if the current value appears literally in that block's innerHTML, changing it is a silent break. Plus type and enum checks, source attributes as a no-op, and the three specific failure paths uniqueID, kbVersion and columns, including a collision check.
+* New: kadence/check-bindings — checks all references in a post across five storage locations, including the shortcode copy and inline spans.
+* describe-block and list-blocks now state explicitly with is_dynamic that it is not a safety signal: all Kadence blocks have a render_callback.
 
 = 0.6.0 =
-* De agent skill is nu te downloaden vanaf het instellingenscherm, als zip, met dezelfde capability-poort als de instellingen zelf.
+* The agent skill can now be downloaded from the settings screen, as a zip, behind the same capability gate as the settings themselves.
 
 = 0.5.0 =
-* describe-block splitst uses_context nu in uses_context_own (uit de eigen block.json) en uses_context_added (door een andere plugin toegevoegd). GP Entry Blocks hangt zijn entry-context aan elk blok, wat anders ten onrechte als Kadence-eigenschap leest.
-* Skill uitgebreid met de twee mechanismen voor dynamische inhoud, waarom een query-card herbruikbaar is zolang de koppelingen generiek zijn, en waar dynamische blokken hun context vandaan halen.
+* describe-block now splits uses_context into uses_context_own (from the block's own block.json) and uses_context_added (added by another plugin). GP Entry Blocks attaches its entry context to every block, which otherwise wrongly reads as a Kadence property.
+* Skill extended with the two mechanisms for dynamic content, why a query-card is reusable as long as the bindings are generic, and where dynamic blocks get their context from.
 
 = 0.4.1 =
-* Reparatie: ancestor en de contextvelden kwamen door een misgelopen bewerking niet in de uitvoer van describe-block, en top_level_only filterde nog steeds alleen op parent.
-* Correctie: block_defaults werd beschreven als iets dat de betekenis van een ontbrekend attribuut verandert. Dat klopt niet — kadence_blocks_config_blocks gaat alleen naar de editor en is een invoegstandaard die bij opslaan in de markup wordt geschreven. Bestaande blokken volgen gewoon block.json.
+* Repair: due to a botched edit, ancestor and the context fields did not make it into the output of describe-block, and top_level_only still filtered only on parent.
+* Correction: block_defaults was described as something that changes the meaning of a missing attribute. That is not correct — kadence_blocks_config_blocks only goes to the editor and is an insert default that is written into the markup on save. Existing blocks simply follow block.json.
 
 = 0.4.0 =
-* list-blocks en describe-block lezen nu ancestor. Dat is iets anders dan parent en verklaart waarom de queryblokken pas binnen een Query Loop beschikbaar zijn; 29 van de 92 Kadence-blokken gebruiken het.
-* Reparatie: top_level_only filterde alleen op parent en liet daardoor kadence/navigation-link en kadence/off-canvas-trigger door als vrij plaatsbaar.
-* describe-block geeft nu ook uses_context, provides_context, allowed_blocks en keywords.
-* get-global-styles geeft nu block_defaults: de site-brede standaardinstellingen per blok uit kadence_blocks_config_blocks. Belangrijk, want daar waar die bestaan betekent een ontbrekend attribuut niet de standaardwaarde uit block.json.
+* list-blocks and describe-block now read ancestor. That is something other than parent and explains why the query blocks only become available inside a Query Loop; 29 of the 92 Kadence blocks use it.
+* Repair: top_level_only filtered only on parent and therefore let kadence/navigation-link and kadence/off-canvas-trigger through as freely placeable.
+* describe-block now also returns uses_context, provides_context, allowed_blocks and keywords.
+* get-global-styles now returns block_defaults: the site-wide default settings per block from kadence_blocks_config_blocks. Important, because where they exist, a missing attribute does not mean the default value from block.json.
 
 = 0.3.1 =
-* describe-block: nieuwe groep "indeling" voor colLayout, columns en inheritMaxWidth — die vielen eerder onder "overig" terwijl juist colLayout kolomverhoudingen verklaart.
-* describe-block: loggedIn en loggedOut vallen nu onder "conditioneel" in plaats van "overig".
-* Skill uitgebreid met Query Loops (post meta, gedeeld object, losse filterblokken, één card per query) en met het verschil in zichtbaarheidsopties tussen Row Layout en Sectie.
+* describe-block: new group "indeling" for colLayout, columns and inheritMaxWidth — these previously fell under "overig", while colLayout in particular explains column ratios.
+* describe-block: loggedIn and loggedOut now fall under "conditioneel" instead of "overig".
+* Skill extended with Query Loops (post meta, shared object, separate filter blocks, one card per query) and with the difference in visibility options between Row Layout and Section.
 
 = 0.3.0 =
-* Nieuw: kadence/get-post-meta — de Kadence-configuratie die niet in blokattributen staat, zoals de querydefinitie in _kad_query_query. Allowlist op _kad_, _kt_ en kadence_; meta van andere plugins wordt niet teruggegeven.
-* Nieuw: kadence/find-usages — welke posts via een id-attribuut naar een query, navigatie, card of header verwijzen.
-* inspect-post: from_unique_id om de boom bij een bepaald blok te laten beginnen.
-* inspect-post: nieuw filter kadence_mcp_can_read_post, en de statusregel meldt nu wanneer een post wel leesbaar is maar niet uit een normale query komt (bijvoorbeeld door Members).
-* Reparatie: HTML-entiteiten in include_text werden niet gedecodeerd.
-* Reparatie: de beschrijving van find-post zei dat search alleen op de titel zoekt; WordPress doorzoekt ook de inhoud.
+* New: kadence/get-post-meta — the Kadence configuration that is not in block attributes, such as the query definition in _kad_query_query. Allowlist on _kad_, _kt_ and kadence_; meta from other plugins is not returned.
+* New: kadence/find-usages — which posts refer to a query, navigation, card or header via an id attribute.
+* inspect-post: from_unique_id to start the tree at a particular block.
+* inspect-post: new filter kadence_mcp_can_read_post, and the status line now reports when a post is readable but does not come out of a normal query (for example because of Members).
+* Repair: HTML entities in include_text were not decoded.
+* Repair: the description of find-post said that search only searches the title; WordPress also searches the content.
 
 = 0.2.0 =
-* Nieuw: kadence/diff-blocks — geeft alleen de verschillen tussen twee blokken.
-* Nieuw: kadence/find-post — van paginanaam of slug naar een post_id.
-* inspect-post: metadata standaard mee (bevat blockVisibility en de naam uit de lijstweergave), plus include_text en full_attributes.
-* describe-block: attributen gegroepeerd in plaats van alfabetisch, met een group-filter en een telling per groep.
-* Serverbeschrijving draagt nu een primer over hoe Kadence waarden opslaat.
-* Elk antwoord heeft een status-regel, zodat een leeg resultaat zichzelf verklaart.
-* Reparatie: typografie kwam altijd leeg terug door een onjuiste method_exists-controle op een klasse met __call.
-* Agent skill toegevoegd onder skill/.
+* New: kadence/diff-blocks — returns only the differences between two blocks.
+* New: kadence/find-post — from page name or slug to a post_id.
+* inspect-post: metadata included by default (contains blockVisibility and the name from the list view), plus include_text and full_attributes.
+* describe-block: attributes grouped instead of alphabetical, with a group filter and a count per group.
+* The server description now carries a primer on how Kadence stores values.
+* Every response has a status line, so that an empty result explains itself.
+* Repair: typography always came back empty because of an incorrect method_exists check on a class with __call.
+* Agent skill added under skill/.
 
 = 0.1.0 =
-* Eerste versie. Vijf leesabilities, eigen MCP-server, instellingenscherm en capabilities.
+* First version. Five read abilities, a dedicated MCP server, settings screen and capabilities.

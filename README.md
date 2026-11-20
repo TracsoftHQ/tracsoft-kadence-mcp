@@ -1,9 +1,9 @@
 # Tracsoft Kadence MCP
 
 Tracsoft's hardened build of [mcp-abilities-kadence](https://github.com/joostadams/mcp-abilities-kadence)
-by Joost Adams (GPL-2.0-or-later). The upstream documentation follows below in
-Dutch; Tracsoft's changes are listed in `TRACSOFT.md` and in the changelog in
-`readme.txt`.
+by Joost Adams (GPL-2.0-or-later). The upstream documentation follows below,
+translated to English. Tracsoft's changes are listed in `TRACSOFT.md` and in the
+changelog in `readme.txt`.
 
 **Install:** download `tracsoft-kadence-mcp.zip` from the
 [latest release](https://github.com/TracsoftHQ/tracsoft-kadence-mcp/releases/latest)
@@ -14,220 +14,218 @@ releases like any other plugin update, including in MainWP.
 
 # MCP Abilities — Kadence
 
-Geeft een MCP-agent toegang tot Kadence Blocks, Kadence Blocks Pro, Kadence Pro
-en het Kadence-thema, via de WordPress Abilities API.
+Gives an MCP agent access to Kadence Blocks, Kadence Blocks Pro, Kadence Pro
+and the Kadence theme, through the WordPress Abilities API.
 
-**Negenenveertig abilities: drieëntwintig lezen, zesentwintig schrijven.**
+**Forty-nine abilities: twenty-three read, twenty-six write.**
 
-Schrijven is hier dus geen uitzondering. Elke schrijfability vraagt drie dingen:
-de capability `kadence_mcp_write` (die bij installatie aan niemand wordt
-gegeven), bewerkrecht volgens WordPress zelf, en een token uit een voorafgaande
-controlestap. Na afloop wordt er teruggelezen en vergeleken met wat er bedoeld
-was.
+So writing is not the exception here. Every write ability requires three things:
+the capability `kadence_mcp_write` (which is granted to no one on
+installation), edit rights according to WordPress itself, and a token from a
+preceding check step. Afterwards the result is read back and compared with what
+was intended.
 
-Let op waar ze schrijven. De meeste raken `post_content` en maken dus een
-revisie. `set-entity-meta` en `set-card-layout` schrijven post meta, en die kent
-**geen revisies** — de oude waarde in het antwoord is je enige weg terug.
-`set-global-typography` en `set-site-css` raken de hele site in plaats van één
+Pay attention to where they write. Most touch `post_content` and therefore create
+a revision. `set-entity-meta` and `set-card-layout` write post meta, which has
+**no revisions** — the old value in the response is your only way back.
+`set-global-typography` and `set-site-css` affect the whole site instead of one
 post.
 
-### Lezen
+### Read
 
-| Ability | Wat het doet |
+| Ability | What it does |
 |---|---|
-| `kadence/find-post` | van paginanaam of slug naar een `post_id` |
-| `kadence/inspect-post` | de blokkenboom van een pagina, header of element |
-| `kadence/get-raw-markup` | de opgeslagen blokmarkup, zoals die in de database staat |
-| `kadence/diff-blocks` | alleen de verschillen tussen twee blokken |
-| `kadence/list-blocks` | welke Kadence-blokken er zijn en uit welke plugin |
-| `kadence/describe-block` | de attributen van één blok, gegroepeerd en gepagineerd |
-| `kadence/list-entities` | de Kadence-posttypes en hun posts |
-| `kadence/get-post-meta` | de Kadence-configuratie die niet in blokattributen staat |
-| `kadence/find-usages` | welke posts naar een query, navigatie of card verwijzen |
-| `kadence/check-bindings` | wijzen de dynamische koppelingen nog naar iets dat bestaat |
-| `kadence/get-global-styles` | het kleurenpalet, de basistypografie en de invoegstandaarden |
-| `kadence/describe-query` | de drie lagen van een Query Loop naast elkaar, met proefdraai |
-| `kadence/describe-post-type` | taxonomieën en meta-velden, als opstap naar een Query Card |
-| `kadence/list-recipes` | welke sectiesjablonen er zijn |
-| `kadence/generate-section` | bouwt geldige markup uit een sjabloon — slaat niets op |
-| `kadence/preview-write` | de markup voor en na, zonder iets op te slaan |
-| `kadence/validate-write` | toetst een voorgenomen wijziging — schrijft niets |
-| `kadence/verify-markup` | vindt blokken waarvan de klassen niet meer bij de attributen passen |
-| `kadence/prepare-import` | controleert markup uit de editor of van een andere site, zet uniqueIDs om, zet media-, term- en post-ID's om volgens een opgegeven kaart, meldt verwijzingen en geeft een token voor `insert-blocks` — schrijft niets |
-| `kadence/check-access` | wat dit account per posttype mag lezen en bewerken, en welke rechten (`edit_theme_options`, `unfiltered_html`) ontbreken |
-| `kadence/audit-colors` | per kleurwaarde waar hij staat: blokattributen, Kadence-meta en typografie, met hex die gelijk is aan een paletkleur apart gemeld |
-| `kadence/site-fingerprint` | hashes van palet, typografie, fonts, termen, Kadence-objecten en plugins, om twee sites structureel te vergelijken |
-| `kadence/export-entity` | een Kadence-object als pakket: inhoud én `_kad`-instellingen, met de ID's die op een andere site een kaart nodig hebben |
+| `kadence/find-post` | from page name or slug to a `post_id` |
+| `kadence/inspect-post` | the block tree of a page, header or element |
+| `kadence/get-raw-markup` | the stored block markup, as it is in the database |
+| `kadence/diff-blocks` | only the differences between two blocks |
+| `kadence/list-blocks` | which Kadence blocks exist and which plugin they come from |
+| `kadence/describe-block` | the attributes of one block, grouped and paginated |
+| `kadence/list-entities` | the Kadence post types and their posts |
+| `kadence/get-post-meta` | the Kadence configuration that is not in block attributes |
+| `kadence/find-usages` | which posts refer to a query, navigation or card |
+| `kadence/check-bindings` | do the dynamic bindings still point to something that exists |
+| `kadence/get-global-styles` | the color palette, the base typography and the insert defaults |
+| `kadence/describe-query` | the three layers of a Query Loop side by side, with a trial run |
+| `kadence/describe-post-type` | taxonomies and meta fields, as a step toward a Query Card |
+| `kadence/list-recipes` | which section templates exist |
+| `kadence/generate-section` | builds valid markup from a template — saves nothing |
+| `kadence/preview-write` | the markup before and after, without saving anything |
+| `kadence/validate-write` | checks an intended change — writes nothing |
+| `kadence/verify-markup` | finds blocks whose classes no longer match their attributes |
+| `kadence/prepare-import` | checks markup from the editor or from another site, converts uniqueIDs, converts media, term and post IDs according to a given map, reports references and issues a token for `insert-blocks` — writes nothing |
+| `kadence/check-access` | what this account may read and edit per post type, and which capabilities (`edit_theme_options`, `unfiltered_html`) are missing |
+| `kadence/audit-colors` | for each color value, where it is used: block attributes, Kadence meta and typography, with hex values that equal a palette color reported separately |
+| `kadence/site-fingerprint` | hashes of palette, typography, fonts, terms, Kadence objects and plugins, to compare two sites structurally |
+| `kadence/export-entity` | a Kadence object as a package: content and `_kad` settings, with the IDs that need a map on another site |
 
-### Schrijven
+### Write
 
-| Ability | Wat het raakt |
+| Ability | What it touches |
 |---|---|
-| `kadence/set-attributes` | attributen op één blok |
-| `kadence/style-blocks` | attributen op meerdere blokken, in één revisie |
-| `kadence/set-text` | de tekst binnen één tekstblok |
-| `kadence/insert-blocks` | markup uit `generate-section` of `prepare-import` toevoegen aan een post |
-| `kadence/remove-blocks` | blokken weghalen, inclusief alles eronder |
-| `kadence/move-blocks` | blokken verplaatsen binnen een post, met behoud van uniqueID |
-| `kadence/replace-block` | een blok herbouwen met behoud van zijn `uniqueID` |
-| `kadence/duplicate-blocks` | een blok kopiëren naar een andere post |
-| `kadence/create-page` | een nieuwe pagina, standaard als concept |
-| `kadence/create-post` | een post van elk publiek posttype (bericht, dienst, markt …) met termen, uitgelichte afbeelding en ACF-velden, alles getoetst tegen dat posttype — standaard als concept |
-| `kadence/update-post` | een bestaande post van zo een posttype bijwerken: titel, slug, samenvatting, volgorde, afbeelding, termen en ACF-velden — ACF en termen zonder revisie |
-| `kadence/create-entity` | een lege navigatie, header of element met de volledige set instellingen van Kadence, of een vector uit een SVG — standaard als concept |
-| `kadence/set-page-status` | concept naar gepubliceerd, of terug |
-| `kadence/connect-translation` | een bestaande post in WPML als vertaling aan zijn origineel koppelen, los of als lijst — raakt alleen de vertaaltabel van WPML |
-| `kadence/replace-colors` | kleuren omzetten over de hele site met een kaart {oud: nieuw}, met bewuste uitzonderingen (opacity, core-blokken, Gravity Forms) |
-| `kadence/update-entity-content` | tekst vervangen in de SVG van een vector of de JSON van een custom SVG, met verwacht aantal en verliescontrole |
-| `kadence/trash-post` | een post in de prullenbak, na een controle waar hij nog gebruikt wordt — nooit definitief |
-| `kadence/import-entity` | een pakket uit `export-entity` neerzetten, nieuw of over een bestaand object, met ID-kaarten en byte-voor-byte teruglezen |
-| `kadence/create-query` | een Query Loop kopiëren, met verse `uniqueID`s |
-| `kadence/set-query` | wat een Query Loop ophaalt — post meta |
-| `kadence/sync-query-facets` | de facetten weer laten kloppen met de filterblokken — post meta |
-| `kadence/create-query-card` | een Query Card kopiëren |
-| `kadence/set-card-layout` | kolommen en tussenruimte van een Query Card — post meta, geen revisie |
-| `kadence/set-entity-meta` | een `_kad_`-instelling op een Kadence-post — post meta, geen revisie |
-| `kadence/set-global-typography` | de globale typografie van het thema — site-breed, geen revisie |
-| `kadence/set-site-css` | de Extra CSS van de Customizer — site-breed |
+| `kadence/set-attributes` | attributes on one block |
+| `kadence/style-blocks` | attributes on multiple blocks, in one revision |
+| `kadence/set-text` | the text inside one text block |
+| `kadence/insert-blocks` | add markup from `generate-section` or `prepare-import` to a post |
+| `kadence/remove-blocks` | remove blocks, including everything below them |
+| `kadence/move-blocks` | move blocks within a post, preserving the uniqueID |
+| `kadence/replace-block` | rebuild a block while preserving its `uniqueID` |
+| `kadence/duplicate-blocks` | copy a block to another post |
+| `kadence/create-page` | a new page, as a draft by default |
+| `kadence/create-post` | a post of any public post type (post, service, market …) with terms, featured image and ACF fields, all checked against that post type — as a draft by default |
+| `kadence/update-post` | update an existing post of such a post type: title, slug, excerpt, order, image, terms and ACF fields — ACF and terms without a revision |
+| `kadence/create-entity` | an empty navigation, header or element with Kadence's full set of settings, or a vector from an SVG — as a draft by default |
+| `kadence/set-page-status` | draft to published, or back |
+| `kadence/connect-translation` | link an existing post in WPML as a translation of its original, singly or as a list — touches only WPML's translation table |
+| `kadence/replace-colors` | convert colors across the whole site with a map {old: new}, with deliberate exceptions (opacity, core blocks, Gravity Forms) |
+| `kadence/update-entity-content` | replace text in the SVG of a vector or the JSON of a custom SVG, with an expected count and a loss check |
+| `kadence/trash-post` | move a post to the trash, after checking where it is still used — never permanently |
+| `kadence/import-entity` | place a package from `export-entity`, as new or over an existing object, with ID maps and byte-for-byte read-back |
+| `kadence/create-query` | copy a Query Loop, with fresh `uniqueID`s |
+| `kadence/set-query` | what a Query Loop fetches — post meta |
+| `kadence/sync-query-facets` | make the facets match the filter blocks again — post meta |
+| `kadence/create-query-card` | copy a Query Card |
+| `kadence/set-card-layout` | columns and gap of a Query Card — post meta, no revision |
+| `kadence/set-entity-meta` | a `_kad_` setting on a Kadence post — post meta, no revision |
+| `kadence/set-global-typography` | the theme's global typography — site-wide, no revision |
+| `kadence/set-site-css` | the Customizer's Additional CSS — site-wide |
 
-Bestanden en caches worden nergens aangeraakt.
+Files and caches are never touched.
 
-Elk antwoord draagt een `status`-regel die zegt of een leeg resultaat betekent
-dat er niets ís, of dat er niet gekeken kon worden.
+Every response carries a `status` line that says whether an empty result means
+that there is nothing, or that it could not be checked.
 
-## Nodig
+## Requirements
 
-- WordPress 6.9 of hoger, PHP 7.4 of hoger. Vanaf 6.9 zit de
-  [**Abilities API**](https://github.com/WordPress/abilities-api) in core;
-  daaronder heb je die als losse plugin nodig, en daar ligt de ondergrens dus
-- De [**MCP Adapter**](https://github.com/WordPress/mcp-adapter), als eigen
-  plugin ernaast. Hij staat niet in de plugin-directory, dus zoeken onder
-  **Plugins → Nieuwe plugin** levert niets op. Haal de ZIP van zijn
-  [Releases-pagina](https://github.com/WordPress/mcp-adapter/releases/latest),
-  of met WP-CLI:
+- WordPress 6.9 or higher, PHP 7.4 or higher. As of 6.9 the
+  [**Abilities API**](https://github.com/WordPress/abilities-api) is in core;
+  below that you need it as a separate plugin, which is why the minimum is set there
+- The [**MCP Adapter**](https://github.com/WordPress/mcp-adapter), as its own
+  plugin alongside this one. It is not in the plugin directory, so searching under
+  **Plugins → Add New Plugin** returns nothing. Get the ZIP from its
+  [Releases page](https://github.com/WordPress/mcp-adapter/releases/latest),
+  or with WP-CLI:
 
       wp plugin install https://github.com/WordPress/mcp-adapter/releases/latest/download/mcp-adapter.zip --activate
 
-  Een gevendorde kopie binnen een andere plugin — Gravity Forms levert er een
-  mee — laat de klasse wél bestaan maar start niets. Deze plugin start de
-  adapter daarom zelf zodra je de hoofdschakelaar aanzet, maar alleen dan.
-  Bouw daar niet op: de adapter raadt bundelen zelf af en verwijdert die vorm
-  in een latere versie
-- Kadence Blocks. De rest van de Kadence-stack is optioneel; wat er niet is
-  wordt gewoon niet gemeld
+  A vendored copy inside another plugin — Gravity Forms ships one —
+  does make the class exist but starts nothing. This plugin therefore starts the
+  adapter itself as soon as you turn on the main switch, but only then.
+  Don't build on that: the adapter itself advises against bundling and will remove that form
+  in a later version
+- Kadence Blocks. The rest of the Kadence stack is optional; whatever is missing
+  is simply not reported
 
-Ontbreekt de Abilities API of de adapter, dan registreert de plugin niets en
-legt het instellingenscherm uit wat er mist.
+If the Abilities API or the adapter is missing, the plugin registers nothing and
+the settings screen explains what is missing.
 
-## Downloaden
+## Download
 
-Eén bestand, en het staat niet achter de groene knop.
+One file, and it is not behind the green button.
 
-Pak `tracsoft-kadence-mcp.zip` van de
-[Releases-pagina](https://github.com/TracsoftHQ/tracsoft-kadence-mcp/releases/latest).
-Dat is de ZIP die bij die versietag is gebouwd, met de mapnaam die WordPress
-verwacht en zonder de ontwikkelbestanden.
+Get `tracsoft-kadence-mcp.zip` from the
+[Releases page](https://github.com/TracsoftHQ/tracsoft-kadence-mcp/releases/latest).
+That is the ZIP built for that version tag, with the folder name WordPress
+expects and without the development files.
 
-Dus niet **Code → Download ZIP**. Die geeft je de huidige staat van `main` — dat
-hoeft geen uitgebrachte versie te zijn — in een map met `-main` erachter.
+So not **Code → Download ZIP**. That gives you the current state of `main` — which
+need not be a released version — in a folder with `-main` appended.
 
-De agent skill hoef je hier niet apart te halen. Die zit in de plugin en staat
-na installatie als download onder **Kadence Blocks → MCP**.
+You don't need to fetch the agent skill separately here. It is included in the plugin and is
+available as a download under **Kadence Blocks → MCP** after installation.
 
-## Installeren
+## Installation
 
-1. De ZIP installeren via **Plugins → Nieuwe plugin → Plugin uploaden**, en
-   activeren
-2. Naar **Kadence Blocks → MCP**
-3. *MCP inschakelen* aanzetten
-4. De tools aanvinken die je wil aanbieden — standaard staat alles uit
-5. De endpoint-URL kopiëren en in je MCP-client zetten
+1. Install the ZIP via **Plugins → Add New Plugin → Upload Plugin**, and
+   activate it
+2. Go to **Kadence Blocks → MCP**
+3. Turn on *Enable MCP*
+4. Check the tools you want to offer — everything is off by default
+5. Copy the endpoint URL and put it in your MCP client
 
-Updates komen daarna via WP-admin. De plugin controleert de GitHub-releases van
-deze repo en biedt een nieuwe versie aan als gewone plugin-update; er is geen
-token nodig, want de repo is publiek.
+After that, updates come through WP admin. The plugin checks the GitHub releases of
+this repo and offers a new version as a regular plugin update; no
+token is needed, because the repo is public.
 
 ## Endpoint
 
-Twee standen.
+Two modes.
 
-**Eigen endpoint** (standaard) — `/wp-json/mcp/kadence`. Elke ingeschakelde
-ability staat als losse tool in de lijst van de assistent. De namespace `mcp`
-is dezelfde waar de adapter zijn standaardserver neerzet en waar Gravity Forms
-zijn server onderhangt, zodat alle MCP-endpoints van een site bij elkaar staan.
+**Own endpoint** (default) — `/wp-json/mcp/kadence`. Every enabled
+ability appears as a separate tool in the assistant's list. The namespace `mcp`
+is the same one where the adapter puts its default server and where Gravity Forms
+places its server, so all of a site's MCP endpoints sit together.
 
-De assistent ziet de toolnamen zonder schuine streep: MCP staat die niet toe,
-dus `kadence/list-blocks` komt binnen als **`kadence-list-blocks`**. In de
-gedeelde stand is juist de naam mét schuine streep de waarde die je aan
-`ability_name` meegeeft.
+The assistant sees the tool names without a slash: MCP does not allow one,
+so `kadence/list-blocks` arrives as **`kadence-list-blocks`**. In the
+shared mode, by contrast, the name with the slash is the value you pass to
+`ability_name`.
 
-**Gedeelde site-endpoint** — `/wp-json/mcp/mcp-adapter-default-server`. De
-endpoint die alle MCP-plugins op de site delen. Eén verbinding, maar de
-Kadence-tools zijn alleen bereikbaar via de generieke discovery-tools van
-WordPress: de assistent moet eerst vragen wát er is en daarna via een omweg
-uitvoeren.
+**Shared site endpoint** — `/wp-json/mcp/mcp-adapter-default-server`. The
+endpoint that all MCP plugins on the site share. One connection, but the
+Kadence tools are only reachable through WordPress's generic discovery tools:
+the assistant first has to ask what is available and then execute it
+in a roundabout way.
 
-Kies de gedeelde stand alleen als je bewust één verbinding voor de hele site
-wil.
+Choose the shared mode only if you deliberately want one connection for the whole site.
 
-## Rechten
+## Permissions
 
-Drie eigen capabilities. Bij activering krijgt alleen de beheerdersrol
-`kadence_mcp_view` en `kadence_mcp_manage`; de hoofdsleutel krijgt niemand
-automatisch.
+Three capabilities of its own. On activation only the administrator role gets
+`kadence_mcp_view` and `kadence_mcp_manage`; nobody gets the master key
+automatically.
 
-**Deactiveren raakt je rollen niet aan.** Opruimen gebeurt pas bij verwijderen
-van de plugin. Anders zou één deactiveer-activeercyclus je eigen MCP-rol
-leeghalen.
+**Deactivating does not touch your roles.** Cleanup happens only when the
+plugin is deleted. Otherwise a single deactivate-activate cycle would empty your own MCP role.
 
-| Capability | Geeft recht op |
+| Capability | Grants the right to |
 |---|---|
-| `read` | langs de REST-poort komen en posts mogen zien (WordPress-standaard) |
-| `kadence_mcp_view` | de leestools uitvoeren, en de toolcatalogus opvragen |
-| `kadence_mcp_manage` | het instellingenscherm zien en opslaan |
-| `kadence_mcp_full_access` | alles hierboven, ook wat er later bij komt |
+| `read` | get past the REST gate and see posts (WordPress default) |
+| `kadence_mcp_view` | run the read tools, and request the tool catalog |
+| `kadence_mcp_manage` | view and save the settings screen |
+| `kadence_mcp_full_access` | everything above, including whatever is added later |
 
-**Geef de assistent een eigen gebruiker.** Die rol heeft er **twee** nodig:
-`kadence_mcp_view` én `read` — dat laatste is het gewone abonneerecht. Zonder
-`read` komt het account niet langs de REST-poort en kunnen de tools die posts
-uitlezen geen enkele post zien. Wil de assistent ook concepten en
-niet-gepubliceerde headers en elementen kunnen lezen, dan is daarbovenop
-`edit_theme_options` nodig; laat dat weg als je dat niet wil. Hang er een
-account aan en verbind met een applicatiewachtwoord van dat account. Wat die rol niet mag, kan de assistent
-niet — ongeacht welke tools aanstaan. Een rechtenplugin als Members kan de
-capabilities per rol toekennen zonder dat deze plugin daarvan hoeft te weten.
+**Give the assistant its own user.** That role needs **two**:
+`kadence_mcp_view` and `read` — the latter is the ordinary subscriber capability. Without
+`read` the account cannot get past the REST gate and the tools that read posts
+cannot see a single post. If the assistant should also be able to read drafts and
+unpublished headers and elements, it additionally needs
+`edit_theme_options`; leave that out if you don't want that. Attach an
+account to it and connect with an application password for that account. What that role may not do, the assistant
+cannot do — regardless of which tools are on. A permissions plugin like Members can
+assign the capabilities per role without this plugin needing to know about it.
 
-De toggles en de capabilities doen iets verschillends:
+The toggles and the capabilities do different things:
 
-- de **toggle** bepaalt of een ability wordt aangeboden
-- de **capability** bepaalt of dit account hem mag uitvoeren
+- the **toggle** determines whether an ability is offered
+- the **capability** determines whether this account may run it
 
-De toggle is oppervlakteverkleining. De capability is de grendel.
+The toggle reduces the surface. The capability is the lock.
 
 ## Agent skill
 
-Onder `skill/` staat een skill met de werkwijzen en valkuilen die niet in een
-toolschema passen. De serverbeschrijving draagt de conventies al en wordt
-automatisch geladen; de skill is het niveau daarboven.
+Under `skill/` there is a skill with the working methods and pitfalls that don't fit in a
+tool schema. The server description already carries the conventions and is loaded
+automatically; the skill is the level above that.
 
-Je haalt hem op met de knop *Skill downloaden* onder **Kadence Blocks → MCP** —
-die levert dezelfde map, meegeleverd met de geïnstalleerde versie. Pak de ZIP
-uit in de skills-map van je agent, zodat `kadence-blocks` daar rechtstreeks in
-staat. `skill/README.md` beschrijft hetzelfde voor wie vanuit de repo werkt.
+You get it with the *Download skill* button under **Kadence Blocks → MCP** —
+which delivers the same folder, shipped with the installed version. Unzip the ZIP
+into your agent's skills folder, so that `kadence-blocks` sits directly
+inside it. `skill/README.md` describes the same for anyone working from the repo.
 
-## Uitbreiden
+## Extending
 
-Een ability toevoegen is één ruwe definitie in een klasse die
-`get_definitions()` heeft, plus die klasse in `Kadence_MCP_Registry::bronnen()`.
-De registry vult schema, `permission_callback` en meta aan, en het
-instellingenscherm bouwt zijn lijst uit diezelfde registry — je hoeft nergens
-een tweede lijst bij te werken.
+Adding an ability is one raw definition in a class that has
+`get_definitions()`, plus that class in `Kadence_MCP_Registry::bronnen()`.
+The registry fills in the schema, `permission_callback` and meta, and the
+settings screen builds its list from that same registry — you don't need to update a
+second list anywhere.
 
-Het filter `kadence_mcp_ability_definition` mag label, omschrijving en schema's
-aanpassen. Naam, ability-klasse, `permission_callback` en `execute_callback`
-worden daarna teruggezet: een filter mag de beschrijving veranderen, nooit de
-grendel.
+The filter `kadence_mcp_ability_definition` may adjust label, description and schemas.
+Name, ability class, `permission_callback` and `execute_callback`
+are reset afterwards: a filter may change the description, never the
+lock.
 
-## Licentie
+## License
 
 GPL-2.0-or-later.

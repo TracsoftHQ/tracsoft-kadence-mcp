@@ -1641,7 +1641,7 @@ class Kadence_MCP_Abilities_Query {
 				$waarde = maybe_unserialize( isset( $waarden[0] ) ? $waarden[0] : '' );
 
 				if ( is_array( $waarde ) || is_object( $waarde ) ) {
-					$kort = sprintf( '(%s met %d elementen)', is_object( $waarde ) ? 'object' : 'array', count( (array) $waarde ) );
+					$kort = sprintf( '(%s with %d elements)', is_object( $waarde ) ? 'object' : 'array', count( (array) $waarde ) );
 				} else {
 					$kort = (string) $waarde;
 					$kort = strlen( $kort ) > 80 ? substr( $kort, 0, 80 ) . '…' : $kort;
@@ -1699,14 +1699,14 @@ class Kadence_MCP_Abilities_Query {
 	 * class-kadence-blocks-pro-dynamic-content.php, 13-09-2026.
 	 */
 	const DYNAMISCHE_VELDEN = array(
-		'post|post_title'              => 'de titel',
-		'post|post_excerpt'            => 'de samenvatting',
-		'post|post_date'               => 'de publicatiedatum, in het datumformaat van de site — NIET zelf op te maken in het blok',
-		'post|post_date_modified'      => 'de wijzigingsdatum',
-		'post|post_url'                => 'de permalink, gebruik dit voor de link van een knop',
-		'post|post_featured_image'     => 'de uitgelichte afbeelding',
-		'post|post_featured_image_url' => 'de URL van de uitgelichte afbeelding',
-		'post|post_custom_field'       => 'een eigen veld; zet para op kb_custom_input en custom op de meta-sleutel',
+		'post|post_title'              => 'the title',
+		'post|post_excerpt'            => 'the excerpt',
+		'post|post_date'               => 'the publish date, in the site\'s date format — do NOT format it yourself in the block',
+		'post|post_date_modified'      => 'the modified date',
+		'post|post_url'                => 'the permalink; use this for a button\'s link',
+		'post|post_featured_image'     => 'the featured image',
+		'post|post_featured_image_url' => 'the URL of the featured image',
+		'post|post_custom_field'       => 'a custom field; set para to kb_custom_input and custom to the meta key',
 	);
 
 	/**
