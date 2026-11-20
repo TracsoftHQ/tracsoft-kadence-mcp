@@ -34,7 +34,7 @@ if ( defined( 'KADENCE_MCP_VERSION' ) ) {
 				return;
 			}
 			echo '<div class="notice notice-error"><p>'
-				. esc_html__( 'Tracsoft Kadence MCP is not running because the original "MCP Abilities — Kadence" plugin is active. Deactivate and delete the original; Tracsoft Kadence MCP replaces it and keeps the same settings.', 'mcp-abilities-kadence' )
+				. esc_html__( 'Tracsoft Kadence MCP is not running because the original "MCP Abilities — Kadence" plugin is active. Delete the original (this removes its settings and capabilities), then deactivate and reactivate Tracsoft Kadence MCP and set it up again.', 'mcp-abilities-kadence' )
 				. '</p></div>';
 		}
 	);

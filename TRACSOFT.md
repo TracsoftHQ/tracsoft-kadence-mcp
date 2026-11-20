@@ -37,6 +37,28 @@ Known and accepted, not changed:
 - Releases are not signed. Anyone who can publish a release on this repo can
   ship code to every site that runs the plugin. Protect the repo (see below).
 
+## Setting it up on a site
+
+1. Install MCP Adapter, Enable Abilities for MCP, and the
+   `tracsoft-kadence-mcp.zip` from the latest release. Activate all three.
+2. Activation gives administrators `kadence_mcp_view` and `kadence_mcp_manage`.
+   Nobody gets `kadence_mcp_write`, and without it Claude sees no write tools
+   at all. Grant it to the people who will build with Claude, for example to
+   every administrator with WP-CLI:
+
+   ```bash
+   wp cap add administrator kadence_mcp_write
+   ```
+
+   or per user with a role plugin such as Members. Remove it again with
+   `wp cap remove administrator kadence_mcp_write` when a build is done, if the
+   site should go back to read-only.
+3. Under Kadence Blocks → MCP, switch the plugin on and enable the tools you
+   want to offer.
+4. Never install the original mcp-abilities-kadence on the same site. If it is
+   there, delete it first: its uninstall removes the shared capabilities and
+   settings, so reactivate Tracsoft Kadence MCP afterwards.
+
 ## How to release an update
 
 1. Make the change on a branch and open a pull request. CI lints PHP 7.4 and 8.3.
