@@ -2605,6 +2605,21 @@ msgstr "Offer the checked tools via MCP"
 msgid "Staat dit uit, dan is geen enkele tool bereikbaar — ook niet de tools die hieronder aangevinkt staan."
 msgstr "When this is off, no tool is reachable — not even the tools checked below."
 
+msgid "Write access"
+msgstr "Write access"
+
+msgid "Administrators"
+msgstr "Administrators"
+
+msgid "Allow administrators to use the write tools"
+msgstr "Allow administrators to use the write tools"
+
+msgid "Gives the Administrator role the capability kadence_mcp_write when you save. Every administrator on this site, and an assistant signed in as one, can then change content with the write tools you switch on below. Untick it and save to make the site read-only again. Other roles are not changed."
+msgstr "Gives the Administrator role the capability kadence_mcp_write when you save. Every administrator on this site, and an assistant signed in as one, can then change content with the write tools you switch on below. Untick it and save to make the site read-only again. Other roles are not changed."
+
+msgid "Only a user who can manage site options can change this."
+msgstr "Only a user who can manage site options can change this."
+
 msgid "Alleen lezen"
 msgstr "Read only"
 
@@ -2649,6 +2664,15 @@ msgstr "Status"
 
 msgid "Tools actief"
 msgstr "Tools active"
+
+msgid "Administrators can write"
+msgstr "Administrators can write"
+
+msgid "Yes"
+msgstr "Yes"
+
+msgid "No"
+msgstr "No"
 
 msgid "Thema"
 msgstr "Theme"

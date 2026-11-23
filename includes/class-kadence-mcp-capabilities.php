@@ -157,6 +157,47 @@ class Kadence_MCP_Capabilities {
 	}
 
 	/**
+	 * Tracsoft: does the Administrator role hold kadence_mcp_write?
+	 *
+	 * The role itself is the only source of truth, so this agrees with
+	 * `wp cap add administrator kadence_mcp_write` and with a role plugin.
+	 *
+	 * @return bool
+	 */
+	public static function admins_can_write() {
+		$role = get_role( 'administrator' );
+
+		return $role instanceof WP_Role && $role->has_cap( self::WRITE );
+	}
+
+	/**
+	 * Tracsoft: give kadence_mcp_write to, or take it from, the Administrator
+	 * role. This is what the switch under Kadence Blocks → MCP does.
+	 *
+	 * Only the Administrator role is touched. Other roles keep whatever a role
+	 * plugin or WP-CLI gave them.
+	 *
+	 * @param bool $allow True to grant, false to remove.
+	 *
+	 * @return bool Whether administrators can write afterwards.
+	 */
+	public static function set_admin_write( $allow ) {
+		$role = get_role( 'administrator' );
+
+		if ( ! $role instanceof WP_Role ) {
+			return false;
+		}
+
+		if ( $allow && ! $role->has_cap( self::WRITE ) ) {
+			$role->add_cap( self::WRITE );
+		} elseif ( ! $allow && isset( $role->capabilities[ self::WRITE ] ) ) {
+			$role->remove_cap( self::WRITE );
+		}
+
+		return self::admins_can_write();
+	}
+
+	/**
 	 * Tracsoft hardening: may the current user read this post through MCP?
 	 *
 	 * One check for every tool that loads a post by ID, so a read or a dry-run

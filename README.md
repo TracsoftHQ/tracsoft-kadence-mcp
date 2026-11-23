@@ -195,6 +195,11 @@ account to it and connect with an application password for that account. What th
 cannot do — regardless of which tools are on. A permissions plugin like Members can
 assign the capabilities per role without this plugin needing to know about it.
 
+Tracsoft addition: for the Administrator role you don't need a permissions
+plugin. Under Kadence Blocks → MCP, **Allow administrators to use the write
+tools** grants `kadence_mcp_write` to administrators when you save, and removes
+it when you untick it.
+
 The toggles and the capabilities do different things:
 
 - the **toggle** determines whether an ability is offered

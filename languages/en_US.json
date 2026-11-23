@@ -946,5 +946,13 @@
  "weggelaten omdat ze gelijk zijn aan de standaardwaarde: %s. Dat is wat de editor ook doet.": "omitted because they equal the default value: %s. That is what the editor does too.",
  "weggelaten omdat ze niet in het blokschema staan: %s. Die zouden bij het renderen toch stil genegeerd worden.": "omitted because they are not in the block schema: %s. They would be silently ignored on render anyway.",
  "zegt niets over validatieveiligheid: alle Kadence-blokken hebben een render_callback. Gebruik validate-write.": "says nothing about validation safety: all Kadence blocks have a render_callback. Use validate-write.",
- "— de assistent ziet dit als %s": "— the assistant sees this as %s"
+ "— de assistent ziet dit als %s": "— the assistant sees this as %s",
+ "Write access": "Write access",
+ "Administrators": "Administrators",
+ "Allow administrators to use the write tools": "Allow administrators to use the write tools",
+ "Gives the Administrator role the capability kadence_mcp_write when you save. Every administrator on this site, and an assistant signed in as one, can then change content with the write tools you switch on below. Untick it and save to make the site read-only again. Other roles are not changed.": "Gives the Administrator role the capability kadence_mcp_write when you save. Every administrator on this site, and an assistant signed in as one, can then change content with the write tools you switch on below. Untick it and save to make the site read-only again. Other roles are not changed.",
+ "Only a user who can manage site options can change this.": "Only a user who can manage site options can change this.",
+ "Administrators can write": "Administrators can write",
+ "Yes": "Yes",
+ "No": "No"
 }
