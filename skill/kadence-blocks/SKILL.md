@@ -16,6 +16,14 @@ Every write ability requires the capability `kadence_mcp_write`, edit rights on
 the post according to WordPress, and a token from a preceding check step. Read
 below how that check works before you use one.
 
+If a write is refused for a missing `kadence_mcp_write`, or `check-access`
+reports it as not granted, do not look for another way in. Nobody holds that
+capability after installation. Tell the user it is switched on in wp-admin
+under Kadence Blocks → MCP with **Allow administrators to use the write
+tools**, then save. That covers the Administrator role only; another role needs
+a role plugin such as Members or WP-CLI. Run `check-access` again once they say
+it is done, and suggest unticking it when the build is finished.
+
 Note that they do not all touch the same thing. Most write `post_content`
 and therefore create a revision. `set-entity-meta` and `set-card-layout` write post
 meta, and post meta has **no** revisions — the old value in the response is your only way
