@@ -27,6 +27,13 @@ class Kadence_MCP_Settings {
 	const OPTION_ENABLED_TOOLS = 'kadence_mcp_enabled_tools';
 	const OPTION_ENDPOINT_MODE = 'kadence_mcp_endpoint_mode';
 
+	/**
+	 * Tracsoft: carries the "Allow administrators to write" switch through the
+	 * settings form. The Administrator role is the source of truth, not this
+	 * option; see sanitize_admin_write().
+	 */
+	const OPTION_ADMIN_WRITE = 'kadence_mcp_admin_write';
+
 	const OPTION_GROUP = 'kadence_mcp_settings';
 	const MENU_SLUG    = 'kadence-mcp';
 
@@ -244,6 +251,54 @@ class Kadence_MCP_Settings {
 				'sanitize_callback' => array( __CLASS__, 'sanitize_tools' ),
 			)
 		);
+
+		// Tracsoft: the switch that grants kadence_mcp_write to administrators.
+		register_setting(
+			self::OPTION_GROUP,
+			self::OPTION_ADMIN_WRITE,
+			array(
+				'type'              => 'boolean',
+				'default'           => false,
+				'sanitize_callback' => array( __CLASS__, 'sanitize_admin_write' ),
+			)
+		);
+	}
+
+	/**
+	 * Tracsoft: may the current user flip the administrator write switch?
+	 *
+	 * Seeing and saving this screen needs only kadence_mcp_manage, which a site
+	 * can hand to a lesser role. Handing out write access is a bigger decision,
+	 * so it asks for manage_options as well.
+	 *
+	 * @return bool
+	 */
+	public static function can_change_admin_write() {
+		return current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Tracsoft: apply the administrator write switch.
+	 *
+	 * Saving the form is what grants or removes the capability, so the switch
+	 * and the role can never disagree: the stored value is always read back
+	 * from the role. Three cases leave the role alone: the field was not
+	 * posted (null, which is also what WordPress passes when another screen
+	 * saves this option group), the user may not change it, or the value
+	 * already matches.
+	 *
+	 * @param mixed $value The posted value.
+	 *
+	 * @return bool
+	 */
+	public static function sanitize_admin_write( $value ) {
+		if ( null === $value || ! self::can_change_admin_write() ) {
+			return Kadence_MCP_Capabilities::admins_can_write();
+		}
+
+		$allow = ! in_array( $value, array( '0', 0, '', false ), true );
+
+		return Kadence_MCP_Capabilities::set_admin_write( $allow );
 	}
 
 	/**
@@ -387,6 +442,7 @@ class Kadence_MCP_Settings {
 					</tr>
 				</table>
 
+				<?php self::render_admin_write_section(); ?>
 				<?php self::render_tools_section(); ?>
 				<?php self::render_endpoint_section(); ?>
 
@@ -396,6 +452,50 @@ class Kadence_MCP_Settings {
 			<?php self::render_status_section(); ?>
 			<?php Kadence_MCP_Skill::render_sectie(); ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Tracsoft: the "Allow administrators to write" switch.
+	 *
+	 * Upstream grants kadence_mcp_write to nobody and leaves granting it to
+	 * WP-CLI or a role plugin. On Tracsoft client sites the people who build
+	 * with Claude are administrators, so this screen can grant and remove it.
+	 * It still starts off, and switching it on is a deliberate, saved choice.
+	 *
+	 * The checkbox shows what the role holds right now, not a stored option.
+	 * For a user who may not change it the box is disabled and no hidden field
+	 * is sent, so saving the rest of the screen leaves the role alone.
+	 *
+	 * @return void
+	 */
+	private static function render_admin_write_section() {
+		$allowed    = Kadence_MCP_Capabilities::admins_can_write();
+		$can_change = self::can_change_admin_write();
+		?>
+		<h2><?php esc_html_e( 'Write access', 'mcp-abilities-kadence' ); ?></h2>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Administrators', 'mcp-abilities-kadence' ); ?></th>
+				<td>
+					<?php if ( $can_change ) : ?>
+						<input type="hidden" name="<?php echo esc_attr( self::OPTION_ADMIN_WRITE ); ?>" value="0">
+					<?php endif; ?>
+					<label>
+						<input type="checkbox" name="<?php echo esc_attr( self::OPTION_ADMIN_WRITE ); ?>" value="1" <?php checked( $allowed ); ?> <?php disabled( ! $can_change ); ?>>
+						<?php esc_html_e( 'Allow administrators to use the write tools', 'mcp-abilities-kadence' ); ?>
+					</label>
+					<p class="description" style="max-width:46em">
+						<?php esc_html_e( 'Gives the Administrator role the capability kadence_mcp_write when you save. Every administrator on this site, and an assistant signed in as one, can then change content with the write tools you switch on below. Untick it and save to make the site read-only again. Other roles are not changed.', 'mcp-abilities-kadence' ); ?>
+					</p>
+					<?php if ( ! $can_change ) : ?>
+						<p class="description">
+							<?php esc_html_e( 'Only a user who can manage site options can change this.', 'mcp-abilities-kadence' ); ?>
+						</p>
+					<?php endif; ?>
+				</td>
+			</tr>
+		</table>
 		<?php
 	}
 
@@ -645,6 +745,10 @@ class Kadence_MCP_Settings {
 				<tr>
 					<td><?php esc_html_e( 'Endpoint', 'mcp-abilities-kadence' ); ?></td>
 					<td><code><?php echo esc_html( self::get_endpoint_url() ); ?></code></td>
+				</tr>
+				<tr>
+					<td><?php esc_html_e( 'Administrators can write', 'mcp-abilities-kadence' ); ?></td>
+					<td><?php echo Kadence_MCP_Capabilities::admins_can_write() ? esc_html__( 'Yes', 'mcp-abilities-kadence' ) : esc_html__( 'No', 'mcp-abilities-kadence' ); ?></td>
 				</tr>
 				<?php
 				$omgeving = Kadence_MCP_Inventory::get_environment();

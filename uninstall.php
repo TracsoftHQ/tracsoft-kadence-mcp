@@ -23,6 +23,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 delete_option( 'kadence_mcp_enabled' );
 delete_option( 'kadence_mcp_enabled_tools' );
 delete_option( 'kadence_mcp_endpoint_mode' );
+delete_option( 'kadence_mcp_admin_write' );
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-kadence-mcp-capabilities.php';
 

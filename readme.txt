@@ -4,7 +4,7 @@ Tags: mcp, kadence, abilities, ai
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.27.1.2
+Stable tag: 1.27.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,10 @@ Kadence Blocks > MCP.
 Requires the WordPress Abilities API and the MCP Adapter.
 
 == Changelog ==
+
+= 1.27.1.3 (Tracsoft) =
+* New: a switch under Kadence Blocks → MCP, "Allow administrators to use the write tools". Saving it gives the Administrator role kadence_mcp_write, or takes it away, so a site no longer needs WP-CLI or a role plugin for that. It is off after installation, shows what the role holds right now, changes no other role, and can only be changed by a user who can manage site options.
+* The Status table on the same screen shows whether administrators can write.
 
 = 1.27.1.2 (Tracsoft) =
 * English: every message, setting, tool description and error is now in English, through an English translation (languages/mcp-abilities-kadence-en_US.mo) of all 948 upstream strings, loaded on every site whose language is not Dutch. Values the plugin returns or accepts as data (such as the verdicts veilig, riskant and blokkeer, and the pad: path prefix) stay as they are, with an English gloss in the descriptions.

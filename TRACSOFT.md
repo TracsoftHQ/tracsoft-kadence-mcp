@@ -9,9 +9,10 @@ which provides the sign-in.
 Most of the code and its comments are upstream's and in Dutch. Every Tracsoft
 change is marked with a `Tracsoft` comment, so `grep -rn Tracsoft` lists them.
 
-## What Tracsoft changed (1.27.1.1)
+## What Tracsoft changed
 
-The changes come from a security review of upstream v1.27.1 on 2026-11-20.
+The changes in this table came with 1.27.1.1, from a security review of
+upstream v1.27.1 on 2026-11-20.
 
 | Area | Upstream | Tracsoft |
 | :--- | :--- | :--- |
@@ -25,6 +26,15 @@ The changes come from a security review of upstream v1.27.1 on 2026-11-20.
 | Custom SVG content | Written raw | Requires `unfiltered_html` |
 | Terms on create/update-post | No `assign_terms` check | Checked per taxonomy |
 | CI | Actions pinned by tag | Pinned by commit SHA |
+
+Added in 1.27.1.3: the **Allow administrators to use the write tools** switch
+under Kadence Blocks → MCP. Upstream leaves granting `kadence_mcp_write` to
+WP-CLI or a role plugin on purpose. Tracsoft builds client sites as an
+administrator, so the settings screen can now grant and remove it for the
+Administrator role. It is still off after installation, and only a user with
+`manage_options` can change it (the screen itself needs only
+`kadence_mcp_manage`). The code is `Kadence_MCP_Capabilities::set_admin_write()`
+and `Kadence_MCP_Settings::sanitize_admin_write()`.
 
 Known and accepted, not changed:
 
@@ -43,18 +53,22 @@ Known and accepted, not changed:
    `tracsoft-kadence-mcp.zip` from the latest release. Activate all three.
 2. Activation gives administrators `kadence_mcp_view` and `kadence_mcp_manage`.
    Nobody gets `kadence_mcp_write`, and without it Claude sees no write tools
-   at all. Grant it to the people who will build with Claude, for example to
-   every administrator with WP-CLI:
+   at all.
+3. Under Kadence Blocks → MCP, switch the plugin on and enable the tools you
+   want to offer. To let Claude build, tick **Allow administrators to use the
+   write tools** on the same screen and save. That gives the Administrator
+   role `kadence_mcp_write`. Untick it and save when a build is done, if the
+   site should go back to read-only.
+
+   The switch covers administrators only. For another role, or one user, use a
+   role plugin such as Members, or WP-CLI:
 
    ```bash
-   wp cap add administrator kadence_mcp_write
+   wp cap add <role> kadence_mcp_write
    ```
 
-   or per user with a role plugin such as Members. Remove it again with
-   `wp cap remove administrator kadence_mcp_write` when a build is done, if the
-   site should go back to read-only.
-3. Under Kadence Blocks → MCP, switch the plugin on and enable the tools you
-   want to offer.
+   The switch reads the role itself, so it also shows a grant made with WP-CLI
+   or Members.
 4. Never install the original mcp-abilities-kadence on the same site. If it is
    there, delete it first: its uninstall removes the shared capabilities and
    settings, so reactivate Tracsoft Kadence MCP afterwards.

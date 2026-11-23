@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tracsoft Kadence MCP\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 16:57-0500\n"
+"POT-Creation-Date: 2026-11-23 15:23-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3723,7 +3723,7 @@ msgid "Kadence MCP: volledige toegang"
 msgstr ""
 
 #. translators: %d: post ID.
-#: includes/class-kadence-mcp-capabilities.php:243
+#: includes/class-kadence-mcp-capabilities.php:284
 #, php-format
 msgid "No read access to post %d."
 msgstr ""
@@ -4018,209 +4018,241 @@ msgstr ""
 msgid "Kadence MCP Server"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:189
-#: includes/class-kadence-mcp-settings.php:307
+#: includes/class-kadence-mcp-settings.php:196
+#: includes/class-kadence-mcp-settings.php:362
 msgid "Kadence MCP"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:190
+#: includes/class-kadence-mcp-settings.php:197
 msgid "MCP"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:300
+#: includes/class-kadence-mcp-settings.php:355
 msgid "Je hebt geen toegang tot deze pagina."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:310
+#: includes/class-kadence-mcp-settings.php:365
 msgid "Geeft een AI-assistent toegang tot Kadence via MCP: drieëntwintig leestools en vijfentwintig schrijftools. Alles staat standaard uit; je zet per tool aan wat je wil aanbieden. Schrijven vraagt daarnaast de capability kadence_mcp_write, die bij installatie aan niemand wordt toegekend."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:316
+#: includes/class-kadence-mcp-settings.php:371
 msgid "Nog niet bruikbaar."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:317
+#: includes/class-kadence-mcp-settings.php:372
 msgid "Deze plugin heeft zowel de WordPress Abilities API als de MCP Adapter nodig. Zolang die ontbreken wordt er niets geregistreerd en is er geen endpoint."
 msgstr ""
 
 #. translators: 1: Abilities API status, 2: MCP Adapter status.
-#: includes/class-kadence-mcp-settings.php:323
+#: includes/class-kadence-mcp-settings.php:378
 #, php-format
 msgid "Abilities API: %1$s — MCP Adapter: %2$s"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:324
-#: includes/class-kadence-mcp-settings.php:325
+#: includes/class-kadence-mcp-settings.php:379
+#: includes/class-kadence-mcp-settings.php:380
 msgid "aanwezig"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:324
-#: includes/class-kadence-mcp-settings.php:325
+#: includes/class-kadence-mcp-settings.php:379
+#: includes/class-kadence-mcp-settings.php:380
 msgid "ontbreekt"
 msgstr ""
 
 #. translators: %s: link to the MCP Adapter release asset.
-#: includes/class-kadence-mcp-settings.php:342
+#: includes/class-kadence-mcp-settings.php:397
 #, php-format
 msgid "De MCP Adapter staat niet in de plugin-directory; zoeken levert niets op. Haal %s van de releasepagina en installeer die via Plugins → Nieuwe plugin → Plugin uploaden. Neem het bestand onder Assets, niet de broncode — die mist zijn dependencies."
 msgstr ""
 
 #. translators: %s: the current WordPress version.
-#: includes/class-kadence-mcp-settings.php:359
+#: includes/class-kadence-mcp-settings.php:414
 #, php-format
 msgid "De Abilities API zit in WordPress vanaf 6.9. Deze site draait %s; werk WordPress bij, of installeer de Abilities API als losse plugin."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:371
+#: includes/class-kadence-mcp-settings.php:426
 msgid "Hoofdschakelaar"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:374
+#: includes/class-kadence-mcp-settings.php:429
 msgid "MCP inschakelen"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:381
+#: includes/class-kadence-mcp-settings.php:436
 msgid "Bied de aangevinkte tools aan via MCP"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:384
+#: includes/class-kadence-mcp-settings.php:439
 msgid "Staat dit uit, dan is geen enkele tool bereikbaar — ook niet de tools die hieronder aangevinkt staan."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:414
+#: includes/class-kadence-mcp-settings.php:476
+msgid "Write access"
+msgstr ""
+
+#: includes/class-kadence-mcp-settings.php:479
+msgid "Administrators"
+msgstr ""
+
+#: includes/class-kadence-mcp-settings.php:486
+msgid "Allow administrators to use the write tools"
+msgstr ""
+
+#: includes/class-kadence-mcp-settings.php:489
+msgid "Gives the Administrator role the capability kadence_mcp_write when you save. Every administrator on this site, and an assistant signed in as one, can then change content with the write tools you switch on below. Untick it and save to make the site read-only again. Other roles are not changed."
+msgstr ""
+
+#: includes/class-kadence-mcp-settings.php:493
+msgid "Only a user who can manage site options can change this."
+msgstr ""
+
+#: includes/class-kadence-mcp-settings.php:514
 msgid "Alleen lezen"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:415
+#: includes/class-kadence-mcp-settings.php:515
 msgid "Deze tools lezen uit en veranderen niets. Zet aan wat je wil aanbieden."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:419
+#: includes/class-kadence-mcp-settings.php:519
 msgid "Schrijven"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:420
+#: includes/class-kadence-mcp-settings.php:520
 msgid "Deze tools veranderen inhoud. Aanzetten is niet genoeg: het account heeft daarnaast de capability kadence_mcp_write nodig, en die wordt bij activering aan niemand toegekend. Zet dit alleen aan wanneer je erbij bent, en daarna weer uit."
 msgstr ""
 
 #. translators: %d: number of tools in this group.
-#: includes/class-kadence-mcp-settings.php:467
+#: includes/class-kadence-mcp-settings.php:567
 #, php-format
 msgid "Alle %d aanvinken"
 msgstr ""
 
 #. translators: %s: the tool name as the MCP client sees it.
-#: includes/class-kadence-mcp-settings.php:503
+#: includes/class-kadence-mcp-settings.php:603
 #, php-format
 msgid "— de assistent ziet dit als %s"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:596
-#: includes/class-kadence-mcp-settings.php:646
+#: includes/class-kadence-mcp-settings.php:696
+#: includes/class-kadence-mcp-settings.php:746
 msgid "Endpoint"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:599
+#: includes/class-kadence-mcp-settings.php:699
 msgid "Hoe verbindt de assistent?"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:604
+#: includes/class-kadence-mcp-settings.php:704
 msgid "Eigen endpoint (aanbevolen)"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:606
+#: includes/class-kadence-mcp-settings.php:706
 msgid "Een server alleen voor Kadence. Elke ingeschakelde tool staat er als losse tool in, wat een assistent betrouwbaarder vindt en aanroept dan een tool die hij eerst moet opvragen."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:611
+#: includes/class-kadence-mcp-settings.php:711
 msgid "Gedeelde site-endpoint"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:613
+#: includes/class-kadence-mcp-settings.php:713
 msgid "De endpoint die alle MCP-plugins op deze site delen. Eén verbinding voor de hele site, maar de Kadence-tools zijn alleen bereikbaar via de generieke discovery-tools van WordPress. Kies dit alleen als je bewust één verbinding wil."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:618
+#: includes/class-kadence-mcp-settings.php:718
 msgid "Huidige URL:"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:638
+#: includes/class-kadence-mcp-settings.php:738
 msgid "Status"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:642
+#: includes/class-kadence-mcp-settings.php:742
 msgid "Tools actief"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:652
+#: includes/class-kadence-mcp-settings.php:750
+msgid "Administrators can write"
+msgstr ""
+
+#: includes/class-kadence-mcp-settings.php:751
+msgid "Yes"
+msgstr ""
+
+#: includes/class-kadence-mcp-settings.php:751
+msgid "No"
+msgstr ""
+
+#: includes/class-kadence-mcp-settings.php:756
 msgid "Thema"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:653
+#: includes/class-kadence-mcp-settings.php:757
 msgid "Themaversie"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:654
+#: includes/class-kadence-mcp-settings.php:758
 msgid "Child theme"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:655
+#: includes/class-kadence-mcp-settings.php:759
 msgid "Kadence Blocks"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:656
+#: includes/class-kadence-mcp-settings.php:760
 msgid "Kadence Blocks Pro"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:657
+#: includes/class-kadence-mcp-settings.php:761
 msgid "Kadence Pro"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:664
+#: includes/class-kadence-mcp-settings.php:768
 msgid "niet aanwezig"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:670
+#: includes/class-kadence-mcp-settings.php:774
 msgid "Een apart account voor de assistent"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:672
+#: includes/class-kadence-mcp-settings.php:776
 msgid "Geef de assistent bij voorkeur een eigen gebruiker met een eigen rol, en verbind met een applicatiewachtwoord van dat account. Wat die rol niet mag, kan de assistent niet — ongeacht welke tools hierboven aanstaan."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:675
+#: includes/class-kadence-mcp-settings.php:779
 msgid "Die rol heeft twee capabilities nodig, niet één."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:676
+#: includes/class-kadence-mcp-settings.php:780
 msgid "Naast kadence_mcp_view ook read — het gewone abonneerecht. Zonder read komt het account niet langs de REST-poort, en kunnen de tools die posts uitlezen geen enkele post zien. Wil de assistent ook concepten en niet-gepubliceerde headers en elementen kunnen lezen, dan is daarbovenop edit_theme_options nodig; laat dat weg als je dat niet wil."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:681
+#: includes/class-kadence-mcp-settings.php:785
 msgid "Capability"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:682
+#: includes/class-kadence-mcp-settings.php:786
 msgid "Geeft recht op"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:688
+#: includes/class-kadence-mcp-settings.php:792
 msgid "langs de REST-poort komen en posts mogen zien — WordPress-standaard, elke rol vanaf abonnee heeft hem"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:692
+#: includes/class-kadence-mcp-settings.php:796
 msgid "de leestools uitvoeren"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:696
+#: includes/class-kadence-mcp-settings.php:800
 msgid "dit scherm zien en opslaan"
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:700
+#: includes/class-kadence-mcp-settings.php:804
 msgid "blokken wijzigen — krijgt niemand automatisch, ook de beheerder niet. Daarnaast eist WordPress zelf bewerkrecht op de post."
 msgstr ""
 
-#: includes/class-kadence-mcp-settings.php:704
+#: includes/class-kadence-mcp-settings.php:808
 msgid "alles hierboven, ook wat er later bij komt — niemand krijgt hem automatisch"
 msgstr ""
 
