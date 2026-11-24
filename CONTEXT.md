@@ -35,10 +35,10 @@ per post type.
 value in the response's `before` field is the only way back. That is also stated
 in every status line.
 
-**Site-wide.** `set-global-typography` writes theme mods, `set-site-css`
-writes the Customizer's Additional CSS. These affect every page, and theme mods
+**Site-wide.** `set-global-typography` and `set-theme-mods` write theme mods,
+`set-site-css` writes the Customizer's Additional CSS. These affect every page, and theme mods
 have no revisions either. They therefore sit behind an extra gate:
-`edit_theme_options` on top of `kadence_mcp_write`, and the typography accepts
+`edit_theme_options` on top of `kadence_mcp_write`, and both theme-mod writers accept
 only a fixed list of keys — theme mods also contain the header, the colors
 and the layout, and a typo must not be able to land there.
 

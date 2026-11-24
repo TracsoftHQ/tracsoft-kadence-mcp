@@ -8,7 +8,7 @@ description: "How to read and modify a Kadence site through the Kadence MCP serv
 This skill describes how to use the Kadence MCP server without making the
 mistakes that the tool schemas cannot prevent.
 
-The server has forty-nine abilities: twenty-three read, twenty-six write.
+The server has fifty-two abilities: twenty-four read, twenty-eight write.
 **So writing is not the exception** — check per tool whether it writes, instead
 of assuming that reading is the norm.
 
@@ -27,8 +27,8 @@ it is done, and suggest unticking it when the build is finished.
 Note that they do not all touch the same thing. Most write `post_content`
 and therefore create a revision. `set-entity-meta` and `set-card-layout` write post
 meta, and post meta has **no** revisions — the old value in the response is your only way
-back. `set-global-typography` and `set-site-css` affect the whole site instead of
-a single post.
+back. `set-global-typography`, `set-theme-mods` and `set-site-css` affect the
+whole site instead of a single post.
 
 ## Before you propose a change
 
@@ -1169,6 +1169,46 @@ In a core block, use a CSS value in `style` (`var(--global-palette5)`
 or a custom token) or the preset `var:preset|color|theme-palette5`, and in
 `textColor`/`backgroundColor` the slug `theme-palette5`. Gravity Forms accepts only
 hex in its form block.
+
+## Header, footer and logo: theme mods, not blocks
+
+On a site that uses the Kadence theme's own header and footer (the
+Customizer builders), those live in theme mods, not in a post. Build them with
+`get-theme-mods` and `set-theme-mods`. Don't do it with a `kadence_header`
+post: that still needs a Customizer step to select it, and there's no footer
+counterpart.
+
+1. `get-theme-mods` first. The current layout shows the rows and slots that
+   exist, `items` lists what each builder accepts, and `shapes` says what each
+   value must look like.
+2. A logo has to be in the media library. If it isn't online anywhere, use
+   `upload-media` (base64, JPG/PNG/GIF/WebP, at most 2 MB; no SVG). Two
+   steps: send it once for the proposal, then the same call with the token.
+3. `set-theme-mods` with only what changes, then the same call with the token.
+   A builder changes per slot:
+
+   ```json
+   {"mods": {
+     "custom_logo": 62,
+     "logo_layout": {"include": {"desktop": "logo"}},
+     "header_desktop_items": {"main": {"main_left": ["logo"], "main_center": ["navigation"], "main_right": ["button"]}},
+     "header_button_label": "Save my seat",
+     "header_button_link": "https://example.com/workshops/",
+     "footer_items": {"bottom": {"bottom_1": ["footer-html"], "bottom_2": ["footer-navigation"]}},
+     "footer_bottom_columns": "2"
+   }}
+   ```
+
+   `logo_layout.include` is a string made of `logo`, `title` and `tagline`
+   joined with `_`, so `logo` alone hides the site title.
+4. Moving an item means taking it out of its old slot in the same call. Every
+   item may sit in only one place in a layout; `set-theme-mods` refuses a
+   second copy rather than letting it vanish silently.
+
+What the builders show still depends on things outside this list. A
+`navigation` item shows the menu assigned to the Primary location, and
+`footer-navigation` the Footer location. Colors come from the palette and from
+CSS. And there is no revision: keep `before` from every write.
 
 ## Typography and fonts: what is actually set
 
