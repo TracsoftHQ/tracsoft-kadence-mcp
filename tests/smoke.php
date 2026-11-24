@@ -126,6 +126,49 @@ foreach ( Kadence_MCP_Registry::get_definitions() as $d ) {
 	}
 }
 
+// Tracsoft: set-theme-mods and upload-media, proposal step only. Without a
+// token neither saves anything, so this keeps the promise in the header.
+$verwacht = array(
+	'theme-mods: proposal'      => array( array( 'Kadence_MCP_Abilities_Site', 'set_theme_mods' ), array( 'mods' => array( 'header_button_label' => 'Smoke test' ) ), 'array' ),
+	'theme-mods: unknown key'   => array( array( 'Kadence_MCP_Abilities_Site', 'set_theme_mods' ), array( 'mods' => array( 'blogname' => 'x' ) ), 'kadence_mcp_unknown_theme_mod' ),
+	'theme-mods: unknown item'  => array( array( 'Kadence_MCP_Abilities_Site', 'set_theme_mods' ), array( 'mods' => array( 'header_desktop_items' => array( 'main' => array( 'main_right' => array( 'not-an-item' ) ) ) ) ), 'kadence_mcp_bad_theme_mod' ),
+	'theme-mods: unknown slot'  => array( array( 'Kadence_MCP_Abilities_Site', 'set_theme_mods' ), array( 'mods' => array( 'header_desktop_items' => array( 'main' => array( 'main_nowhere' => array() ) ) ) ), 'kadence_mcp_bad_theme_mod' ),
+	'theme-mods: item twice'    => array( array( 'Kadence_MCP_Abilities_Site', 'set_theme_mods' ), array( 'mods' => array( 'header_desktop_items' => array( 'main' => array( 'main_left' => array( 'logo' ), 'main_right' => array( 'logo' ) ) ) ) ), 'kadence_mcp_bad_theme_mod' ),
+	'theme-mods: bad choice'    => array( array( 'Kadence_MCP_Abilities_Site', 'set_theme_mods' ), array( 'mods' => array( 'header_button_size' => 'huge' ) ), 'kadence_mcp_bad_theme_mod' ),
+	'upload-media: png'         => array( array( 'Kadence_MCP_Abilities_Site', 'upload_media' ), array( 'filename' => 'smoke.png', 'data' => 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' ), 'array' ),
+	'upload-media: svg refused' => array( array( 'Kadence_MCP_Abilities_Site', 'upload_media' ), array( 'filename' => 'smoke.svg', 'data' => base64_encode( '<svg xmlns="http://www.w3.org/2000/svg"/>' ) ), 'kadence_mcp_upload_type' ),
+);
+
+$mag_schrijven = Kadence_MCP_Capabilities::current_user_can( Kadence_MCP_Capabilities::WRITE );
+
+foreach ( $verwacht as $naam => $geval ) {
+	$recht = 0 === strpos( $naam, 'upload-media' ) ? 'upload_files' : 'edit_theme_options';
+
+	// Without the write grant (the default after install) these answer with a
+	// clean WP_Error, which proves nothing about the checks; skip them.
+	if ( ! $mag_schrijven || ! current_user_can( $recht ) ) {
+		WP_CLI::log( sprintf( '%-32s skipped (needs kadence_mcp_write and %s)', $naam, $recht ) );
+		continue;
+	}
+
+	try {
+		$uit = call_user_func( $geval[0], $geval[1] );
+	} catch ( Throwable $e ) {
+		WP_CLI::warning( sprintf( '%s: %s in %s:%d', $naam, $e->getMessage(), $e->getFile(), $e->getLine() ) );
+		++$fouten;
+		continue;
+	}
+
+	$kreeg = is_wp_error( $uit ) ? $uit->get_error_code() : ( is_array( $uit ) ? 'array' : gettype( $uit ) );
+
+	if ( $kreeg === $geval[2] ) {
+		WP_CLI::log( sprintf( '%-32s ok (%s)', $naam, $kreeg ) );
+	} else {
+		WP_CLI::warning( sprintf( '%s: expected %s, got %s', $naam, $geval[2], $kreeg ) );
+		++$fouten;
+	}
+}
+
 if ( $fouten ) {
 	WP_CLI::error( sprintf( '%d abilities faalden.', $fouten ) );
 }

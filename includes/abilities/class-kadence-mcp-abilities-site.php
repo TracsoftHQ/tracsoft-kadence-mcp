@@ -397,6 +397,100 @@ class Kadence_MCP_Abilities_Site {
 					'execute_callback' => array( __CLASS__, 'set_site_css' ),
 				),
 			),
+			// Tracsoft: Customizer settings over MCP (1.27.1.4). Without these
+			// three, a site's header, footer and logo still needed a browser
+			// login or WP-CLI, while everything else was buildable here.
+			array(
+				'name' => 'kadence/get-theme-mods',
+				'args' => array(
+					'label'       => __( 'Thema-instellingen voor header, footer en logo lezen', 'mcp-abilities-kadence' ),
+					'summary'     => __( 'De Customizer-instellingen die set-theme-mods mag wijzigen, met hun huidige waarde.', 'mcp-abilities-kadence' ),
+					'description' => __( 'Leest de Customizer-instellingen van het Kadence-thema die set-theme-mods mag wijzigen: de header- en footerbouwer (header_desktop_items, header_mobile_items, footer_items), het logo, de headerknoppen, de HTML-items en het aantal footerkolommen. Per sleutel krijg je de waarde die het thema nu gebruikt en of die opgeslagen is of de standaardwaarde van Kadence. Daarnaast per bouwer welke items in een vak mogen (items), zodat je nooit een item-ID hoeft te raden, en per sleutel welke vorm een waarde moet hebben (shapes). Lees dit altijd vóór set-theme-mods: de rijen en vakken van een bouwer staan in de huidige waarde, en een vak dat daar niet in staat wordt geweigerd. Schrijft niets.', 'mcp-abilities-kadence' ),
+					'input_schema' => array(
+						'type'       => 'object',
+						'default'    => (object) array(),
+						'properties' => array(
+							'keys' => array(
+								'type'        => 'array',
+								'items'       => array( 'type' => 'string' ),
+								'description' => __( 'Alleen deze sleutels. Leeg laten geeft ze allemaal.', 'mcp-abilities-kadence' ),
+							),
+						),
+						'additionalProperties' => false,
+					),
+					'execute_callback' => array( __CLASS__, 'get_theme_mods_ability' ),
+				),
+			),
+			array(
+				'name' => 'kadence/set-theme-mods',
+				'args' => array(
+					'label'       => __( 'Thema-instellingen voor header, footer en logo wijzigen', 'mcp-abilities-kadence' ),
+					'summary'     => __( 'SCHRIJFACTIE. Bouwt de header en footer van het thema, zet het logo en de headerknop.', 'mcp-abilities-kadence' ),
+					'description' => __( 'Wijzigt Customizer-instellingen van het Kadence-thema uit een vaste lijst: de indeling van de header (desktop en mobiel) en de footer, het logo (custom_logo, mobile_logo, use_mobile_logo, logo_layout, logo_width), de header- en mobiele knop (label, link, stijl, maat, zichtbaarheid), header_html_content, footer_html_content, het aantal kolommen per footerrij en footer_navigation_stretch. Elke andere sleutel wordt geweigerd: theme mods bevatten het uiterlijk van de hele site en kennen geen revisies. Lees eerst get-theme-mods. Een bouwer geef je per rij en vak op, en alleen wat je noemt verandert: {"header_desktop_items":{"main":{"main_right":["navigation","button"]}}} laat de andere vakken staan. Een vak moet al bestaan, een item moet in de lijst van get-theme-mods staan, en een item mag maar één keer in een indeling voorkomen — anders geldt alleen de eerste plek en lijkt de rest stil te verdwijnen. Een logo is het ID van een afbeelding in de mediabibliotheek (zet er een neer met upload-media). Twee stappen: eerst zonder token voor een voorstel met before, after en per wijziging een regel uitleg, daarna opnieuw met het token. LET OP: er is geen revisie; terugdraaien kan alleen met de waarden uit before.', 'mcp-abilities-kadence' ),
+					'readonly'    => false,
+					'destructive' => true,
+					'idempotent'  => true,
+					'input_schema' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'mods'  => array(
+								'type'                 => 'object',
+								'additionalProperties' => true,
+								'description'          => __( 'De sleutels die moeten wijzigen, met hun nieuwe waarde. Alleen sleutels uit get-theme-mods.', 'mcp-abilities-kadence' ),
+							),
+							'token' => array( 'type' => 'string' ),
+						),
+						'required'             => array( 'mods' ),
+						'additionalProperties' => false,
+					),
+					'output_schema' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'before'  => array( 'type' => 'object' ),
+							'after'   => array( 'type' => 'object' ),
+							'changed' => array( 'type' => 'array' ),
+							'notes'   => array( 'type' => 'array' ),
+							'written' => array( 'type' => 'boolean' ),
+							'token'   => array( 'type' => 'string' ),
+							'status'  => array( 'type' => 'string' ),
+						),
+					),
+					'execute_callback' => array( __CLASS__, 'set_theme_mods' ),
+				),
+			),
+			array(
+				'name' => 'kadence/upload-media',
+				'args' => array(
+					'label'       => __( 'Een afbeelding in de mediabibliotheek zetten', 'mcp-abilities-kadence' ),
+					'summary'     => __( 'SCHRIJFACTIE. Zet een JPG, PNG, GIF of WebP vanuit de aanroep in de mediabibliotheek.', 'mcp-abilities-kadence' ),
+					'description' => __( 'Zet een afbeelding in de mediabibliotheek vanuit de aanroep zelf, als base64. Bedoeld voor een logo of een kleine afbeelding die nergens publiek staat: een upload via een PUT-link wordt door sommige hosts (Nexcess) door de firewall geweigerd, en importeren vanaf een URL kan alleen als het bestand al online staat. Alleen JPG, PNG, GIF en WebP, gecontroleerd op de inhoud en niet alleen op de extensie, en hooguit 2 MB. Geen SVG: die kan script bevatten. Twee stappen: eerst zonder token voor een voorstel met type, afmetingen en grootte, daarna dezelfde aanroep met het token. Het resultaat geeft het ID terug dat je in set-theme-mods (custom_logo) of in een blok gebruikt.', 'mcp-abilities-kadence' ),
+					'readonly'    => false,
+					'destructive' => false,
+					'idempotent'  => false,
+					'input_schema' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'filename' => array(
+								'type'        => 'string',
+								'description' => __( 'De bestandsnaam, met extensie, bijvoorbeeld logo-horizontaal.png.', 'mcp-abilities-kadence' ),
+							),
+							'data'     => array(
+								'type'        => 'string',
+								'description' => __( 'De inhoud als base64. Een data:-voorvoegsel mag.', 'mcp-abilities-kadence' ),
+							),
+							'title'    => array( 'type' => 'string' ),
+							'alt'      => array(
+								'type'        => 'string',
+								'description' => __( 'De alt-tekst. Voor een logo: de naam van het bedrijf.', 'mcp-abilities-kadence' ),
+							),
+							'token'    => array( 'type' => 'string' ),
+						),
+						'required'             => array( 'filename', 'data' ),
+						'additionalProperties' => false,
+					),
+					'execute_callback' => array( __CLASS__, 'upload_media' ),
+				),
+			),
 		);
 	}
 
@@ -687,6 +781,841 @@ class Kadence_MCP_Abilities_Site {
 			'status'  => ( $controle === $na )
 				? __( 'geschreven en teruggelezen: wat er staat komt overeen met wat er bedoeld was. WordPress bewaart de vorige versie als revisie van de custom_css-post.', 'mcp-abilities-kadence' )
 				: __( 'LET OP: er is geschreven, maar bij het teruglezen wijkt de CSS af van wat er verstuurd is. Waarschijnlijk heeft de sanitizer van WordPress ingegrepen. Vergelijk after met wat je bedoelde.', 'mcp-abilities-kadence' ),
+		);
+	}
+
+	/**
+	 * Tracsoft: the Customizer settings set-theme-mods may touch, each with the
+	 * shape its value must have.
+	 *
+	 * A fixed list for the same reason as TYPOGRAFIE_SLEUTELS: theme mods are
+	 * one bucket holding the look of the whole site, and there is no revision
+	 * to undo a wrong key. Names and shapes read from Kadence 1.6.0.1
+	 * (inc/components/options/component.php and inc/customizer/options/),
+	 * 24-11-2026. Shapes:
+	 *   indeling:<bouwer>  builder layout, rows → slots → item IDs
+	 *   afbeelding         attachment ID of an image, 0 clears it
+	 *   aanuit             boolean
+	 *   logo               {include:{desktop,tablet,mobile}, layout:{…}}
+	 *   maat               {size:{desktop,tablet,mobile}, unit:{…}}
+	 *   tekst / url / html plain text, URL, HTML through wp_kses_post
+	 *   keuze:a,b,c        one of the listed values
+	 */
+	const THEMA_INSTELLINGEN = array(
+		'header_desktop_items'      => 'indeling:header',
+		'header_mobile_items'       => 'indeling:mobile',
+		'footer_items'              => 'indeling:footer',
+		'custom_logo'               => 'afbeelding',
+		'mobile_logo'               => 'afbeelding',
+		'use_mobile_logo'           => 'aanuit',
+		'logo_layout'               => 'logo',
+		'logo_width'                => 'maat',
+		'header_button_label'       => 'tekst',
+		'header_button_link'        => 'url',
+		'header_button_style'       => 'keuze:filled,outline,secondary',
+		'header_button_size'        => 'keuze:small,medium,large',
+		'header_button_visibility'  => 'keuze:all,loggedin,loggedout',
+		'mobile_button_label'       => 'tekst',
+		'mobile_button_link'        => 'url',
+		'mobile_button_style'       => 'keuze:filled,outline,secondary',
+		'mobile_button_size'        => 'keuze:small,medium,large',
+		'mobile_button_visibility'  => 'keuze:all,loggedin,loggedout',
+		'header_html_content'       => 'html',
+		'footer_html_content'       => 'html',
+		'footer_top_columns'        => 'keuze:1,2,3,4,5',
+		'footer_middle_columns'     => 'keuze:1,2,3,4,5',
+		'footer_bottom_columns'     => 'keuze:1,2,3,4,5',
+		'footer_navigation_stretch' => 'aanuit',
+	);
+
+	/**
+	 * Tracsoft: the items each builder offers in the free Kadence theme, read
+	 * from the 'choices' of the builder controls (header-builder-options.php,
+	 * footer-builder-options.php, Kadence 1.6.0.1). Kadence Pro adds items of
+	 * its own; those are allowed as soon as they appear anywhere in the
+	 * current layout, and the filter kadence_mcp_builder_items can add more.
+	 */
+	const BOUWER_ITEMS = array(
+		'header' => array( 'logo', 'navigation', 'navigation-2', 'search', 'button', 'social', 'html' ),
+		'mobile' => array( 'mobile-logo', 'mobile-navigation', 'search', 'mobile-button', 'mobile-social', 'mobile-html', 'popup-toggle' ),
+		'footer' => array( 'footer-navigation', 'footer-social', 'footer-html', 'footer-widget1', 'footer-widget2', 'footer-widget3', 'footer-widget4', 'footer-widget5', 'footer-widget6' ),
+	);
+
+	/**
+	 * Tracsoft: the logo_layout layouts the theme recognizes
+	 * (inc/template-functions/header-functions.php, Kadence 1.6.0.1).
+	 */
+	const LOGO_LAYOUTS = array( '', 'standard', 'title_logo', 'title_tag_logo', 'top_logo_title', 'top_logo_title_tag', 'top_title_logo', 'top_title_tag_logo', 'top_title_logo_tag' );
+
+	/**
+	 * Tracsoft: the value the theme uses now, defaults included.
+	 *
+	 * kadence()->option() fills a missing theme mod with Kadence's default.
+	 * That matters for the builders: on a fresh site nothing is saved, and
+	 * the rows and slots only exist in the default.
+	 *
+	 * @param string $sleutel The key.
+	 *
+	 * @return mixed
+	 */
+	private static function huidige_thema_waarde( $sleutel ) {
+		if ( function_exists( 'Kadence\\kadence' ) ) {
+			try {
+				$thema = \Kadence\kadence();
+
+				if ( is_object( $thema ) ) {
+					return $thema->option( $sleutel );
+				}
+			} catch ( \Throwable $e ) {
+				unset( $e );
+			}
+		}
+
+		return get_theme_mod( $sleutel );
+	}
+
+	/**
+	 * Tracsoft: the item IDs allowed in one builder.
+	 *
+	 * @param string $bouwer  header, mobile or footer.
+	 * @param mixed  $huidig  The current layout; every item in it is allowed.
+	 *
+	 * @return string[]
+	 */
+	private static function toegestane_items( $bouwer, $huidig ) {
+		$items = isset( self::BOUWER_ITEMS[ $bouwer ] ) ? self::BOUWER_ITEMS[ $bouwer ] : array();
+
+		if ( is_array( $huidig ) ) {
+			array_walk_recursive(
+				$huidig,
+				static function ( $waarde ) use ( &$items ) {
+					if ( is_string( $waarde ) && '' !== $waarde ) {
+						$items[] = $waarde;
+					}
+				}
+			);
+		}
+
+		/**
+		 * Filters the item IDs set-theme-mods accepts in a builder.
+		 *
+		 * @param string[] $items  The allowed IDs.
+		 * @param string   $bouwer header, mobile or footer.
+		 */
+		$items = apply_filters( 'kadence_mcp_builder_items', $items, $bouwer );
+
+		return array_values( array_unique( array_map( 'strval', (array) $items ) ) );
+	}
+
+	/**
+	 * Tracsoft: check one proposed value and merge it with the current one.
+	 *
+	 * @param string $sleutel The key.
+	 * @param string $vorm    Its shape from THEMA_INSTELLINGEN.
+	 * @param mixed  $huidig  The current value.
+	 * @param mixed  $nieuw   The proposed value.
+	 * @param array  $notes   Notes for the report, by reference.
+	 *
+	 * @return mixed|WP_Error The merged value.
+	 */
+	private static function toets_thema_waarde( $sleutel, $vorm, $huidig, $nieuw, &$notes ) {
+		$fout = static function ( $bericht ) use ( $sleutel ) {
+			return new WP_Error(
+				'kadence_mcp_bad_theme_mod',
+				sprintf(
+					/* translators: 1: key, 2: what is wrong. */
+					__( '%1$s: %2$s', 'mcp-abilities-kadence' ),
+					$sleutel,
+					$bericht
+				)
+			);
+		};
+
+		$soort  = strtok( $vorm, ':' );
+		$extra  = (string) substr( $vorm, strlen( $soort ) + 1 );
+
+		switch ( $soort ) {
+			case 'indeling':
+				if ( ! is_array( $nieuw ) || empty( $nieuw ) ) {
+					return $fout( __( 'geef een object met rijen en vakken, bijvoorbeeld {"main":{"main_right":["navigation"]}}.', 'mcp-abilities-kadence' ) );
+				}
+
+				if ( ! is_array( $huidig ) ) {
+					return $fout( __( 'de huidige indeling is niet te lezen; is het Kadence-thema actief?', 'mcp-abilities-kadence' ) );
+				}
+
+				$toegestaan = self::toegestane_items( $extra, $huidig );
+				$uit        = $huidig;
+
+				foreach ( $nieuw as $rij => $vakken ) {
+					if ( ! isset( $huidig[ $rij ] ) || ! is_array( $huidig[ $rij ] ) ) {
+						return $fout( sprintf(
+							/* translators: 1: row, 2: existing rows. */
+							__( 'de rij "%1$s" bestaat niet. Rijen: %2$s.', 'mcp-abilities-kadence' ),
+							$rij,
+							implode( ', ', array_keys( $huidig ) )
+						) );
+					}
+
+					if ( ! is_array( $vakken ) ) {
+						return $fout( sprintf(
+							/* translators: %s: row. */
+							__( 'de rij "%s" moet een object met vakken zijn.', 'mcp-abilities-kadence' ),
+							$rij
+						) );
+					}
+
+					foreach ( $vakken as $vak => $lijst ) {
+						if ( ! array_key_exists( $vak, $huidig[ $rij ] ) ) {
+							return $fout( sprintf(
+								/* translators: 1: slot, 2: row, 3: existing slots. */
+								__( 'het vak "%1$s" bestaat niet in de rij "%2$s". Vakken: %3$s.', 'mcp-abilities-kadence' ),
+								$vak,
+								$rij,
+								implode( ', ', array_keys( $huidig[ $rij ] ) )
+							) );
+						}
+
+						if ( ! is_array( $lijst ) ) {
+							return $fout( sprintf(
+								/* translators: %s: slot. */
+								__( 'het vak "%s" moet een lijst met item-ID\'s zijn; een leeg vak is [].', 'mcp-abilities-kadence' ),
+								$vak
+							) );
+						}
+
+						$lijst = array_values( array_map( 'strval', $lijst ) );
+
+						foreach ( $lijst as $item ) {
+							if ( ! in_array( $item, $toegestaan, true ) ) {
+								return $fout( sprintf(
+									/* translators: 1: item, 2: allowed items. */
+									__( 'het item "%1$s" kent deze bouwer niet. Toegestaan: %2$s.', 'mcp-abilities-kadence' ),
+									$item,
+									implode( ', ', $toegestaan )
+								) );
+							}
+						}
+
+						$uit[ $rij ][ $vak ] = $lijst;
+					}
+				}
+
+				// One item, one place. Kadence renders an item only where it
+				// first finds it; a second copy simply never shows.
+				$gezien = array();
+
+				foreach ( $uit as $rij => $vakken ) {
+					foreach ( (array) $vakken as $vak => $lijst ) {
+						foreach ( (array) $lijst as $item ) {
+							if ( isset( $gezien[ $item ] ) ) {
+								return $fout( sprintf(
+									/* translators: 1: item, 2: first slot, 3: second slot. */
+									__( 'het item "%1$s" staat dan zowel in %2$s als in %3$s. Haal het uit het ene vak als je het in het andere zet.', 'mcp-abilities-kadence' ),
+									$item,
+									$gezien[ $item ],
+									$rij . '.' . $vak
+								) );
+							}
+
+							$gezien[ $item ] = $rij . '.' . $vak;
+						}
+					}
+				}
+
+				return $uit;
+
+			case 'afbeelding':
+				if ( ! is_numeric( $nieuw ) || (int) $nieuw < 0 ) {
+					return $fout( __( 'geef het ID van een afbeelding in de mediabibliotheek, of 0 om hem weg te halen.', 'mcp-abilities-kadence' ) );
+				}
+
+				$id = (int) $nieuw;
+
+				if ( 0 === $id ) {
+					return 0;
+				}
+
+				if ( 'attachment' !== get_post_type( $id ) || ! wp_attachment_is_image( $id ) ) {
+					return $fout( sprintf(
+						/* translators: %d: attachment ID. */
+						__( '%d is geen afbeelding in de mediabibliotheek.', 'mcp-abilities-kadence' ),
+						$id
+					) );
+				}
+
+				if ( ! current_user_can( 'read_post', $id ) ) {
+					return $fout( __( 'je mag deze afbeelding niet lezen.', 'mcp-abilities-kadence' ) );
+				}
+
+				return $id;
+
+			case 'aanuit':
+				if ( ! is_bool( $nieuw ) ) {
+					return $fout( __( 'geef true of false.', 'mcp-abilities-kadence' ) );
+				}
+
+				return $nieuw;
+
+			case 'logo':
+			case 'maat':
+				if ( ! is_array( $nieuw ) || empty( $nieuw ) ) {
+					return $fout( __( 'geef een object; zie shapes in get-theme-mods.', 'mcp-abilities-kadence' ) );
+				}
+
+				$delen = 'logo' === $soort ? array( 'include', 'layout' ) : array( 'size', 'unit' );
+				$uit   = is_array( $huidig ) ? $huidig : array();
+
+				foreach ( $nieuw as $deel => $per_scherm ) {
+					if ( ! in_array( $deel, $delen, true ) || ! is_array( $per_scherm ) ) {
+						return $fout( sprintf(
+							/* translators: %s: allowed parts. */
+							__( 'alleen %s, elk als object met desktop, tablet en mobile.', 'mcp-abilities-kadence' ),
+							implode( ' en ', $delen )
+						) );
+					}
+
+					foreach ( $per_scherm as $scherm => $waarde ) {
+						if ( ! in_array( $scherm, array( 'desktop', 'tablet', 'mobile' ), true ) ) {
+							return $fout( sprintf(
+								/* translators: %s: device. */
+								__( '"%s" is geen scherm; gebruik desktop, tablet of mobile.', 'mcp-abilities-kadence' ),
+								$scherm
+							) );
+						}
+
+						$goed = true;
+
+						if ( 'include' === $deel ) {
+							$goed = '' === $waarde || ( is_string( $waarde ) && 1 === preg_match( '/^(logo|title|tagline)(_(logo|title|tagline))*$/', $waarde ) );
+						} elseif ( 'layout' === $deel ) {
+							$goed = in_array( $waarde, self::LOGO_LAYOUTS, true );
+						} elseif ( 'size' === $deel ) {
+							$goed = '' === $waarde || ( is_numeric( $waarde ) && $waarde >= 0 );
+						} elseif ( 'unit' === $deel ) {
+							$goed = in_array( $waarde, array( 'px', 'em', 'rem', 'vw', '%' ), true );
+						}
+
+						if ( ! $goed ) {
+							return $fout( sprintf(
+								/* translators: 1: part, 2: device. */
+								__( 'de waarde voor %1$s.%2$s kent het thema niet; zie shapes in get-theme-mods.', 'mcp-abilities-kadence' ),
+								$deel,
+								$scherm
+							) );
+						}
+
+						if ( ! isset( $uit[ $deel ] ) || ! is_array( $uit[ $deel ] ) ) {
+							$uit[ $deel ] = array();
+						}
+
+						$uit[ $deel ][ $scherm ] = $waarde;
+					}
+				}
+
+				return $uit;
+
+			case 'tekst':
+				if ( ! is_string( $nieuw ) ) {
+					return $fout( __( 'geef tekst.', 'mcp-abilities-kadence' ) );
+				}
+
+				$schoon = sanitize_text_field( $nieuw );
+
+				if ( $schoon !== $nieuw ) {
+					$notes[] = sprintf(
+						/* translators: %s: key. */
+						__( '%s: de tekst is opgeschoond (HTML of regeleinden eruit), zoals de Customizer dat ook doet.', 'mcp-abilities-kadence' ),
+						$sleutel
+					);
+				}
+
+				return $schoon;
+
+			case 'url':
+				if ( ! is_string( $nieuw ) ) {
+					return $fout( __( 'geef een URL, of een lege tekst.', 'mcp-abilities-kadence' ) );
+				}
+
+				if ( '' === $nieuw ) {
+					return '';
+				}
+
+				$schoon = esc_url_raw( $nieuw );
+
+				if ( '' === $schoon ) {
+					return $fout( __( 'dit is geen geldige URL.', 'mcp-abilities-kadence' ) );
+				}
+
+				return $schoon;
+
+			case 'html':
+				if ( ! is_string( $nieuw ) ) {
+					return $fout( __( 'geef HTML als tekst.', 'mcp-abilities-kadence' ) );
+				}
+
+				$schoon = wp_kses_post( $nieuw );
+
+				if ( $schoon !== $nieuw ) {
+					$notes[] = sprintf(
+						/* translators: %s: key. */
+						__( '%s: wp_kses_post heeft iets uit de HTML gehaald; vergelijk after met wat je bedoelde.', 'mcp-abilities-kadence' ),
+						$sleutel
+					);
+				}
+
+				return $schoon;
+
+			case 'keuze':
+				$keuzes = explode( ',', $extra );
+				$waarde = is_int( $nieuw ) ? (string) $nieuw : $nieuw;
+
+				if ( ! is_string( $waarde ) || ! in_array( $waarde, $keuzes, true ) ) {
+					return $fout( sprintf(
+						/* translators: %s: allowed values. */
+						__( 'kies uit %s.', 'mcp-abilities-kadence' ),
+						implode( ', ', $keuzes )
+					) );
+				}
+
+				return $waarde;
+		}
+
+		return $fout( __( 'onbekende vorm.', 'mcp-abilities-kadence' ) );
+	}
+
+	/**
+	 * Tracsoft: a readable description of each shape, for get-theme-mods.
+	 *
+	 * @param string $vorm The shape from THEMA_INSTELLINGEN.
+	 *
+	 * @return string
+	 */
+	private static function beschrijf_vorm( $vorm ) {
+		$soort = strtok( $vorm, ':' );
+		$extra = (string) substr( $vorm, strlen( $soort ) + 1 );
+
+		switch ( $soort ) {
+			case 'indeling':
+				return __( 'rijen → vakken → lijst met item-ID\'s; geef alleen de vakken die veranderen', 'mcp-abilities-kadence' );
+			case 'afbeelding':
+				return __( 'ID van een afbeelding in de mediabibliotheek; 0 haalt hem weg', 'mcp-abilities-kadence' );
+			case 'aanuit':
+				return __( 'true of false', 'mcp-abilities-kadence' );
+			case 'logo':
+				return __( 'include per scherm (desktop/tablet/mobile): logo, title en tagline aan elkaar met _, bijvoorbeeld logo of logo_title; layout per scherm: standard, title_logo, top_logo_title en verwante', 'mcp-abilities-kadence' );
+			case 'maat':
+				return __( 'size per scherm (getal) en unit per scherm (px, em, rem, vw, %)', 'mcp-abilities-kadence' );
+			case 'tekst':
+				return __( 'platte tekst', 'mcp-abilities-kadence' );
+			case 'url':
+				return __( 'een URL, of leeg', 'mcp-abilities-kadence' );
+			case 'html':
+				return __( 'HTML; gaat door wp_kses_post. In footer_html_content werken {copyright}, {year} en {site-title}', 'mcp-abilities-kadence' );
+			case 'keuze':
+				return sprintf(
+					/* translators: %s: allowed values. */
+					__( 'een van: %s', 'mcp-abilities-kadence' ),
+					str_replace( ',', ', ', $extra )
+				);
+		}
+
+		return '';
+	}
+
+	/**
+	 * Tracsoft: read the Customizer settings set-theme-mods may change.
+	 *
+	 * @param array $input The input.
+	 *
+	 * @return array|WP_Error
+	 */
+	public static function get_theme_mods_ability( $input = array() ) {
+		if ( ! current_user_can( 'edit_theme_options' ) ) {
+			return new WP_Error(
+				'kadence_mcp_theme_denied',
+				__( 'Je mag de thema-instellingen van deze site niet wijzigen (edit_theme_options).', 'mcp-abilities-kadence' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		$gevraagd = isset( $input['keys'] ) && is_array( $input['keys'] ) ? array_map( 'strval', $input['keys'] ) : array();
+		$onbekend = array_diff( $gevraagd, array_keys( self::THEMA_INSTELLINGEN ) );
+
+		if ( ! empty( $onbekend ) ) {
+			return new WP_Error(
+				'kadence_mcp_unknown_theme_mod',
+				sprintf(
+					/* translators: 1: unknown keys, 2: allowed keys. */
+					__( 'Onbekende sleutels: %1$s. Toegestaan zijn alleen %2$s.', 'mcp-abilities-kadence' ),
+					implode( ', ', $onbekend ),
+					implode( ', ', array_keys( self::THEMA_INSTELLINGEN ) )
+				)
+			);
+		}
+
+		$sleutels = empty( $gevraagd ) ? array_keys( self::THEMA_INSTELLINGEN ) : $gevraagd;
+		$mods     = array();
+		$vormen   = array();
+
+		foreach ( $sleutels as $sleutel ) {
+			$mods[ $sleutel ] = array(
+				'value'  => self::huidige_thema_waarde( $sleutel ),
+				'source' => null === get_theme_mod( $sleutel, null ) ? 'standaard' : 'opgeslagen',
+			);
+			$vormen[ $sleutel ] = self::beschrijf_vorm( self::THEMA_INSTELLINGEN[ $sleutel ] );
+		}
+
+		$items = array(
+			'header' => self::toegestane_items( 'header', self::huidige_thema_waarde( 'header_desktop_items' ) ),
+			'mobile' => self::toegestane_items( 'mobile', self::huidige_thema_waarde( 'header_mobile_items' ) ),
+			'footer' => self::toegestane_items( 'footer', self::huidige_thema_waarde( 'footer_items' ) ),
+		);
+
+		$thema_actief = function_exists( 'Kadence\\kadence' );
+
+		return array(
+			'mods'   => (object) $mods,
+			'items'  => $items,
+			'shapes' => (object) $vormen,
+			'status' => $thema_actief
+				? sprintf(
+					/* translators: %d: number of keys. */
+					__( '%d sleutels gelezen. source zegt of de waarde opgeslagen is of de standaardwaarde van Kadence. Een bouwer wijzig je per vak met set-theme-mods.', 'mcp-abilities-kadence' ),
+					count( $mods )
+				)
+				: __( 'LET OP: het Kadence-thema is niet actief. De waarden komen rechtstreeks uit de theme mods en standaardwaarden ontbreken; de bouwers zijn dan leeg.', 'mcp-abilities-kadence' ),
+		);
+	}
+
+	/**
+	 * Tracsoft: change Customizer settings from the fixed list.
+	 *
+	 * Built like set_global_typography(): an allowlist, a merge with what is
+	 * there, a token bound to before and after, and a read-back.
+	 *
+	 * @param array $input The input.
+	 *
+	 * @return array|WP_Error
+	 */
+	public static function set_theme_mods( $input = array() ) {
+		if ( ! Kadence_MCP_Capabilities::current_user_can( Kadence_MCP_Capabilities::WRITE ) ) {
+			return new WP_Error(
+				'kadence_mcp_write_denied',
+				__( 'Je hebt de capability kadence_mcp_write niet. Die wordt bij installatie aan niemand gegeven en moet bewust worden toegekend.', 'mcp-abilities-kadence' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		if ( ! current_user_can( 'edit_theme_options' ) ) {
+			return new WP_Error(
+				'kadence_mcp_theme_denied',
+				__( 'Je mag de thema-instellingen van deze site niet wijzigen (edit_theme_options).', 'mcp-abilities-kadence' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		$voorstel = isset( $input['mods'] ) && is_array( $input['mods'] ) ? $input['mods'] : array();
+
+		if ( empty( $voorstel ) ) {
+			return new WP_Error( 'kadence_mcp_no_theme_mods', __( 'Geef in mods op welke sleutels moeten wijzigen.', 'mcp-abilities-kadence' ) );
+		}
+
+		$onbekend = array_diff( array_keys( $voorstel ), array_keys( self::THEMA_INSTELLINGEN ) );
+
+		if ( ! empty( $onbekend ) ) {
+			return new WP_Error(
+				'kadence_mcp_unknown_theme_mod',
+				sprintf(
+					/* translators: 1: unknown keys, 2: allowed keys. */
+					__( 'Onbekende sleutels: %1$s. Toegestaan zijn alleen %2$s. Theme mods bevatten het uiterlijk van de hele site en kennen geen revisies; daarom staat hier een vaste lijst.', 'mcp-abilities-kadence' ),
+					implode( ', ', $onbekend ),
+					implode( ', ', array_keys( self::THEMA_INSTELLINGEN ) )
+				)
+			);
+		}
+
+		$voor      = array();
+		$na        = array();
+		$gewijzigd = array();
+		$notes     = array();
+
+		foreach ( $voorstel as $sleutel => $waarde ) {
+			$huidig = self::huidige_thema_waarde( $sleutel );
+			$samen  = self::toets_thema_waarde( $sleutel, self::THEMA_INSTELLINGEN[ $sleutel ], $huidig, $waarde, $notes );
+
+			if ( is_wp_error( $samen ) ) {
+				return $samen;
+			}
+
+			$voor[ $sleutel ] = $huidig;
+			$na[ $sleutel ]   = $samen;
+
+			if ( wp_json_encode( $huidig ) !== wp_json_encode( $samen ) ) {
+				$gewijzigd[] = array( 'key' => $sleutel, 'from' => $huidig, 'to' => $samen );
+			}
+		}
+
+		$verwacht = 'kmcp1_' . substr(
+			wp_hash( (string) wp_json_encode( array( 'wat' => 'themamods', 'voor' => $voor, 'na' => $na ) ) ),
+			0,
+			32
+		);
+
+		$token   = isset( $input['token'] ) ? (string) $input['token'] : '';
+		$rapport = array(
+			'before'  => (object) $voor,
+			'after'   => (object) $na,
+			'changed' => $gewijzigd,
+			'notes'   => $notes,
+		);
+
+		if ( '' === $token ) {
+			return array_merge(
+				$rapport,
+				array(
+					'written' => false,
+					'token'   => empty( $gewijzigd ) ? '' : $verwacht,
+					'status'  => empty( $gewijzigd )
+						? __( 'Voorstel, er is NIETS opgeslagen — en er zou ook niets veranderen: deze waarden staan er al.', 'mcp-abilities-kadence' )
+						: sprintf(
+							/* translators: %d: number of keys. */
+							__( 'Voorstel, er is NIETS opgeslagen. Er zouden %d themasleutels wijzigen. Theme mods kennen geen revisies, dus bewaar het veld before voordat je doorgaat. Roep opnieuw aan met het token om te schrijven.', 'mcp-abilities-kadence' ),
+							count( $gewijzigd )
+						),
+				)
+			);
+		}
+
+		if ( ! hash_equals( $verwacht, $token ) ) {
+			return new WP_Error(
+				'kadence_mcp_bad_token',
+				__( 'Het token klopt niet. Of het voorstel is anders dan wat er getoetst is, of de thema-instellingen zijn intussen gewijzigd. Vraag een nieuw voorstel aan.', 'mcp-abilities-kadence' )
+			);
+		}
+
+		foreach ( $gewijzigd as $wijziging ) {
+			set_theme_mod( $wijziging['key'], $na[ $wijziging['key'] ] );
+		}
+
+		$controle  = array();
+		$afwijking = array();
+
+		// Read back the stored theme mod itself, not kadence()->option():
+		// that can serve a cached, filtered or default-filled value within
+		// the same request, and would then hide a failed write.
+		foreach ( $gewijzigd as $wijziging ) {
+			$sleutel              = $wijziging['key'];
+			$controle[ $sleutel ] = get_theme_mod( $sleutel );
+
+			if ( wp_json_encode( $controle[ $sleutel ] ) !== wp_json_encode( $na[ $sleutel ] ) ) {
+				$afwijking[] = $sleutel;
+			}
+		}
+
+		foreach ( $na as $sleutel => $waarde ) {
+			if ( ! array_key_exists( $sleutel, $controle ) ) {
+				$controle[ $sleutel ] = $waarde;
+			}
+		}
+
+		return array_merge(
+			$rapport,
+			array(
+				'after'   => (object) $controle,
+				'written' => empty( $afwijking ),
+				'token'   => '',
+				'status'  => empty( $afwijking )
+					? __( 'geschreven en teruggelezen: wat er staat komt overeen met wat er bedoeld was. Er is GEEN revisie — theme mods kennen die niet. Terugdraaien kan alleen met de waarden uit before. Een paginacache moet eerst geleegd worden voordat bezoekers het zien.', 'mcp-abilities-kadence' )
+					: sprintf(
+						/* translators: %s: the keys that differ. */
+						__( 'LET OP: er is geschreven, maar bij het teruglezen wijken deze sleutels af: %s. Waarschijnlijk heeft een filter of een sanitizer ingegrepen. Controleer het veld after.', 'mcp-abilities-kadence' ),
+						implode( ', ', $afwijking )
+					),
+			)
+		);
+	}
+
+	/**
+	 * Tracsoft: the largest image upload-media accepts, in bytes.
+	 */
+	const UPLOAD_MAX_BYTES = 2097152;
+
+	/**
+	 * Tracsoft: put an image from the call itself into the media library.
+	 *
+	 * Exists because some hosts (Nexcess, 24-11-2026) refuse the PUT of
+	 * Enable Abilities' upload link at the firewall, and a URL import needs
+	 * the file to be online already. A logo that only lives on a Mac had no
+	 * way in.
+	 *
+	 * @param array $input The input.
+	 *
+	 * @return array|WP_Error
+	 */
+	public static function upload_media( $input = array() ) {
+		if ( ! Kadence_MCP_Capabilities::current_user_can( Kadence_MCP_Capabilities::WRITE ) ) {
+			return new WP_Error(
+				'kadence_mcp_write_denied',
+				__( 'Je hebt de capability kadence_mcp_write niet. Die wordt bij installatie aan niemand gegeven en moet bewust worden toegekend.', 'mcp-abilities-kadence' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			return new WP_Error(
+				'kadence_mcp_upload_denied',
+				__( 'Je mag geen bestanden uploaden op deze site (upload_files).', 'mcp-abilities-kadence' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		$naam  = isset( $input['filename'] ) ? sanitize_file_name( (string) $input['filename'] ) : '';
+		$data  = isset( $input['data'] ) ? (string) $input['data'] : '';
+		$titel = isset( $input['title'] ) ? sanitize_text_field( (string) $input['title'] ) : '';
+		$alt   = isset( $input['alt'] ) ? sanitize_text_field( (string) $input['alt'] ) : '';
+		$token = isset( $input['token'] ) ? (string) $input['token'] : '';
+
+		if ( '' === $naam || '' === $data ) {
+			return new WP_Error( 'kadence_mcp_upload_empty', __( 'Geef filename en data.', 'mcp-abilities-kadence' ) );
+		}
+
+		// A data: URI prefix is fine; strip it.
+		if ( 0 === strpos( $data, 'data:' ) && false !== strpos( $data, ',' ) ) {
+			$data = substr( $data, strpos( $data, ',' ) + 1 );
+		}
+
+		// Decoded size from the encoded length first, so a huge string is
+		// refused before it is decoded into memory.
+		if ( (int) floor( strlen( $data ) * 3 / 4 ) > self::UPLOAD_MAX_BYTES + 3 ) {
+			return new WP_Error(
+				'kadence_mcp_upload_too_big',
+				sprintf(
+					/* translators: %d: maximum size in MB. */
+					__( 'Het bestand is groter dan %d MB. Verklein het, of importeer het vanaf een URL.', 'mcp-abilities-kadence' ),
+					(int) ( self::UPLOAD_MAX_BYTES / 1048576 )
+				)
+			);
+		}
+
+		$bytes = base64_decode( preg_replace( '/\s+/', '', $data ), true );
+
+		if ( false === $bytes || '' === $bytes ) {
+			return new WP_Error( 'kadence_mcp_upload_bad_base64', __( 'data is geen geldige base64.', 'mcp-abilities-kadence' ) );
+		}
+
+		if ( strlen( $bytes ) > self::UPLOAD_MAX_BYTES ) {
+			return new WP_Error(
+				'kadence_mcp_upload_too_big',
+				sprintf(
+					/* translators: %d: maximum size in MB. */
+					__( 'Het bestand is groter dan %d MB. Verklein het, of importeer het vanaf een URL.', 'mcp-abilities-kadence' ),
+					(int) ( self::UPLOAD_MAX_BYTES / 1048576 )
+				)
+			);
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		$tmp = wp_tempnam( $naam );
+
+		if ( ! $tmp || false === file_put_contents( $tmp, $bytes ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			return new WP_Error( 'kadence_mcp_upload_tmp', __( 'Kon geen tijdelijk bestand schrijven op de server.', 'mcp-abilities-kadence' ) );
+		}
+
+		// Checked on the content, not the extension. SVG is deliberately not
+		// in the list: it can carry script.
+		$mimes = array(
+			'jpg|jpeg|jpe' => 'image/jpeg',
+			'png'          => 'image/png',
+			'gif'          => 'image/gif',
+			'webp'         => 'image/webp',
+		);
+		$soort = wp_check_filetype_and_ext( $tmp, $naam, $mimes );
+		$maten = @getimagesize( $tmp ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+
+		if ( empty( $soort['type'] ) || empty( $soort['ext'] ) || ! is_array( $maten ) ) {
+			wp_delete_file( $tmp );
+
+			return new WP_Error( 'kadence_mcp_upload_type', __( 'Dit is geen JPG, PNG, GIF of WebP, of de extensie past niet bij de inhoud.', 'mcp-abilities-kadence' ) );
+		}
+
+		if ( ! empty( $soort['proper_filename'] ) ) {
+			$naam = $soort['proper_filename'];
+		}
+
+		$voorstel = array(
+			'filename' => $naam,
+			'type'     => $soort['type'],
+			'bytes'    => strlen( $bytes ),
+			'width'    => (int) $maten[0],
+			'height'   => (int) $maten[1],
+			'title'    => $titel,
+			'alt'      => $alt,
+		);
+
+		$verwacht = 'kmcp1_' . substr(
+			wp_hash( (string) wp_json_encode( array( 'wat' => 'upload', 'sha' => hash( 'sha256', $bytes ), 'voorstel' => $voorstel, 'user' => get_current_user_id() ) ) ),
+			0,
+			32
+		);
+
+		if ( '' === $token ) {
+			wp_delete_file( $tmp );
+
+			return array_merge(
+				$voorstel,
+				array(
+					'written' => false,
+					'token'   => $verwacht,
+					'status'  => __( 'Voorstel, er is NIETS opgeslagen. Stuur dezelfde aanroep nog eens met het token om de afbeelding in de mediabibliotheek te zetten.', 'mcp-abilities-kadence' ),
+				)
+			);
+		}
+
+		if ( ! hash_equals( $verwacht, $token ) ) {
+			wp_delete_file( $tmp );
+
+			return new WP_Error(
+				'kadence_mcp_bad_token',
+				__( 'Het token klopt niet: het bestand, de naam, de titel of de alt-tekst verschilt van het voorstel. Vraag een nieuw voorstel aan.', 'mcp-abilities-kadence' )
+			);
+		}
+
+		$id = media_handle_sideload(
+			array(
+				'name'     => $naam,
+				'tmp_name' => $tmp,
+			),
+			0,
+			'' !== $titel ? $titel : null
+		);
+
+		if ( is_wp_error( $id ) ) {
+			wp_delete_file( $tmp );
+
+			return $id;
+		}
+
+		if ( '' !== $alt ) {
+			update_post_meta( $id, '_wp_attachment_image_alt', $alt );
+		}
+
+		return array_merge(
+			$voorstel,
+			array(
+				'id'      => (int) $id,
+				'url'     => (string) wp_get_attachment_url( $id ),
+				'written' => true,
+				'token'   => '',
+				'status'  => sprintf(
+					/* translators: %d: attachment ID. */
+					__( 'In de mediabibliotheek gezet als bijlage %d. Gebruik dat ID in set-theme-mods (custom_logo) of in een blok.', 'mcp-abilities-kadence' ),
+					(int) $id
+				),
+			)
 		);
 	}
 

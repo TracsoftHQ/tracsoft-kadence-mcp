@@ -17,7 +17,7 @@ upstream v1.27.1 on 2026-11-20.
 | Area | Upstream | Tracsoft |
 | :--- | :--- | :--- |
 | Updates | From joostadams/mcp-abilities-kadence: latest release, then any version tag, then the head of `main` | Only a published, non-prerelease release of TracsoftHQ/tracsoft-kadence-mcp that carries `tracsoft-kadence-mcp.zip`. No tag or branch fallback. `Update URI` header set so WordPress.org never offers an update. |
-| Write tools | Allowed in on `kadence_mcp_view`; `kadence_mcp_write` checked inside each handler, after the dry-run preview | `kadence_mcp_write` required at the permission layer for all 26 write tools |
+| Write tools | Allowed in on `kadence_mcp_view`; `kadence_mcp_write` checked inside each handler, after the dry-run preview | `kadence_mcp_write` required at the permission layer for all write tools (28 as of 1.27.1.4) |
 | Reading posts by ID | Several tools (describe-post-type, describe-query, update-post previews, build previews, usage lists) loaded any post without a read check | One helper, `Kadence_MCP_Capabilities::can_read_post()`, used everywhere: `read_post`, plus `edit_post` for password-protected posts |
 | Site CSS | `edit_theme_options` | Also `edit_css`, as core requires |
 | Page status | `publish_posts` checked for publish only | Also for private |
@@ -35,6 +35,37 @@ Administrator role. It is still off after installation, and only a user with
 `manage_options` can change it (the screen itself needs only
 `kadence_mcp_manage`). The code is `Kadence_MCP_Capabilities::set_admin_write()`
 and `Kadence_MCP_Settings::sanitize_admin_write()`.
+
+Added in 1.27.1.4: **Customizer settings and media over MCP.** Three new
+abilities in `class-kadence-mcp-abilities-site.php`, so a client site's
+header, footer and logo can be built without a browser login or WP-CLI:
+
+- `kadence/get-theme-mods` reads the allowlisted settings. For each one it
+  gives the current value (Kadence defaults included), whether it's saved,
+  the shape it must have, and the item IDs each builder accepts.
+- `kadence/set-theme-mods` writes them. It's built like set-global-typography:
+  - an allowlist (`THEMA_INSTELLINGEN`)
+  - a shape check per key
+  - builder layouts merged per slot
+  - a token bound to before and after
+  - a read-back afterwards
+
+  It refuses an unknown slot, an unknown item, and an item placed twice.
+  It needs `kadence_mcp_write` and `edit_theme_options`.
+- `kadence/upload-media` puts a JPG, PNG, GIF or WebP from the call into the
+  media library: base64, at most 2 MB, type checked on content, no SVG.
+  Nexcess's firewall refuses the PUT on Enable Abilities' upload link. It
+  needs `kadence_mcp_write` and `upload_files`.
+
+Key names and shapes were read from Kadence 1.6.0.1's options and builder
+files. Kadence Pro's extra builder items are accepted once they appear in the
+current layout, or through the `kadence_mcp_builder_items` filter. Not in the
+list on purpose: colors, backgrounds, sticky and transparent header settings,
+and the global palette (a separate option). Add a key to
+`THEMA_INSTELLINGEN` with a shape when one is needed.
+
+After updating a site to 1.27.1.4, tick the three new tools under
+Kadence Blocks → MCP. New tools are off by default, like every tool.
 
 Known and accepted, not changed:
 

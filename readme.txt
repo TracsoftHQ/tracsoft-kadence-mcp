@@ -4,7 +4,7 @@ Tags: mcp, kadence, abilities, ai
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.27.1.3
+Stable tag: 1.27.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,17 +12,17 @@ Read and make targeted changes to Kadence Blocks, Kadence Blocks Pro, Kadence Pr
 
 == Description ==
 
-Forty-nine abilities for the WordPress Abilities API, with which an MCP assistant
+Fifty-two abilities for the WordPress Abilities API, with which an MCP assistant
 can read a site's Kadence structure and make targeted changes to it: which
 blocks exist, which attributes they have, how a page is built,
 which headers and elements exist, and which color palette applies.
 
-Twenty-three of them are read-only. Twenty-six write: set-attributes,
+Twenty-four of them are read-only. Twenty-eight write: set-attributes,
 style-blocks, set-text, insert-blocks, remove-blocks, move-blocks, duplicate-blocks,
 replace-block, create-page, create-entity, create-post, update-post, set-page-status, connect-translation, create-query, create-query-card,
 set-query, sync-query-facets, set-card-layout, set-entity-meta,
-set-global-typography, set-site-css, replace-colors, update-entity-content,
-trash-post and import-entity. All twenty-six require a capability of their own (kadence_mcp_write, which after installation is granted to
+set-global-typography, set-theme-mods, set-site-css, upload-media, replace-colors, update-entity-content,
+trash-post and import-entity. All twenty-eight require a capability of their own (kadence_mcp_write, which after installation is granted to
 no one), edit rights on the post according to WordPress, and a token
 from a preceding check step. After every write action the post is
 read back and compared with what was intended.
@@ -39,6 +39,10 @@ Kadence Blocks > MCP.
 Requires the WordPress Abilities API and the MCP Adapter.
 
 == Changelog ==
+
+= 1.27.1.4 (Tracsoft) =
+* New: get-theme-mods and set-theme-mods. Claude can now build the Kadence theme's header and footer over MCP: the header builder (desktop and mobile), the footer builder and its column counts, the logo and how it shows, the header and mobile buttons, and the header and footer HTML. A fixed list of keys, each with a shape check: a builder changes per slot, a slot must exist, an item must be one the builder offers, and an item may sit in only one place. Two steps with a token, read back afterwards. Theme mods have no revisions, so the before field is the way back. Needs kadence_mcp_write and edit_theme_options.
+* New: upload-media. Puts a JPG, PNG, GIF or WebP from the call (base64, at most 2 MB) into the media library, checked on content rather than extension; no SVG. For logos and small images that aren't online anywhere, on hosts whose firewall refuses a PUT upload link. Needs kadence_mcp_write and upload_files.
 
 = 1.27.1.3 (Tracsoft) =
 * New: a switch under Kadence Blocks → MCP, "Allow administrators to use the write tools". Saving it gives the Administrator role kadence_mcp_write, or takes it away, so a site no longer needs WP-CLI or a role plugin for that. It is off after installation, shows what the role holds right now, changes no other role, and can only be changed by a user who can manage site options.

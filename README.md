@@ -17,7 +17,7 @@ releases like any other plugin update, including in MainWP.
 Gives an MCP agent access to Kadence Blocks, Kadence Blocks Pro, Kadence Pro
 and the Kadence theme, through the WordPress Abilities API.
 
-**Forty-nine abilities: twenty-three read, twenty-six write.**
+**Fifty-two abilities: twenty-four read, twenty-eight write.**
 
 So writing is not the exception here. Every write ability requires three things:
 the capability `kadence_mcp_write` (which is granted to no one on
@@ -28,8 +28,8 @@ was intended.
 Pay attention to where they write. Most touch `post_content` and therefore create
 a revision. `set-entity-meta` and `set-card-layout` write post meta, which has
 **no revisions** — the old value in the response is your only way back.
-`set-global-typography` and `set-site-css` affect the whole site instead of one
-post.
+`set-global-typography`, `set-theme-mods` and `set-site-css` affect the whole
+site instead of one post. `upload-media` adds an image to the media library.
 
 ### Read
 
@@ -89,6 +89,8 @@ post.
 | `kadence/set-entity-meta` | a `_kad_` setting on a Kadence post — post meta, no revision |
 | `kadence/set-global-typography` | the theme's global typography — site-wide, no revision |
 | `kadence/set-site-css` | the Customizer's Additional CSS — site-wide |
+| `kadence/set-theme-mods` | the theme's header and footer builders, logo, header buttons and footer columns — site-wide, no revision (Tracsoft) |
+| `kadence/upload-media` | a JPG, PNG, GIF or WebP from the call into the media library, up to 2 MB (Tracsoft) |
 
 Files and caches are never touched.
 

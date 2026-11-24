@@ -3,7 +3,7 @@
  * Plugin Name:       Tracsoft Kadence MCP
  * Plugin URI:        https://github.com/TracsoftHQ/tracsoft-kadence-mcp
  * Description:       Tracsoft's hardened build of MCP Abilities — Kadence. Gives an MCP agent access to Kadence Blocks, Kadence Blocks Pro, Kadence Pro and the Kadence theme through the WordPress Abilities API. Everything is off by default, and writing needs its own capability that nobody gets automatically. Based on mcp-abilities-kadence by Joost Adams.
- * Version:           1.27.1.3
+ * Version:           1.27.1.4
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            Tracsoft (based on work by Joost Adams)
@@ -48,7 +48,7 @@ if ( defined( 'KADENCE_MCP_VERSION' ) ) {
  * orders 1.27.1.1 above 1.27.1, and a later upstream merge to 1.28.0 starts
  * again at 1.28.0.1.
  */
-define( 'KADENCE_MCP_VERSION', '1.27.1.3' );
+define( 'KADENCE_MCP_VERSION', '1.27.1.4' );
 define( 'KADENCE_MCP_FILE', __FILE__ );
 define( 'KADENCE_MCP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'KADENCE_MCP_BASENAME', plugin_basename( __FILE__ ) );

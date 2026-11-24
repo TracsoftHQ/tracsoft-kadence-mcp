@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tracsoft Kadence MCP\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-23 15:23-0500\n"
+"POT-Creation-Date: 2026-11-24 12:40-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -599,8 +599,10 @@ msgstr ""
 #: includes/abilities/class-kadence-mcp-abilities-content.php:2445
 #: includes/abilities/class-kadence-mcp-abilities-content.php:2695
 #: includes/abilities/class-kadence-mcp-abilities-query.php:441
-#: includes/abilities/class-kadence-mcp-abilities-site.php:463
-#: includes/abilities/class-kadence-mcp-abilities-site.php:599
+#: includes/abilities/class-kadence-mcp-abilities-site.php:557
+#: includes/abilities/class-kadence-mcp-abilities-site.php:693
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1305
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1450
 msgid "Je hebt de capability kadence_mcp_write niet. Die wordt bij installatie aan niemand gegeven en moet bewust worden toegekend."
 msgstr ""
 
@@ -746,7 +748,7 @@ msgstr ""
 #: includes/abilities/class-kadence-mcp-abilities-build.php:4715
 #: includes/abilities/class-kadence-mcp-abilities-build.php:4932
 #: includes/abilities/class-kadence-mcp-abilities-build.php:5203
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2089
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3008
 msgid "Je hebt de capability kadence_mcp_write niet."
 msgstr ""
 
@@ -1491,7 +1493,8 @@ msgstr ""
 
 #: includes/abilities/class-kadence-mcp-abilities-build.php:5192
 #: includes/abilities/class-kadence-mcp-abilities-query.php:595
-#: includes/abilities/class-kadence-mcp-abilities-site.php:538
+#: includes/abilities/class-kadence-mcp-abilities-site.php:632
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1380
 msgid "Voorstel, er is NIETS opgeslagen — en er zou ook niets veranderen: deze waarden staan er al."
 msgstr ""
 
@@ -3261,436 +3264,734 @@ msgstr ""
 msgid "Standaard onwaar: de meegegeven CSS vervangt alles. Op waar wordt hij achter de bestaande CSS geplakt."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:473
-#: includes/abilities/class-kadence-mcp-abilities-site.php:607
+#: includes/abilities/class-kadence-mcp-abilities-site.php:406
+msgid "Thema-instellingen voor header, footer en logo lezen"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:407
+msgid "De Customizer-instellingen die set-theme-mods mag wijzigen, met hun huidige waarde."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:408
+msgid "Leest de Customizer-instellingen van het Kadence-thema die set-theme-mods mag wijzigen: de header- en footerbouwer (header_desktop_items, header_mobile_items, footer_items), het logo, de headerknoppen, de HTML-items en het aantal footerkolommen. Per sleutel krijg je de waarde die het thema nu gebruikt en of die opgeslagen is of de standaardwaarde van Kadence. Daarnaast per bouwer welke items in een vak mogen (items), zodat je nooit een item-ID hoeft te raden, en per sleutel welke vorm een waarde moet hebben (shapes). Lees dit altijd vóór set-theme-mods: de rijen en vakken van een bouwer staan in de huidige waarde, en een vak dat daar niet in staat wordt geweigerd. Schrijft niets."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:416
+msgid "Alleen deze sleutels. Leeg laten geeft ze allemaal."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:427
+msgid "Thema-instellingen voor header, footer en logo wijzigen"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:428
+msgid "SCHRIJFACTIE. Bouwt de header en footer van het thema, zet het logo en de headerknop."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:429
+msgid "Wijzigt Customizer-instellingen van het Kadence-thema uit een vaste lijst: de indeling van de header (desktop en mobiel) en de footer, het logo (custom_logo, mobile_logo, use_mobile_logo, logo_layout, logo_width), de header- en mobiele knop (label, link, stijl, maat, zichtbaarheid), header_html_content, footer_html_content, het aantal kolommen per footerrij en footer_navigation_stretch. Elke andere sleutel wordt geweigerd: theme mods bevatten het uiterlijk van de hele site en kennen geen revisies. Lees eerst get-theme-mods. Een bouwer geef je per rij en vak op, en alleen wat je noemt verandert: {\"header_desktop_items\":{\"main\":{\"main_right\":[\"navigation\",\"button\"]}}} laat de andere vakken staan. Een vak moet al bestaan, een item moet in de lijst van get-theme-mods staan, en een item mag maar één keer in een indeling voorkomen — anders geldt alleen de eerste plek en lijkt de rest stil te verdwijnen. Een logo is het ID van een afbeelding in de mediabibliotheek (zet er een neer met upload-media). Twee stappen: eerst zonder token voor een voorstel met before, after en per wijziging een regel uitleg, daarna opnieuw met het token. LET OP: er is geen revisie; terugdraaien kan alleen met de waarden uit before."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:439
+msgid "De sleutels die moeten wijzigen, met hun nieuwe waarde. Alleen sleutels uit get-theme-mods."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:464
+msgid "Een afbeelding in de mediabibliotheek zetten"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:465
+msgid "SCHRIJFACTIE. Zet een JPG, PNG, GIF of WebP vanuit de aanroep in de mediabibliotheek."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:466
+msgid "Zet een afbeelding in de mediabibliotheek vanuit de aanroep zelf, als base64. Bedoeld voor een logo of een kleine afbeelding die nergens publiek staat: een upload via een PUT-link wordt door sommige hosts (Nexcess) door de firewall geweigerd, en importeren vanaf een URL kan alleen als het bestand al online staat. Alleen JPG, PNG, GIF en WebP, gecontroleerd op de inhoud en niet alleen op de extensie, en hooguit 2 MB. Geen SVG: die kan script bevatten. Twee stappen: eerst zonder token voor een voorstel met type, afmetingen en grootte, daarna dezelfde aanroep met het token. Het resultaat geeft het ID terug dat je in set-theme-mods (custom_logo) of in een blok gebruikt."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:475
+msgid "De bestandsnaam, met extensie, bijvoorbeeld logo-horizontaal.png."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:479
+msgid "De inhoud als base64. Een data:-voorvoegsel mag."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:484
+msgid "De alt-tekst. Voor een logo: de naam van het bedrijf."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:567
+#: includes/abilities/class-kadence-mcp-abilities-site.php:701
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1237
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1313
 msgid "Je mag de thema-instellingen van deze site niet wijzigen (edit_theme_options)."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:481
+#: includes/abilities/class-kadence-mcp-abilities-site.php:575
 msgid "Geef in typography op welke sleutels moeten wijzigen."
 msgstr ""
 
 #. translators: 1: unknown keys, 2: allowed keys.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:491
+#: includes/abilities/class-kadence-mcp-abilities-site.php:585
 #, php-format
 msgid "Onbekende sleutels: %1$s. Toegestaan zijn alleen %2$s. Theme mods bevatten ook de header, de kleuren en de layout; daarom staat hier een vaste lijst en geen prefixcontrole."
 msgstr ""
 
 #. translators: %d: number of keys.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:541
+#: includes/abilities/class-kadence-mcp-abilities-site.php:635
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1383
 #, php-format
 msgid "Voorstel, er is NIETS opgeslagen. Er zouden %d themasleutels wijzigen. Theme mods kennen geen revisies, dus bewaar het veld before voordat je doorgaat. Roep opnieuw aan met het token om te schrijven."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:551
+#: includes/abilities/class-kadence-mcp-abilities-site.php:645
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1393
 msgid "Het token klopt niet. Of het voorstel is anders dan wat er getoetst is, of de thema-instellingen zijn intussen gewijzigd. Vraag een nieuw voorstel aan."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:578
+#: includes/abilities/class-kadence-mcp-abilities-site.php:672
 msgid "geschreven en teruggelezen: wat er staat komt overeen met wat er bedoeld was. Er is GEEN revisie — theme mods kennen die niet. Terugdraaien kan alleen met de waarden uit before."
 msgstr ""
 
 #. translators: %s: the keys that differ.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:581
+#: includes/abilities/class-kadence-mcp-abilities-site.php:675
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1422
 #, php-format
 msgid "LET OP: er is geschreven, maar bij het teruglezen wijken deze sleutels af: %s. Waarschijnlijk heeft een filter of een sanitizer ingegrepen. Controleer het veld after."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:619
+#: includes/abilities/class-kadence-mcp-abilities-site.php:713
 msgid "Missing the edit_css capability, which WordPress requires to change Additional CSS on this site."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:627
+#: includes/abilities/class-kadence-mcp-abilities-site.php:721
 msgid "Deze WordPress-installatie kent de Extra CSS van de Customizer niet."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:638
+#: includes/abilities/class-kadence-mcp-abilities-site.php:732
 msgid "Lege CSS zou alles wat er staat wissen. Wil je dat echt, geef dan een spatie mee; wil je iets toevoegen, zet append aan."
 msgstr ""
 
 #. translators: 1: current length, 2: proposed length.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:660
+#: includes/abilities/class-kadence-mcp-abilities-site.php:754
 #, php-format
 msgid "Voorstel, er is NIETS opgeslagen. Er staat nu %1$d tekens CSS, het worden er %2$d. Bewaar het veld before: dit is de enige manier om terug te draaien. Roep opnieuw aan met het token om te schrijven."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:670
+#: includes/abilities/class-kadence-mcp-abilities-site.php:764
 msgid "Het token klopt niet. Of het voorstel is anders dan wat er getoetst is, of de Extra CSS is intussen gewijzigd. Vraag een nieuw voorstel aan."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:688
+#: includes/abilities/class-kadence-mcp-abilities-site.php:782
 msgid "geschreven en teruggelezen: wat er staat komt overeen met wat er bedoeld was. WordPress bewaart de vorige versie als revisie van de custom_css-post."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:689
+#: includes/abilities/class-kadence-mcp-abilities-site.php:783
 msgid "LET OP: er is geschreven, maar bij het teruglezen wijkt de CSS af van wat er verstuurd is. Waarschijnlijk heeft de sanitizer van WordPress ingegrepen. Vergelijk after met wat je bedoelde."
 msgstr ""
 
+#. translators: 1: key, 2: what is wrong.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:927
+#, php-format
+msgid "%1$s: %2$s"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:940
+msgid "geef een object met rijen en vakken, bijvoorbeeld {\"main\":{\"main_right\":[\"navigation\"]}}."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:944
+msgid "de huidige indeling is niet te lezen; is het Kadence-thema actief?"
+msgstr ""
+
+#. translators: 1: row, 2: existing rows.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:954
+#, php-format
+msgid "de rij \"%1$s\" bestaat niet. Rijen: %2$s."
+msgstr ""
+
+#. translators: %s: row.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:963
+#, php-format
+msgid "de rij \"%s\" moet een object met vakken zijn."
+msgstr ""
+
+#. translators: 1: slot, 2: row, 3: existing slots.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:972
+#, php-format
+msgid "het vak \"%1$s\" bestaat niet in de rij \"%2$s\". Vakken: %3$s."
+msgstr ""
+
+#. translators: %s: slot.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:982
+#, php-format
+msgid "het vak \"%s\" moet een lijst met item-ID's zijn; een leeg vak is []."
+msgstr ""
+
+#. translators: 1: item, 2: allowed items.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:993
+#, php-format
+msgid "het item \"%1$s\" kent deze bouwer niet. Toegestaan: %2$s."
+msgstr ""
+
+#. translators: 1: item, 2: first slot, 3: second slot.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1014
+#, php-format
+msgid "het item \"%1$s\" staat dan zowel in %2$s als in %3$s. Haal het uit het ene vak als je het in het andere zet."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1030
+msgid "geef het ID van een afbeelding in de mediabibliotheek, of 0 om hem weg te halen."
+msgstr ""
+
+#. translators: %d: attachment ID.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1042
+#, php-format
+msgid "%d is geen afbeelding in de mediabibliotheek."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1048
+msgid "je mag deze afbeelding niet lezen."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1055
+msgid "geef true of false."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1063
+msgid "geef een object; zie shapes in get-theme-mods."
+msgstr ""
+
+#. translators: %s: allowed parts.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1073
+#, php-format
+msgid "alleen %s, elk als object met desktop, tablet en mobile."
+msgstr ""
+
+#. translators: %s: device.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1082
+#, php-format
+msgid "\"%s\" is geen scherm; gebruik desktop, tablet of mobile."
+msgstr ""
+
+#. translators: 1: part, 2: device.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1102
+#, php-format
+msgid "de waarde voor %1$s.%2$s kent het thema niet; zie shapes in get-theme-mods."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1120
+msgid "geef tekst."
+msgstr ""
+
+#. translators: %s: key.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1128
+#, php-format
+msgid "%s: de tekst is opgeschoond (HTML of regeleinden eruit), zoals de Customizer dat ook doet."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1137
+msgid "geef een URL, of een lege tekst."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1147
+msgid "dit is geen geldige URL."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1154
+msgid "geef HTML als tekst."
+msgstr ""
+
+#. translators: %s: key.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1162
+#, php-format
+msgid "%s: wp_kses_post heeft iets uit de HTML gehaald; vergelijk after met wat je bedoelde."
+msgstr ""
+
+#. translators: %s: allowed values.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1176
+#, php-format
+msgid "kies uit %s."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1184
+msgid "onbekende vorm."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1200
+msgid "rijen → vakken → lijst met item-ID's; geef alleen de vakken die veranderen"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1202
+msgid "ID van een afbeelding in de mediabibliotheek; 0 haalt hem weg"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1204
+msgid "true of false"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1206
+msgid "include per scherm (desktop/tablet/mobile): logo, title en tagline aan elkaar met _, bijvoorbeeld logo of logo_title; layout per scherm: standard, title_logo, top_logo_title en verwante"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1208
+msgid "size per scherm (getal) en unit per scherm (px, em, rem, vw, %)"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1210
+msgid "platte tekst"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1212
+msgid "een URL, of leeg"
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1214
+msgid "HTML; gaat door wp_kses_post. In footer_html_content werken {copyright}, {year} en {site-title}"
+msgstr ""
+
+#. translators: %s: allowed values.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1218
+#, php-format
+msgid "een van: %s"
+msgstr ""
+
+#. translators: 1: unknown keys, 2: allowed keys.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1250
+#, php-format
+msgid "Onbekende sleutels: %1$s. Toegestaan zijn alleen %2$s."
+msgstr ""
+
+#. translators: %d: number of keys.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1284
+#, php-format
+msgid "%d sleutels gelezen. source zegt of de waarde opgeslagen is of de standaardwaarde van Kadence. Een bouwer wijzig je per vak met set-theme-mods."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1287
+msgid "LET OP: het Kadence-thema is niet actief. De waarden komen rechtstreeks uit de theme mods en standaardwaarden ontbreken; de bouwers zijn dan leeg."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1321
+msgid "Geef in mods op welke sleutels moeten wijzigen."
+msgstr ""
+
+#. translators: 1: unknown keys, 2: allowed keys.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1331
+#, php-format
+msgid "Onbekende sleutels: %1$s. Toegestaan zijn alleen %2$s. Theme mods bevatten het uiterlijk van de hele site en kennen geen revisies; daarom staat hier een vaste lijst."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1419
+msgid "geschreven en teruggelezen: wat er staat komt overeen met wat er bedoeld was. Er is GEEN revisie — theme mods kennen die niet. Terugdraaien kan alleen met de waarden uit before. Een paginacache moet eerst geleegd worden voordat bezoekers het zien."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1458
+msgid "Je mag geen bestanden uploaden op deze site (upload_files)."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1470
+msgid "Geef filename en data."
+msgstr ""
+
+#. translators: %d: maximum size in MB.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1485
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1502
+#, php-format
+msgid "Het bestand is groter dan %d MB. Verklein het, of importeer het vanaf een URL."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1494
+msgid "data is geen geldige base64."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1515
+msgid "Kon geen tijdelijk bestand schrijven op de server."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1532
+msgid "Dit is geen JPG, PNG, GIF of WebP, of de extensie past niet bij de inhoud."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1563
+msgid "Voorstel, er is NIETS opgeslagen. Stuur dezelfde aanroep nog eens met het token om de afbeelding in de mediabibliotheek te zetten."
+msgstr ""
+
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1573
+msgid "Het token klopt niet: het bestand, de naam, de titel of de alt-tekst verschilt van het voorstel. Vraag een nieuw voorstel aan."
+msgstr ""
+
+#. translators: %d: attachment ID.
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1605
+#, php-format
+msgid "In de mediabibliotheek gezet als bijlage %d. Gebruik dat ID in set-theme-mods (custom_logo) of in een blok."
+msgstr ""
+
 #. translators: %s: comma-separated post type names.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:768
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1687
 #, php-format
 msgid "let op — deze gevraagde posttypes bestaan niet op deze site: %s. Laat post_types weg om te zien wat er wél is."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:772
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1691
 msgid "leeg — er is geen enkel Kadence-posttype geregistreerd. Draait Kadence Blocks wel?"
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:774
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1693
 msgid "leeg — de posttypes bestaan wel maar bevatten geen posts die deze rol mag lezen. Bij concepten is daar edit_theme_options of edit_posts voor nodig."
 msgstr ""
 
 #. translators: 1: number of posts, 2: number of post types.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:778
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1697
 #, php-format
 msgid "%1$d posts gevonden in %2$d posttypes."
 msgstr ""
 
 #. translators: %d: number of posts.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:787
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1706
 #, php-format
 msgid "LET OP: %d posts bestaan wel maar zijn voor dit account niet leesbaar (unreadable per posttype). Maak ze niet opnieuw aan; kijk met check-access welk recht er ontbreekt."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:865
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1784
 msgid "leeg — er is niet gezocht en er zijn geen recente posts leesbaar. Geef search of slug op."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:866
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1785
 msgid "leeg — geen treffers. Let op dat search op de titel zoekt en slug exact moet zijn. Concepten verschijnen alleen als de rol ze mag lezen."
 msgstr ""
 
 #. translators: %d: number of posts.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:870
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1789
 #, php-format
 msgid "%d treffers. Gebruik het id met inspect-post."
 msgstr ""
 
 #. translators: %s: uniqueID.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:938
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1857
 #, php-format
 msgid "leeg — geen blok met uniqueID \"%s\" op deze site, of niet leesbaar voor dit account."
 msgstr ""
 
 #. translators: 1: number of posts, 2: uniqueID.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:943
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1862
 #, php-format
 msgid "%1$d post(s) met een blok \"%2$s\". Staat hij in meer dan één post, dan is er gedupliceerd; kies op post_type en titel."
 msgstr ""
 
 #. translators: %d: post ID.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:966
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1192
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1885
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2111
 #, php-format
 msgid "Er bestaat geen post met ID %d."
 msgstr ""
 
 #. translators: %d: post ID.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:978
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1897
 #, php-format
 msgid "Geen leesrecht op post %d."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:993
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1912
 msgid "leeg — deze post heeft geen post meta. Dat is normaal voor een gewone pagina; Kadence-meta bestaat vooral op kadence_query, kadence_query_card en kadence_header."
 msgstr ""
 
 #. translators: %d: number of withheld keys.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:996
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1915
 #, php-format
 msgid "leeg — deze post heeft wel %d meta-sleutels, maar geen daarvan is van Kadence. Alleen sleutels op _kad_, _kt_ of kadence_ worden teruggegeven."
 msgstr ""
 
 #. translators: 1: number of keys, 2: number withheld.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1002
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1921
 #, php-format
 msgid "%1$d Kadence-sleutels; %2$d sleutels van andere plugins zijn weggelaten."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1033
+#: includes/abilities/class-kadence-mcp-abilities-site.php:1952
 msgid "Geef het post-ID op van het object waarnaar je zoekt."
 msgstr ""
 
 #. translators: %d: number of posts scanned.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1102
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2021
 #, php-format
 msgid "geen treffers, maar de scan is begrensd op %d posts — dat is mogelijk niet de hele site. Verhoog scan_limit of beperk post_type."
 msgstr ""
 
 #. translators: %d: number of posts scanned.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1107
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2026
 #, php-format
 msgid "geen treffers in alle %d gescande posts. Dit object wordt nergens via een id-attribuut opgenomen."
 msgstr ""
 
 #. translators: 1: number of matches, 2: number scanned.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1113
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2032
 #, php-format
 msgid "%1$d posts verwijzen naar dit object, van %2$d gescande posts."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1116
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2035
 msgid "De scan was begrensd, dus er kunnen er meer zijn."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1200
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2119
 msgid "Geen leesrecht op deze post."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1227
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2146
 msgid "leeg — in deze post staan geen dynamische verwijzingen, taxonomiefilters of verwijzingen naar Kadence-objecten. Dat is normaal voor een pagina met alleen statische blokken."
 msgstr ""
 
 #. translators: 1: broken, 2: total, 3: unverifiable.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1231
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2150
 #, php-format
 msgid "%1$d van %2$d verwijzingen dangelt, %3$d zijn niet te verifiëren. LET OP: Kadence logt hier niets over en toont geen foutmelding — een kapotte verwijzing laat het blok gewoon verdwijnen of toont blogberichten."
 msgstr ""
 
 #. translators: 1: total, 2: unverifiable.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1239
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2158
 #, php-format
 msgid "alle %1$d verwijzingen wijzen naar iets dat bestaat; %2$d zijn niet te verifiëren zonder te weten welk posttype ze moeten dragen."
 msgstr ""
 
 #. translators: %d: number of warnings.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1248
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2167
 #, php-format
 msgid "%d waarschuwingen (status waarschuwing): de verwijzing bestaat, maar zal in de praktijk niet doen wat je verwacht — lees de note."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1304
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2223
 msgid "een kale meta-sleutel is niet te toetsen zonder te weten welk posttype hem hoort te dragen. Kadence leest hem met get_field() of get_post_meta(), en die falen nooit — ze geven gewoon niets terug."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1324
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2243
 msgid "dynamische achtergrond in een lus zonder inQueryBlock: alle kaarten krijgen dezelfde foto. Zet inQueryBlock: true op dit blok — en weet dat de editor die vlag weghaalt zodra dit object los wordt opgeslagen; een filter kadence_blocks_in_query_block in het thema is duurzamer."
 msgstr ""
 
 #. translators: %s: group name.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1407
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2326
 #, php-format
 msgid "de groep \"%s\" vóór de pipe bestaat niet. Een onbekende groep eindigt in de default-tak en levert een lege string op, waarna het hele blok niet rendert — zonder spoor."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1420
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2339
 msgid "ACF is niet actief, dus dit veld is niet te toetsen."
 msgstr ""
 
 #. translators: %s: field name.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1431
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2350
 #, php-format
 msgid "er bestaat geen ACF-veld met de naam \"%s\". Let op dat Kadence op NAAM koppelt en niet op field_key; hernoemen van een veld breekt deze verwijzing stil."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1435
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2354
 msgid "het ACF-veld bestaat. Of het aan dít posttype hangt is hiermee niet gezegd — acf_get_field() zegt daar niets over."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1443
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2362
 msgid "er staat een groep maar geen veldnaam achter de pipe."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1448
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2367
 msgid "de groep is geldig. De veldnaam zelf is niet te toetsen zonder de volledige veldenlijst van Kadence Pro."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1452
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2371
 msgid "dit is de drietrapsvariant: de echte sleutel staat in metaField, en als die op kb_custom_input staat weer in customMeta. Beide zijn kale meta-sleutels en niet te toetsen."
 msgstr ""
 
 #. translators: %s: taxonomy slug.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1482
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2401
 #, php-format
 msgid "de taxonomie \"%s\" bestaat niet."
 msgstr ""
 
 #. translators: %s: taxonomy slug.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1495
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2414
 #, php-format
 msgid "de taxonomie \"%s\" bestaat maar hangt aan géén enkel posttype. Dit treedt op na het hernoemen van een taxonomie: de termen blijven bestaan met count 0 en elk filter blijft leeg."
 msgstr ""
 
 #. translators: 1: taxonomy, 2: attached post types, 3: queried post types.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1515
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2434
 #, php-format
 msgid "de taxonomie \"%1$s\" hangt aan %2$s, maar deze query vraagt %3$s op. Het filter kan dus nooit iets tonen — de taxonomie bestaat wel, maar niet voor deze posts."
 msgstr ""
 
 #. translators: %s: comma separated post types.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1528
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2447
 #, php-format
 msgid "hangt aan: %s"
 msgstr ""
 
 #. translators: %d: post ID.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1562
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2481
 #, php-format
 msgid "post %d bestaat niet. Kadence geeft dan null terug en het blok rendert niets."
 msgstr ""
 
 #. translators: 1: actual type, 2: expected type.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1573
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2492
 #, php-format
 msgid "post is van type %1$s terwijl %2$s verwacht wordt. Ook dat geeft null."
 msgstr ""
 
 #. translators: %s: post status.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1585
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2504
 #, php-format
 msgid "het object staat op status \"%s\". Kadence weigert alles wat niet gepubliceerd is, en ook alles met een wachtwoord."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1626
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2545
 msgid "dit posttype bestaat niet. De Query Loop valt dan stil terug op \"post\" en toont blogberichten in plaats van niets — de meest misleidende faalwijze in de hele stack."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1637
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2556
 msgid "een sorteersleutel is niet te toetsen op bestaan. Wel belangrijk: sorteren op meta gebruikt een INNER JOIN, dus posts zonder deze sleutel vallen volledig uit de lijst."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1718
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2637
 msgid "Kadence MCP lezen"
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1719
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2638
 msgid "Kadence MCP schrijven (elke schrijfability)"
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1720
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2639
 msgid "headers, elementen, navigaties, vectoren, typografie en Extra CSS"
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1721
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2640
 msgid "SVG, scripts en & in titels ongeschonden opslaan"
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1722
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2641
 msgid "media uploaden"
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1723
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2642
 msgid "instellingen van plugins"
 msgstr ""
 
 #. translators: 1: post type, 2: hidden, 3: total, 4: capability.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1774
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2693
 #, php-format
 msgid "%1$s: %2$d van de %3$d posts zijn voor dit account onleesbaar. list-entities en find-post tonen die niet, dus ze lijken er niet te zijn — maak ze dan niet opnieuw aan. Nodig: %4$s."
 msgstr ""
 
 #. translators: 1: post type, 2: not editable, 3: total, 4: capability.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1783
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2702
 #, php-format
 msgid "%1$s: %2$d van de %3$d posts zijn wel leesbaar maar niet te bewerken (nodig: %4$s)."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1795
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2714
 msgid "Geen unfiltered_html: WordPress haalt bij het opslaan <svg>, <script> en inline-stijlen door kses, en maakt van & in een titel &amp;. Vectoren en custom SVG's kunnen daardoor leeg of beschadigd opgeslagen worden zonder foutmelding."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1799
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2718
 msgid "Geen edit_theme_options: headers, elementen, navigaties, vectoren, de typografie en de Extra CSS zijn niet te bewerken, en concepten daarvan niet te lezen."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1812
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2731
 msgid "Geen beperkingen gevonden voor de gevraagde posttypes."
 msgstr ""
 
 #. translators: %d: number of warnings.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:1815
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2734
 #, php-format
 msgid "%d beperkingen; lees warnings voordat je iets aanmaakt of overzet."
 msgstr ""
 
 #. translators: 1: distinct values, 2: hex equal to palette, 3: hex outside palette, 4: posts scanned.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2008
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2927
 #, php-format
 msgid "%1$d verschillende kleurwaarden; %2$d hex-waarden zijn gelijk aan een paletkleur (hardgecodeerd, bewegen niet mee), %3$d hex-waarden staan buiten het palet. %4$d posts gescand; rgba met een alfa telt als eigen waarde. Wat in CSS-bestanden van het thema staat, zie je hier niet."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2013
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2932
 msgid "LET OP: de scanlimiet is bereikt; verhoog scan_limit voor een volledig beeld."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2047
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2966
 msgid "Geef map op: {\"#04201a\":\"palette3\", …}. Oud is hoofdletterongevoelig."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2076
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2995
 msgid "Niets om te wijzigen: geen van de oude waarden staat (nog) in de gescande inhoud of meta."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2076
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2995
 msgid "Wel overgeslagen plekken, zie skipped."
 msgstr ""
 
 #. translators: 1: changes, 2: posts, 3: meta items, 4: skipped.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2079
+#: includes/abilities/class-kadence-mcp-abilities-site.php:2998
 #, php-format
 msgid "Voorstel, er is NIETS opgeslagen. %1$d wijzigingen in %2$d posts en %3$d meta-sleutels; %4$d plekken overgeslagen (zie skipped, met reden). Posts krijgen een revisie, meta niet: bewaar per meta-item het veld from. Roep opnieuw aan met dezelfde invoer en het token om alles te schrijven."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2093
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3012
 msgid "Het token hoort niet bij deze invoer, of er is intussen iets gewijzigd in een van de posts of meta. Vraag opnieuw een voorstel."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2100
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3019
 #, php-format
 msgid "post %d: geen bewerkrecht"
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2114
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3033
 #, php-format
 msgid "post %d: na het opslaan wijkt de inhoud af (een filter heeft ingegrepen)"
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2120
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3039
 #, php-format
 msgid "meta %1$d %2$s: geen bewerkrecht"
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2127
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3046
 #, php-format
 msgid "meta %1$d %2$s: na het opslaan wijkt de waarde af"
 msgstr ""
 
 #. translators: 1: changes, 2: posts, 3: meta.
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2153
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3072
 #, php-format
 msgid "geschreven en teruggelezen: %1$d wijzigingen in %2$d posts (elk één revisie) en %3$d meta-sleutels (geen revisie; oude waarden in meta[].changes[].from)."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2158
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3077
 msgid "LET OP: niet alles is geschreven zoals bedoeld; zie errors. De rest staat er wel."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2354
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3273
 msgid "Gravity Forms neemt in het formulierblok alleen hex aan."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2358
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3277
 msgid "een paletnaam werkt alleen in Kadence-blokken; core leest palette3 niet (gebruik var(--global-palette3))."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2367
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3286
 msgid "er hoort een opacity bij; Kadence rekent dan hex om naar rgba, en dat breekt een var(). Gebruik een hex of een paletnaam."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2374
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3293
 msgid "dit is een schaduw [aan, kleur, opacity, …] met een opacity; Kadence rekent de kleur dan om naar rgba, en dat breekt een var(). Gebruik een hex of een paletnaam."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2381
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3300
 #, php-format
 msgid "%s staat onder de 1; Kadence rekent dan hex om naar rgba, en dat breekt een var(). Gebruik een hex of een paletnaam."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2612
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3531
 msgid "Vingerafdruk met details. Vergelijk hashes met die van de andere site; waar een hash verschilt, vergelijk dat onderdeel in parts. entities vergelijkt op titel (slug), zonder ID's en domein."
 msgstr ""
 
-#: includes/abilities/class-kadence-mcp-abilities-site.php:2613
+#: includes/abilities/class-kadence-mcp-abilities-site.php:3532
 msgid "Alleen hashes. Draai dit op beide sites; waar een hash verschilt, vraag opnieuw met detail: true en vergelijk dat onderdeel."
 msgstr ""
 
@@ -3959,7 +4260,7 @@ msgid "Lezen uit Kadence Blocks, Kadence Blocks Pro, Kadence Pro en het Kadence-
 msgstr ""
 
 #: includes/class-kadence-mcp-server.php:45
-msgid "Toegang tot Kadence Blocks, Kadence Blocks Pro, Kadence Pro en het Kadence-thema. Negenenveertig abilities: drieëntwintig lezen, zesentwintig schrijven. SCHRIJVEN IS DUS GEEN UITZONDERING — lees voor elke tool die je aanroept in zijn beschrijving of hij schrijft. Elke schrijfability vraagt de capability kadence_mcp_write (die na installatie aan niemand is toegekend), bewerkrecht op de post volgens WordPress zelf, en een token uit een voorafgaande controlestap (alleen style-blocks en set-text accepteren in plaats daarvan expect_modified, de post_modified_gmt die je al kent: dat is één aanroep in plaats van twee — gebruik het als je de post net gelezen hebt); na afloop wordt er teruggelezen en vergeleken. Wat ze raken verschilt: de meeste schrijven post_content, maar set-entity-meta en set-card-layout schrijven post meta (geen revisies) en set-global-typography en set-site-css raken de hele site. Maak je meer dan één blok tegelijk op, gebruik dan style-blocks: set-attributes doet één blok per aanroep en elk token vervalt zodra de post wijzigt. Wil je een nieuwe sectie bouwen, verzin dan geen markup maar vraag list-recipes en generate-section: Kadence bakt elk uniqueID in de klassenamen van het blok, en met de hand geschreven markup klopt gegarandeerd niet. Markup die de editor zelf schreef, of die van een andere site komt, gaat via prepare-import: die controleert hem, zet de uniqueIDs om, meldt wat per site verschilt, zet media-, term- en post-ID's om met een opgegeven kaart, en geeft een token voor insert-blocks. Een navigatie, header, element of vector die op de doelsite nog niet bestaat maak je eerst aan met create-entity; een gewone post (bericht, dienst, markt) met termen en ACF-velden met create-post, en een bestaande werk je bij met update-post. Blokken binnen een post verplaatsen met behoud van uniqueID doe je met move-blocks."
+msgid "Toegang tot Kadence Blocks, Kadence Blocks Pro, Kadence Pro en het Kadence-thema. Tweeënvijftig abilities: vierentwintig lezen, achtentwintig schrijven. SCHRIJVEN IS DUS GEEN UITZONDERING — lees voor elke tool die je aanroept in zijn beschrijving of hij schrijft. Elke schrijfability vraagt de capability kadence_mcp_write (die na installatie aan niemand is toegekend), bewerkrecht op de post volgens WordPress zelf, en een token uit een voorafgaande controlestap (alleen style-blocks en set-text accepteren in plaats daarvan expect_modified, de post_modified_gmt die je al kent: dat is één aanroep in plaats van twee — gebruik het als je de post net gelezen hebt); na afloop wordt er teruggelezen en vergeleken. Wat ze raken verschilt: de meeste schrijven post_content, maar set-entity-meta en set-card-layout schrijven post meta (geen revisies) en set-global-typography, set-theme-mods en set-site-css raken de hele site, en upload-media zet een afbeelding in de mediabibliotheek. Maak je meer dan één blok tegelijk op, gebruik dan style-blocks: set-attributes doet één blok per aanroep en elk token vervalt zodra de post wijzigt. Wil je een nieuwe sectie bouwen, verzin dan geen markup maar vraag list-recipes en generate-section: Kadence bakt elk uniqueID in de klassenamen van het blok, en met de hand geschreven markup klopt gegarandeerd niet. Markup die de editor zelf schreef, of die van een andere site komt, gaat via prepare-import: die controleert hem, zet de uniqueIDs om, meldt wat per site verschilt, zet media-, term- en post-ID's om met een opgegeven kaart, en geeft een token voor insert-blocks. Een navigatie, header, element of vector die op de doelsite nog niet bestaat maak je eerst aan met create-entity; een gewone post (bericht, dienst, markt) met termen en ACF-velden met create-post, en een bestaande werk je bij met update-post. Blokken binnen een post verplaatsen met behoud van uniqueID doe je met move-blocks."
 msgstr ""
 
 #: includes/class-kadence-mcp-server.php:47
