@@ -1401,11 +1401,21 @@ class Kadence_MCP_Abilities_Site {
 		$controle  = array();
 		$afwijking = array();
 
-		foreach ( $na as $sleutel => $waarde ) {
-			$controle[ $sleutel ] = self::huidige_thema_waarde( $sleutel );
+		// Read back the stored theme mod itself, not kadence()->option():
+		// that can serve a cached, filtered or default-filled value within
+		// the same request, and would then hide a failed write.
+		foreach ( $gewijzigd as $wijziging ) {
+			$sleutel              = $wijziging['key'];
+			$controle[ $sleutel ] = get_theme_mod( $sleutel );
 
-			if ( wp_json_encode( $controle[ $sleutel ] ) !== wp_json_encode( $waarde ) ) {
+			if ( wp_json_encode( $controle[ $sleutel ] ) !== wp_json_encode( $na[ $sleutel ] ) ) {
 				$afwijking[] = $sleutel;
+			}
+		}
+
+		foreach ( $na as $sleutel => $waarde ) {
+			if ( ! array_key_exists( $sleutel, $controle ) ) {
+				$controle[ $sleutel ] = $waarde;
 			}
 		}
 

@@ -139,7 +139,18 @@ $verwacht = array(
 	'upload-media: svg refused' => array( array( 'Kadence_MCP_Abilities_Site', 'upload_media' ), array( 'filename' => 'smoke.svg', 'data' => base64_encode( '<svg xmlns="http://www.w3.org/2000/svg"/>' ) ), 'kadence_mcp_upload_type' ),
 );
 
+$mag_schrijven = Kadence_MCP_Capabilities::current_user_can( Kadence_MCP_Capabilities::WRITE );
+
 foreach ( $verwacht as $naam => $geval ) {
+	$recht = 0 === strpos( $naam, 'upload-media' ) ? 'upload_files' : 'edit_theme_options';
+
+	// Without the write grant (the default after install) these answer with a
+	// clean WP_Error, which proves nothing about the checks; skip them.
+	if ( ! $mag_schrijven || ! current_user_can( $recht ) ) {
+		WP_CLI::log( sprintf( '%-32s skipped (needs kadence_mcp_write and %s)', $naam, $recht ) );
+		continue;
+	}
+
 	try {
 		$uit = call_user_func( $geval[0], $geval[1] );
 	} catch ( Throwable $e ) {
